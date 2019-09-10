@@ -12,82 +12,14 @@
 #  ------------------------------------------------------------------
 
 #' Version 2019-09-10
-#'
+#
 
 
-#' Statistique de Fisher
-#' modifié pas de pondération
-#' @param inc liste des inclinaisons en degrés
-#' @param des liste des déclinaisons en degrés
-#' @param aim liste des aimantations, facultatif
-#' @param pfish pourcentage de confiance
-#' @param inc.absolue calcul avec la valeur absolue des inclinaisons
-#' @return  en degrés
-#' @keywords fisher
-#' @export
-stat.fisher <- function (inc, dec, aim=NA, pfish = 0.95, inc.absolue = TRUE)
-{
 
-  n <- length(inc)
-  if (length(dec) != n) {
-    return("length (dec) diff length(inc)")
-  }
-  if (is.na(aim) || length(aim) != n) {
-    print("length(aim) diff length(inc)")
-    aim <-  rep(1, n)
-  }
-
-
-  imin <- min(inc)
-  imax <- max(inc)
-  dmin <- min(dec)
-  dmax <- max(dec)
-
-  if (inc.absolue == TRUE)
-    inc <- abs(inc)
-
-  # Passage en radian pour les calculs
-  i.rad <- inc/180*pi
-  d.rad <- dec/180*pi
-
-  sx <- sum(aim*cos(i.rad)*sin(d.rad))
-  sy <- sum(aim*cos(i.rad)*cos(d.rad))
-  sz <- sum(aim*sin(i.rad))
-  sn <- sum(aim)
-
-  r <- sqrt(sx*sx+sy*sy+sz*sz)
-
-  imoy <- n_arcsin(sz/r)
-  dmoy <- angleD(sx,sy)
-  KF <- sn/(sn-r)
- # Calcul de A95 Vrai sans simplification tel que fisher 1953
-  a95 <- exp( (1/(n-1))* log(1/(1-pfish)) )
-  a95 <- (a95 - 1 )*(n-r)/r
-  a95 <- acos(1-a95)
-
-  # correction du biais
-  KF <- ((n-1)/n) * KF
-
-
-  delta <- log(1+(1-pfish) * (exp(2*KF)-1)) /KF
-  delta <- acos(delta-1)
-
-  return( )
-
-  # retour en degrés
-  Data <- c(n = n, imoy =imoy/pi*180, dmoy = dmoy/pi*180, alpha=a95/pi*180, pfish = pfish, delta = delta/pi*180, KF = KF,
-            imin = imin, imax = imax, dmin = dmin, dmax = dmax)
-
-  col.names <- c("n", "imoy", "dmoy", "a95", "pFish", "Delta", "KF", "imin", "imax", "dmin", "dmax")
-  return(as.data.frame(t(Data), col.names = col.names, stringsAsFactors = FALSE))
-
-}
-
-#' Equation du 3 degrées
-#' résolution du 3 eme degres pour calcul mcFadden importé de ARMAG
-#'  modifier suivant livre photocopié
-#'  Fonction interne
-
+# Equation du 3 degrées
+# résolution du 3 eme degres pour calcul mcFadden importé de ARMAG
+#  modifier suivant livre photocopié
+#  Fonction interne
 EQUATION_DEGRE_3 <- function(A1,A2,A3)
 {
 
@@ -130,10 +62,9 @@ EQUATION_DEGRE_3 <- function(A1,A2,A3)
   return(rslt)
 }
 
-#' Equation du 4 degrées
-#' résolution du 4 ème degres pour calcul mcFadden importé de ARMAG
-#' Fonction interne
-
+# Equation du 4 degrées
+# résolution du 4 ème degres pour calcul mcFadden importé de ARMAG
+# Fonction interne
 EQUATION_DEGRE_4 <- function(B1,B2,B3,B4)
 {
   E3 <- EQUATION_DEGRE_3(-B2, B1*B3-4*B4, 4*B2*B4-B3*B3-B1*B1*B4)
@@ -273,6 +204,76 @@ stat.mcFadden <- function(inc, dec, inc.absolue = TRUE)
 
 
   }
+
+
+#' Statistique de Fisher
+#' modifié pas de pondération
+#' @param inc liste des inclinaisons en degrés
+#' @param des liste des déclinaisons en degrés
+#' @param aim liste des aimantations, facultatif
+#' @param pfish pourcentage de confiance
+#' @param inc.absolue calcul avec la valeur absolue des inclinaisons
+#' @return  en degrés
+#' @keywords fisher
+#' @export
+stat.fisher <- function (inc, dec, aim=NA, pfish = 0.95, inc.absolue = TRUE)
+{
+
+  n <- length(inc)
+  if (length(dec) != n) {
+    return("length (dec) diff length(inc)")
+  }
+  if (is.na(aim) || length(aim) != n) {
+    print("length(aim) diff length(inc)")
+    aim <-  rep(1, n)
+  }
+
+
+  imin <- min(inc)
+  imax <- max(inc)
+  dmin <- min(dec)
+  dmax <- max(dec)
+
+  if (inc.absolue == TRUE)
+    inc <- abs(inc)
+
+  # Passage en radian pour les calculs
+  i.rad <- inc/180*pi
+  d.rad <- dec/180*pi
+
+  sx <- sum(aim*cos(i.rad)*sin(d.rad))
+  sy <- sum(aim*cos(i.rad)*cos(d.rad))
+  sz <- sum(aim*sin(i.rad))
+  sn <- sum(aim)
+
+  r <- sqrt(sx*sx+sy*sy+sz*sz)
+
+  imoy <- n_arcsin(sz/r)
+  dmoy <- angleD(sx,sy)
+  KF <- sn/(sn-r)
+  # Calcul de A95 Vrai sans simplification tel que fisher 1953
+  a95 <- exp( (1/(n-1))* log(1/(1-pfish)) )
+  a95 <- (a95 - 1 )*(n-r)/r
+  a95 <- acos(1-a95)
+
+  # correction du biais
+  KF <- ((n-1)/n) * KF
+
+
+  delta <- log(1+(1-pfish) * (exp(2*KF)-1)) /KF
+  delta <- acos(delta-1)
+
+  return( )
+
+  # retour en degrés
+  Data <- c(n = n, imoy =imoy/pi*180, dmoy = dmoy/pi*180, alpha=a95/pi*180, pfish = pfish, delta = delta/pi*180, KF = KF,
+            imin = imin, imax = imax, dmin = dmin, dmax = dmax)
+
+  col.names <- c("n", "imoy", "dmoy", "a95", "pFish", "Delta", "KF", "imin", "imax", "dmin", "dmax")
+  return(as.data.frame(t(Data), col.names = col.names, stringsAsFactors = FALSE))
+
+}
+
 
 #' Valeurs maximun d'un tracer lambert
 #' Permet de trouver les valeurs minimales et maximales pour tracer un plot.lambert
