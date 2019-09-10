@@ -2174,9 +2174,80 @@ plot.flin <- function( Data, Data.F12=NULL, pt.names= NULL, point.col = "blue3",
 }
 
 #' Tracer d'un diagramme de désaimantation
+#' @param normalize permet de comparer l'évolution quelque soit l'amplitude
 #' @export
 plot.desaim <- function( Data, F = NULL,  point.col = "blue3", pch = 21, type= "b",
-                       xlab = "°C", ylab = "", main = NULL, absolue = TRUE, new = TRUE, ...)
+                             xlab = "°C", ylab = "", main = NULL,
+                             names = NA, normalize = TRUE, new = TRUE, ...)
+{
+
+  tmp.frame <- NULL
+  if (is.null(main))
+    main <- " F vs Etap.value"
+
+  if(is.data.frame(Data)) {
+    tmp.frame$name <- Data$name
+    tmp.frame$Etap.value <- Data$Etap.value
+    tmp.frame$F <- Data$F
+
+
+  } else {
+    # Création du frame interne
+    if (is.na(names))
+      tmp.frame$name <- as.character(c(1: length(Data)))
+    else
+      tmp.frame$name <- names
+
+    tmp.frame$Etap.value <- Data
+    tmp.frame$F <- F
+  }
+
+  # comptage et séparation des données
+  current <- tmp.frame$name[1]
+  list.name <- current
+
+  for (i in 1: length(tmp.frame$name)) {
+    if ( tmp.frame$name[i] != current) {
+      current <- tmp.frame$name[i]
+      list.name<- c(list.name, current)
+    }
+  }
+
+  xlim <- range(tmp.frame$Etap.value)
+
+  YMax <-max(tmp.frame$F)
+
+  if (normalize) {
+    ylim <- c(0, 100)
+    tmp.frame$F <- tmp.frame$F/YMax * 100
+
+  } else {
+    ylim <- c(0, YMax)
+  }
+
+
+  for (i in 1 : length(list.name)) {
+    Xi <- tmp.frame$Etap.value[tmp.frame$name == list.name[i]]
+    Yi <- tmp.frame$F[tmp.frame$name == list.name[i]]
+
+    if (i == 1)
+      plot(x=Xi, y=Yi, xlab = xlab, ylab = ylab, ylim = ylim, xlim = xlim, type = type, col="gray50", bg = point.col[i], pch = pch,
+           yaxt="n", bty ="n", main = main, new = new)
+    else
+      lines(x=Xi, y=Yi, type = type, col="gray50", bg = point.col[i], pch = pch, yaxt="n", bty ="n")
+
+  }
+
+  axis(2, pos = 0, cex.axis = 0.8, col = "darkgray") # Ordonnées
+
+  mtext( format(YMax, digits = 3), side = 3, col = "gray5", adj = 0, cex.axis = 0.8)
+
+
+}
+
+
+plot.desaim_old <- function( Data, F = NULL,  point.col = "blue3", pch = 21, type= "b",
+                       xlab = "°C", ylab = "", main = NULL, new = TRUE, ...)
 {
 
   if(is.data.frame(Data)) {
@@ -2194,7 +2265,7 @@ plot.desaim <- function( Data, F = NULL,  point.col = "blue3", pch = 21, type= "
   ylim <- range(Y)
   ylim <- c(0, ylim[2])
   plot(x=X, y=Y, xlab = xlab, ylab = ylab, ylim = ylim, type = type, col="gray50", bg = point.col, pch = pch,
-       yaxt="n", bty ="n", main = main)
+       yaxt="n", bty ="n", main = main, new = new)
   ax <- axis(2, pos = 0, cex.axis = 0.8, col = "darkgray") # Ordonnées
 
   mtext( format(YMax, digits = 3), side = 3, col = "gray5", adj = 0, cex.axis = 0.8)
