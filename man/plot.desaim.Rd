@@ -5,8 +5,11 @@
 \title{Tracer d'un diagramme de désaimantation}
 \usage{
 \method{plot}{desaim}(Data, F = NULL, point.col = "blue3", pch = 21,
-  type = "b", xlab = "°C", ylab = "", main = NULL,
-  absolue = TRUE, new = TRUE, ...)
+  type = "b", xlab = "°C", ylab = "", main = NULL, names = NA,
+  normalize = TRUE, new = TRUE, ...)
+}
+\arguments{
+\item{normalize}{permet de comparer l'évolution quelque soit l'amplitude}
 }
 \description{
 Tracer d'un diagramme de désaimantation
