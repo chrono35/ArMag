@@ -1,0 +1,657 @@
+---
+title: "Test Code ArMag"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r pour crer un racoursie }
+#shinyShortcut(shinyDirectory = "~/Documents/AM/R_Projects/ArMag/Visu_AM", OS = "unix",   gitIgnore = FALSE)
+```
+
+# Chargement des fonctions d'ArMag
+```{r echo = TRUE}
+source('~/Documents/AM/R_Projects/ArMag/ArMag.R', echo=FALSE)
+```
+
+
+# Chargement fichier test avec fonction read.AM
+## Test écriture Fonction
+```{r test.lecture fichier}
+ file.AM <- "/Volumes/Partage_Mesures_Archeomag/Mesures/22061_Glomel/22061A.AMD"
+encoding="latin1"
+
+  # Lecture et Copy du fichier
+  lin<- NULL
+  fil <- file(file.AM, "r")
+  lin <- readLines(fil, encoding=encoding) 
+  close(fil)
+  # Recherche position-ligne des noms
+  g <- NULL
+  for (i in 1:length(lin))
+    if (grepl("Id:", lin[i])==TRUE)
+      g<-c(g,i )
+  
+  # Lecture mesure par nom
+  lname <- trimws(substr(lin[g],4, 15))
+  list.mesure <- NULL
+  lmes <- NULL
+  
+  first.mesure <- NULL
+  last.mesure <- NULL
+  for (i in 1:length(g)) {
+    first.mesure <- g[i]+4
+    if (i<length(g))
+      last.mesure <- g[i+1]-2
+    else
+      last.mesure<- length(lin)
+    
+    Etap <- NULL
+    Etap.val <- NULL
+    lX <- NULL
+    lY <- NULL
+    lZ <- NULL
+    lI <- NULL
+    lD <- NULL
+    lF <- NULL
+    Qual <- NULL
+    App <- NULL
+    Suscep <- NULL
+    for (j in first.mesure:last.mesure) {
+      lEtap <- substr(lin[j], 3, 7)
+      lEtap.val <- substr(lin[j], 3, 5)
+      lX <- substr(lin[j], 9, 18)
+      lY <- substr(lin[j], 20, 29)
+      lZ <- substr(lin[j], 31, 40)
+      lQual <- substr(lin[j], 43, 44)
+      lApp <- substr(lin[j], 46, 46)
+      lSuscep <- substr(lin[j], 48, 52)
+      if ( is.na(as.numeric(lX)) || is.na(as.numeric(lY)) || is.na(as.numeric(lY)) ) {
+        lX <- 0
+        lY <- 0
+        lZ <- 0
+        lI <- 0
+        lD <- 0
+        lF <- 0
+      } else {
+        lI <- calcul.vecteur.polaire.I(as.numeric(lX), as.numeric(lY), as.numeric(lZ))
+        lD <- calcul.vecteur.polaire.D(as.numeric(lX), as.numeric(lY), as.numeric(lZ))
+        lF <- calcul.vecteur.polaire.F(as.numeric(lX), as.numeric(lY), as.numeric(lZ))
+      }
+      
+      Qual <- c(Qual, lQual)
+      App <- c(App, lApp)
+      Suscep <- c(Suscep, lSuscep)
+      lmes <- data.frame(number = i, name = lname[i], lEtap, Etap.value = as.numeric(lEtap.val), X = as.numeric(lX), Y = as.numeric(lY), Z = as.numeric(lZ),
+                         I = as.numeric(lI), D = as.numeric(lD), F = as.numeric(lF),
+                         Quality = as.numeric(lQual), App = lApp, Suscep = as.numeric(lSuscep), stringsAsFactors = FALSE)
+    }
+    list.mesure <- rbind(list.mesure, lmes)
+ 
+  }
+  
+  list.mesure      
+```
+
+```{r codage lecture fichier}
+file.AM <- "~/Documents/AM/GDRE1_INT.AMD"
+  lin<- NULL
+  fil <- file(file.AM, "r")
+  lin <- readLines(fil, encoding="latin1") 
+  close(fil)
+  # Recherche position-ligne des noms
+  g <- NULL
+  for (i in 1:length(lin))
+    if (grepl("Id:", lin[i])==TRUE)
+      g<-c(g,i )
+  
+  # Lecture mesure par nom
+  lname <- trimws(substr(lin[g], 4, 14))
+  linc <- trimws(substr(lin[g], 20, 24))
+  laz <- trimws(substr(lin[g], 20, 34))
+  ltet <- trimws(substr(lin[g], 39, 43))
+  lpsy <- trimws(substr(lin[g], 49, 53))
+  lv <- trimws(substr(lin[g], 57, 61))
+  lTH <- trimws(substr(lin[g], 69, 72))
+  lshape <- trimws(substr(lin[g], 76, 79))
+  
+  lT1 <- trimws(substr(lin[g+2], 14, 17))
+  lT2 <- trimws(substr(lin[g+2], 25, 28))
+  lT3 <- trimws(substr(lin[g+2], 36, 39))
+  lT4 <- trimws(substr(lin[g+2], 47, 50))
+  
+  list.mesure <- NULL
+  list.mesure <- data.frame(number = c(1: length(g)), name = lname, inc = linc, az = laz, tet = as.numeric(ltet), psy = as.numeric(lpsy), TH = lTH,
+                         shape = lshape, T1 = as.numeric(lT1), T2 = as.numeric(lT2), T3 = as.numeric(lT3), T4 = as.numeric(lT4), stringsAsFactors = FALSE)
+
+```
+
+## Test execution
+```{r test read.AM}
+#file.AM <- "~/Documents/AM/GDRE1_INT.AMD"
+ file.AM <- "/Volumes/Partage_Mesures_Archeomag/Mesures/22061_Glomel/22061A.AMD"
+mes <- NULL
+mes <- read.AM.mesures (file.AM)
+mes.info <- read.AM.info (file.AM)
+```
+
+```{r test extract.mesures.specimen.name}
+mes.sel <- NULL
+mes.sel <- extract.mesures.specimen.name("44188A_17B1", mes)
+```
+
+
+# Tracer de cercle
+## Test calcul cercle
+
+```{r lambert.ID.field}
+ilim = c(0, 90)
+dmin <- -90
+dmax <- 270
+lab.pos = NULL
+lab.pos$I = 0 #seq(0, 45, by=40)
+lab.pos$D = seq(-90, 180, by=90)
+
+
+plot.lambert.ID.grid(labels = NA, label.pos = lab.pos,
+                  radlab = FALSE,  start = 0,
+                  clockwise = TRUE, 
+                  show.radial.grid = TRUE, dec.min = dmin, dec.max = dmax, inc.min = 0, inc.max = 90 )
+plot.lambert.ID.circle(45,45, 20)
+
+
+
+pt <- lambert.ID.circle.points(10, 45, 20)
+  
+  
+  maxlength <- 100 # la valeur n'a pas d'influence, la fonction plot() calcul le reste
+  # radlab écrit les labels sous forme d'étoile
+  #if (is.null(inc.lim)) 
+    inc.lim <- range(abs(pt$I))
+  
+  # Sélection des échantillons visibles dans le range
+  index.supprim <- NULL
+  condition <- (abs(pt$I)< inc.lim[1] | abs(pt$I)> inc.lim[2] | pt$D<dmin || pt$D>dmax ) 
+  index.supprim <- pt$I[condition == TRUE]
+
+
+
+plot.lambert.ID(mes.sel$I, mes.sel$D, dec.min = dmin, dec.max = dmax, main = "Mesures à plat", show.grid = TRUE)
+plot.lambert.ID.circle(10, 45, 20, dec.min = dmin, dec.max = dmax, col = "red")
+
+
+
+
+plot.lambert.ID.field(mes.sel$I[1], mes.sel$D[1], dec.min = dmin, dec.max = dmax, main = "Mesures à plat", point.col = "forestgreen")
+
+
+plot.lambert.ID.grid(main = "test", labels = NA, label.pos = lab.pos,
+                  radlab = FALSE,  start = 0,
+                  clockwise = TRUE, 
+                  show.radial.grid = TRUE, dec.min = dmin, dec.max = dmax, inc.min = 0, inc.max = 90, new=TRUE )
+
+plot.lambert.ID.circle(45, 45, 20, dec.min = dmin, dec.max = dmax)
+plot.lambert.ID.point(mes.sel$I, mes.sel$D, dec.min = dmin, dec.max = dmax, new = FALSE)
+```
+
+
+
+```{r Codage plot.zijderveld}
+Data <- mes.sel
+ if(is.data.frame(Data)) {
+    tX <- Data$X
+    tY <- Data$Y
+    tZ <- Data$Z
+  } else {
+    tX <- Data
+  }
+Y.r <- range(tY )
+Z.r <- range(tZ)
+Y.range <- c(min(Y.r[1], Z.r[1]), max(Y.r[2], Z.r[2]))
+plot(mes.sel$X, mes.sel$Y, type="o", pch=21, col="forestgreen",   bg=adjustcolor( "forestgreen", alpha.f = 0.7), axes = FALSE, 
+     panel.first = grid(), xlab = "", ylab = "", ylim = Y.range)
+lines(mes.sel$X, -mes.sel$Z, type="o", pch=21,  bg=adjustcolor( "blue", alpha.f = 0.7), col="blue")
+
+#axis(side = 1, at = c(10^-5, 10^-5), labels = formatC(c(10^-5, 10^-5), format = "fg"), las = 1)
+#axis(1, pos = 0, cex.axis = 0.8, at = c(0, 1E-5, 2E-5, 3E-5), labels = c("SZD","sd","sdf","sdf"), col = "darkgray") # Abscisses
+axis(1, pos = 0, cex.axis = 0.8, col = "darkgray")
+axis(2, pos = 0, cex.axis = 0.8, col = "darkgray") # Ordonnées
+
+
+abline(h = 0, col = "darkgray", lty = 1)
+abline(v = 0, col = "darkgray", lty = 1)
+text(0, max(mes.sel$Y), "Y", col = "gray5", adj = c(-.5, 0))
+text(0, -max(mes.sel$Z), "Z", col = "gray5", adj = c(-.5, 0))
+text( max(mes.sel$X), 0, "X", col = "gray5", adj = c(0, -.5))
+
+#plot(mes.sel$Etap.value, mes.sel$Suscep, type = "b")
+```
+
+```{r Test read.AM.info }
+file.AM2 <- "~/Documents/AM/53130B1_2019.AMD"
+mes2 <- read.AM.mesures (file.AM2)
+mes2.info <- NULL
+mes2.info <- read.AM.info (file.AM2)
+```
+
+```{r selection}
+mes.sel2 <- NULL
+mes.sel2 <- extract.mesures.specimen.name("19D", mes2)
+#mes.sel2 <- extract.mesures.specimen.number(2, mes2)
+```
+
+```{r fonction plot.zjiderveld1}
+par(pty="s") # force une figure carré
+plot.zjiderveld1(mes.sel2$X, mes.sel2$Y, mes.sel2$Z, pt.name = mes.sel2$Etap)
+par(mfrow = c(1,2), pty="m") # séparation en 2 colonnes et rétablie une figure taille maximale
+plot.zjiderveld1(mes.sel2, legend.pos = "topright")
+plot.zjiderveld2(mes.sel2, pt.names = NULL)
+```
+
+
+
+
+```{r comparatif fonction plot}
+plot.lambert.XYZ.specimen(mes.sel2)
+plot.lambert.ID.specimen(mes.sel2)
+```
+
+# calcul sur matrice
+```{r matrice}
+# matrice d'anisotropie
+volume <- mes2.info$vol[which(mes2.info$name == trimws(mes.sel2$name[1]))]
+TH <- mes2.info$TH[which(mes2.info$name == trimws(mes.sel2$name[1]))]
+
+temperature <- 400
+etape.sigle <- c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB")
+ani.etape <- trimws(paste(as.character(temperature), etape.sigle, sep = "") )
+selec <- NULL
+for (i in 1:length(ani.etape)) {
+  selec <- c( selec, which(trimws(mes.sel2$Etap) == trimws(ani.etape[i])) )
+}
+res.list <- mes.sel2[selec,]
+res.list <- res.list 
+
+mat.plus <- matrix( c( res.list$X[3], res.list$X[5], res.list$X[1],
+                       res.list$Y[3], res.list$Y[5], res.list$Y[1],
+                       res.list$Z[3], res.list$Z[5], res.list$Z[1]) , 3, 3)
+
+
+mat.moins <- matrix( c( res.list$X[4], res.list$X[6], res.list$X[2],
+                        res.list$Y[4], res.list$Y[6], res.list$Y[2],
+                        res.list$Z[4], res.list$Z[6], res.list$Z[2]) , 3, 3)
+mat.reel <- (mat.plus - mat.moins)/2 / (volume * 1E-6)# / coef.norm
+
+# Symetrisation
+coef.norm <- TH* 10/ (4*pi)
+kxx <- mat.reel[1,1] / coef.norm
+kyy <- mat.reel[2,2] / coef.norm
+kzz <- mat.reel[3,3] / coef.norm
+kxy <- (mat.reel[1,2] + mat.reel[2,1]) / 2 / coef.norm
+kxz <- (mat.reel[1,3] + mat.reel[3,1]) / 2 / coef.norm
+kyz <- (mat.reel[2,3] + mat.reel[3,2]) / 2 / coef.norm
+
+# normalisation
+suscept <- (kxx + kyy + kzz)/3
+mat.sym.norm <- matrix( c( kxx / suscept, kxy / suscept, kxz / suscept,
+                           0,  kyy / suscept, kyz / suscept,
+                           0, 0, kzz / suscept) , 3, 3)
+
+# vecteurs et valeurs propres
+v <- eigen(mat.sym.norm, symmetric = TRUE)
+#res.list <- mes.sel2[selec,]
+# calcul des angles I,D des vecteurs propres}
+v1 <- NULL
+v1$I<-calcul.vecteur.polaire.I(v$vectors[1, 1], v$vectors[2, 1], v$vectors[3 ,1])*180/pi
+v1$D<-calcul.vecteur.polaire.D(v$vectors[1, 1], v$vectors[2, 1], v$vectors[3 ,1])*180/pi
+
+
+v2 <- NULL
+v2$I<-calcul.vecteur.polaire.I(v$vectors[1, 2], v$vectors[2, 2], v$vectors[3 ,2])*180/pi
+v2$D<-calcul.vecteur.polaire.D(v$vectors[1, 2], v$vectors[2, 2], v$vectors[3 ,2])*180/pi
+
+
+v3 <- NULL
+v3$I<-calcul.vecteur.polaire.I(v$vectors[1, 3], v$vectors[2, 3],v$vectors[3 ,3])*180/pi
+v3$D<-calcul.vecteur.polaire.D(v$vectors[1, 3], v$vectors[2, 3],v$vectors[3 ,3])*180/pi
+
+
+if (v3$I<0) {
+  v3$I <- -v3$I
+  v3$D <- D.AM(v3$D +180)
+  v2$I <- -v2$I
+  v2$D <- D.AM(v2$D +180)
+}
+
+plot.lambert.ID(c(v1$I,v2$I,v3$I), c(v1$D,v2$D,v3$D), inc.lim = c(0, 90), pch = c(22, 24, 21))#, point.col = c("red", "green", "orange") )
+ 
+```
+
+```{r test extract.aniso}
+volume <- mes2.info$vol[which(mes2.info$name == trimws(mes.sel2$name[1]))]
+TH <- mes2.info$TH[which(mes2.info$name == trimws(mes.sel2$name[1]))]
+
+ani <- anisotropie.matrix(mes.sel2, etape.value = 400, TH = TH, volume = volume )
+ani
+```
+
+```{r code plot.ani}
+mes.sel1 <- extract.mesures.specimen.number(1, mes2)
+mes.sel2 <- extract.mesures.specimen.number(2, mes2)
+mes.sel3 <- extract.mesures.specimen.number(3, mes2)
+
+ani1 <- anisotropie.tensor(mes.sel1, etape.value = 400, TH = TH, volume = mes2.info$vol[which(mes2.info$name == trimws(mes.sel1$name[1]))] )
+ani2 <- anisotropie.tensor(mes.sel2, etape.value = 400, TH = TH, volume = mes2.info$vol[which(mes2.info$name == trimws(mes.sel2$name[1]))] )
+ani3 <- anisotropie.tensor(mes.sel3, etape.value = 400, TH = TH, volume = mes2.info$vol[which(mes2.info$name == trimws(mes.sel3$name[1]))] )
+
+#plot.ani(c(ani1, ani2, ani3))
+Data <- rbind(ani1, ani2, ani3)
+point.col <- "forestgreen"
+
+ # restructuration des données
+  L1.Inc <- as.numeric(Data[,2])
+  L2.Inc <- as.numeric(Data[,5])
+  L3.Inc <- as.numeric(Data[,8])
+  
+  L1.Dec <- as.numeric(Data[,3])
+  L2.Dec <- as.numeric(Data[,6])
+  L3.Dec <- as.numeric(Data[,9])
+  
+  if (length(point.col) < length(L1.Inc))
+    point.col <- rep(point.col, length.out = length(L1.Inc))
+  new <- TRUE
+  for (i in 1:length(L1.Inc) ) {
+    Da.I <- c(L1.Inc[i], L2.Inc[i], L3.Inc[i])
+    Da.D <- c(L1.Dec[i], L2.Dec[i], L3.Dec[i])
+    plot.lambert.ID(Da.I,
+                    Da.D,
+                    inc.lim = c(0, 90), pch = c(22, 24, 21), point.col = point.col[i], new = new  )
+    new <- FALSE
+  }
+
+```
+
+```{r codage extract.all.anisotropie.tensor.numbers}
+
+numbers <- c(1, 2, 3)
+Data.mesures <- mes2
+Data.info <- mes2.info
+etape.value <- 400
+
+Data <- NULL
+for (i in 1:length(numbers) ) {
+  mesures <-  extract.mesures.specimen.number(numbers[i], Data.mesures) 
+  ani <- anisotropie.tensor(mesures, etape.value = etape.value, 
+                                    TH = Data.info$TH[which(Data.info$name == trimws(mesures$name[1]))],
+                                    volume = Data.info$vol[which(Data.info$name == trimws(mesures$name[1]))] )
+  Data <- rbind(Data, ani)
+}
+
+```
+
+
+
+```{r}
+TH <- 60
+mes.sel <- NULL
+#mes.sel2 <- extract.mesures.specimen.name("19D", mes2)
+mes.sel1 <- extract.mesures.specimen.number(1, mes2)
+mes.sel2 <- extract.mesures.specimen.number(2, mes2)
+mes.sel3 <- extract.mesures.specimen.number(3, mes2)
+
+ani1 <- anisotropie.tensor(mes.sel1, etape.value = 400, TH = TH, volume = mes2.info$vol[which(mes2.info$name == trimws(mes.sel1$name[1]))] )
+ani2 <- anisotropie.tensor(mes.sel2, etape.value = 400, TH = TH, volume = mes2.info$vol[which(mes2.info$name == trimws(mes.sel2$name[1]))] )
+ani3 <- anisotropie.tensor(mes.sel3, etape.value = 400, TH = TH, volume = mes2.info$vol[which(mes2.info$name == trimws(mes.sel3$name[1]))] )
+
+Data <- rbind(ani1, ani2, ani3)
+plot.lambert.ID.tensors(Data, point.col = c("blue", "red", "green"))
+#
+
+numbers <- c(7)
+Data <- anisotropie.tensors.numbers(numbers, mes2, mes2.info, 400)
+plot.lambert.ID.tensors(Data, point.col = c("blue", "red", "green"))
+
+
+numbers.selected <- NULL
+  for (i in 1: length(mes2$number) ) {
+    if ( length(which( numbers.selected == mes2$number[i] )) == 0 )
+      numbers.selected <- c(numbers.selected, mes2$number[i])
+  }
+
+```
+
+```{r test anisotropie.tensors.all}
+
+Data <- anisotropie.tensors.all( mes2, mes2.info, 400)
+#plot.lambert.ID.tensors(Data, point.col = c("blue", "red", "green")) col=adjustcolor( pt.col, alpha.f = 2),
+# Flin Diagramm
+par(pty="s")
+pt.col = c("red")#, "blue")
+plot(abs(Data$F23), abs(Data$F12), xlab = "F12", ylab = "F23", type = "p", col="gray50", bg = pt.col, pch = 21,
+     xaxt="n", yaxt="n", asp = 1, bty ="n", main = "Flin diagram")
+
+  ax1 <- axis(1, pos = 1, cex.axis = 0.8, col = "gray10")
+  ax2 <- axis(2, pos = 1, cex.axis = 0.8, col = "gray10") # Ordonnées
+  cc<-array(c(0,1), c(1,2))
+ 
+abline(  coef = cc, col = "gray90")
+```
+
+```{r test plot.flin }
+plot.flin(Data)#, points.col = c("red", "blue"), pt.names = c("titi", "toto"))
+
+```
+
+```{r codage desaimantation}
+mes.sel2 <- extract.mesures.specimen.name("19D", mes2)
+
+Data <- mes.sel2
+pt.names <-""
+main <- ""
+    eta <- NULL
+  if(is.data.frame(Data)) {
+    X <- Data$Etap.value
+    Y <- Data$F
+    main <- as.character(Data$name[1])
+  } else {
+    X <- Data
+    main <- ""
+  }
+  
+
+YMax <- Y[1] #max(Y)
+  Y <- Y/YMax*100
+  ylim <- range(Y)
+  ylim <- c(0, ylim[2])
+# Flin Diagramm
+par(pty="m")
+pt.col = c("red")#, "blue")
+plot(x=X, y=Y, xlab = "°C", ylab = "", type = "b", col="gray50", bg = pt.col, pch = 21,
+      yaxt="n", bty ="n", main = main)
+ax <- axis(2, pos = 0, cex.axis = 0.8, col = "darkgray") # Ordonnées
+text(0, ax[length(ax)], format(YMax, digits = 3), col = "gray5", adj = c(-0.25, +1.25))
+ 
+```
+
+```{r}
+plot.desaim(mes.sel2)
+```
+
+```{r test repliement}
+res.frame <- NULL
+dec <- NULL
+data <- mes.sel1
+position <- "P"
+
+  
+  if (is.null(dec) ) {
+    inc <- data$I
+    dec <- data$D
+    aim <- data$F
+    nom <- data$name
+    num <- data$number
+  }  else {
+    inc <- data
+    dec <- dec
+    nom <- ""
+    num <- ""
+  }
+  
+  inc <- inc *pi /180
+  dec <- dec *pi /180
+  if (length(aim) < length(inc))
+    aim <- rep(aim, length(inc))
+  
+#  if (length(nom) < length(inc))
+ #   nom <-as.character(c(1: length(inc)) )
+  
+#  if (length(num) < length(inc))
+  #  num <-as.numeric( c(1: length(inc)) )
+  
+  if (length(position) < length(inc))
+    position <- rep(position, length(inc))
+  
+  X <- calcul.vecteur.cartesien.X(inc, dec, aim)
+  Y <- calcul.vecteur.cartesien.Y(inc, dec, aim)
+  Z <- calcul.vecteur.cartesien.Z(inc, dec, aim)
+
+  res <- NULL
+  
+  
+  # 
+  
+ # Carottage à plat, repère conventionnel : Calcul des angles I-D pour les trois positions
+  for (i in 1: length(inc)) {
+    
+    res$name <- c(res$name, as.character(nom[i]))
+    res$number <- c(res$number, num[i])
+    res$F <- c(res$F, aim[i])
+    
+    if (position[i] == "O") { # origine
+      res$D <- c(res$D, angleD( X[i], Y[i] ) /pi * 180 )
+      res$I <- c(res$I, n_arcsin( Z[i]/aim[i] ) /pi * 180)
+      
+      res$P <- c(res$P, "O")
+    }
+    
+    if (position[i] == "P") { # à plat 
+      t.d <- angleD(abs(X[i]), -Y[i]) /pi * 180
+      t.i <- n_arcsin(Z[i]/aim[i]) /pi * 180
+      
+      if (X[i]>= 0 && Z[i]>=0 ) {
+        t.d <- -angleD(X[i], Y[i]) /pi * 180
+      }
+      if (X[i]> 0 && Z[i]<0 ) {
+        t.d <- -angleD(X[i], -Y[i]) /pi * 180
+      }
+      
+      if (X[i]< 0 && Z[i]>0 ) {
+        t.d <- angleD(-X[i], Y[i]) /pi * 180
+      }
+      if (X[i]< 0 && Z[i]<0 ) {
+        t.d <- angleD(-X[i], -Y[i]) /pi * 180
+      }
+      
+      res$I <- c(res$I, t.i)
+      res$D <- c(res$D, t.d )
+
+      res$P <- c(res$P, "P")
+    }
+    
+    if (position[i] == "C") { #  de chant -->> OK
+      
+      t.i <- sign(Z[i]) *abs(n_arcsin( -Y[i]/aim[i])) /pi * 180 
+      t.d <- angleD( X[i], Z[i]) /pi * 180
+     
+      if (X[i]> 0 && Y[i]<0 ) {
+        t.d <- -t.d
+      }
+      
+      if (X[i]< 0 && Y[i]>0 ) {
+        t.d <- t.d - 180
+ 
+      }
+       
+      
+      if (X[i]<= 0 && Y[i]<=0 ) {
+         t.d <- 180 - t.d 
+      }
+      
+      # normalisation de la déclinaison
+      if (t.d> 270)
+        t.d <- t.d - 360
+      if (t.d < -90)
+        t.d <- t.d + 360
+      
+      res$I <- c(res$I, t.i )
+      res$D <- c(res$D, t.d )
+      res$P <- c(res$P, "C")
+    }
+    
+    if (position[i] == "D") { # debout
+      
+      t.i <- sign(Z[i]) * n_arcsin(abs(X[i])/aim[i]) /pi * 180
+      t.d <- angleD(Y[i], -Z[i]) /pi * 180 
+      
+      if (X[i]> 0 && Y[i]<=0 ) {
+        t.d <- t.d - 180
+      }
+      
+      if (X[i]< 0 && Y[i]>0 ) {
+        t.d <- - t.d
+      }
+      if (X[i]< 0 && Y[i]<=0 ) {
+        t.d <- 180 - t.d
+      }
+      
+      res$I <- c(res$I, t.i)
+      res$D <- c(res$D, t.d)
+      res$P <- c(res$P, "D")
+     }
+    
+    tmp <- calcul.vecteur.cartesien(t.i, t.d, aim = aim[i])
+    res$X <- c(res$X, tmp$X)
+    res$Y <- c(res$Y, tmp$Y)
+    res$Z <- c(res$Z, tmp$Z)
+  }
+  
+  res.frame <- data.frame( number =  as.numeric(res$number), name = as.character(res$name),
+                           I = as.numeric(res$I), D = as.numeric(res$D), F = as.numeric(res$F),
+                           X = as.numeric(res$X), Y =as.numeric(res$Y), Z =as.numeric(res$Z), position = res$P, stringsAsFactors = FALSE)
+ 
+  
+```
+
+```{r genere AMD}
+file.AM <- "~/Documents/AM/test.txt"
+list.ech <- c("1T",   "17T",  "35T",  "47T",  "50T",  "59T",  "83T",  "87T",  "89T",  "94T",  "100T", "102T", "103T" )
+shape <- "Cyl"
+entete <- NULL
+entete<- c( "Spinner_Molspin 2008" , 
+              "Commune : Laval",
+              "Site : St Pierre-le-Potier",
+              "Latitude  :   0°  0'  0\" ",
+              "Longitude :   0°  0'  0\" IGRF:+00.0",
+              "Prélèvements sur matériaux déplacés",
+              "Type de carottage : à plat",
+              "Date de création : 27/05/2019", "","")
+
+txt.mesures <- entete
+for (i in 1:length(list.ech)) {
+  txt.mesures <- c( txt.mesures,
+                    paste("Id:", format(list.ech[i], width = 13), "in:000.0 az:000.0 Tet:000.0 Psy:000.0 v:12.27 com:TH50.0µT ", shape, sep = ""),
+                    "Repère:",
+                    "CompDes:  T1:0000T+  T2:0000T+  T3:0000T-  T4:0000T-",
+                    "")
+}
+
+
+# Ecriture du fichier
+
+filCon <- file(file.AM, encoding="UTF8")
+   writeLines(txt.mesures, filCon) 
+close(filCon) 
+```
+
