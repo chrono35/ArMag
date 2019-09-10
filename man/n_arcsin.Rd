@@ -2,10 +2,14 @@
 % Please edit documentation in R/ArMag.R
 \name{n_arcsin}
 \alias{n_arcsin}
-\title{Calcul l'arc sinus d'un réel renvoie un angle entre -PI/2 et +PI/2 ----}
+\title{Calcul l'arc sinus d'un réel renvoie un angle entre -PI/2 et +PI/2}
 \usage{
 n_arcsin(x)
 }
+\value{
+angle en radian
+Fonction interne
+}
 \description{
-Calcul l'arc sinus d'un réel renvoie un angle entre -PI/2 et +PI/2 ----
+Calcul l'arc sinus d'un réel renvoie un angle entre -PI/2 et +PI/2
 }

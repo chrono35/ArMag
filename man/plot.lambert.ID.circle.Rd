@@ -8,6 +8,11 @@
   dec.min = -90, dec.max = 180, col = par("fg"), clockwise = TRUE,
   absolue = TRUE, ...)
 }
+\arguments{
+\item{absolue}{permet de tracer la partie inclinaison négative des cercles}
+
+\item{line.col}{définie la couleur de la ligne}
+}
 \description{
 Trace un cercle sur le diagramme lambert
 }

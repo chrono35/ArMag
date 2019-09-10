@@ -2,10 +2,12 @@
 % Please edit documentation in R/ArMag.R
 \name{Y}
 \alias{Y}
-\title{Valeur de Y graphique pour I et D}
+\title{Valeur de Y graphique pour I et D
+Fonction interne}
 \usage{
 Y(i, d, ray = 1, i.min = 0, box.range)
 }
 \description{
 Valeur de Y graphique pour I et D
+Fonction interne
 }

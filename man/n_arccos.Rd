@@ -6,6 +6,10 @@
 \usage{
 n_arccos(x)
 }
+\value{
+angle en radian
+Fonction interne
+}
 \description{
 Calcul l'arc cosinus d'un réel renvoie un angle entre 0 et +PI
 }

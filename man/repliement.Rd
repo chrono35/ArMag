@@ -2,15 +2,23 @@
 % Please edit documentation in R/ArMag.R
 \name{repliement}
 \alias{repliement}
-\title{repliement}
+\title{repliement
+Calcul le repliement pour les trois position à plat "P", de chant "C" et debout "D"
+pour les matériaux déplacés, la référence est le nord donc -angD}
 \usage{
-repliement(data, dec = NULL, aim = 1, position = "P")
+repliement(data, dec = NULL, aim = 1, name = NA, number = NA,
+  position = "P")
 }
 \arguments{
 \item{dec}{en degrés}
 
 \item{inc}{en degrés}
 }
+\value{
+en degrés
+}
 \description{
 repliement
+Calcul le repliement pour les trois position à plat "P", de chant "C" et debout "D"
+pour les matériaux déplacés, la référence est le nord donc -angD
 }

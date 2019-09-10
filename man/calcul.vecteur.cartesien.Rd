@@ -6,6 +6,11 @@
 \usage{
 calcul.vecteur.cartesien(inc, dec, aim = 1)
 }
+\arguments{
+\item{inc}{liste des inclinaisons en radian}
+
+\item{des}{liste des déclinaisons en radian}
+}
 \description{
 Valeur de X, Y et Z pour I et D
 }

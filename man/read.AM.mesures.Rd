@@ -2,7 +2,8 @@
 % Please edit documentation in R/ArMag.R
 \name{read.AM.mesures}
 \alias{read.AM.mesures}
-\title{Lecture des mesures d'un fichier AM}
+\title{read.AM.mesures
+Lecture des mesures d'un fichier AM}
 \usage{
 read.AM.mesures(file.AM, encoding = "macroman")
 }
@@ -10,5 +11,6 @@ read.AM.mesures(file.AM, encoding = "macroman")
 \item{encoding}{Pour les fichiers du magnétomètre, il faut "macroman" -> difficle à connaitre, peut être "latin1" ou "utf8".}
 }
 \description{
+read.AM.mesures
 Lecture des mesures d'un fichier AM
 }

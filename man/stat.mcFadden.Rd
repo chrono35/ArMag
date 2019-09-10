@@ -4,7 +4,17 @@
 \alias{stat.mcFadden}
 \title{Statistique de mcFadden sur l'inclinaison seul à partir des coordonées I et D}
 \usage{
-stat.mcFadden(inc, dec, inc.absolue = TRUE, digits = 3)
+stat.mcFadden(inc, dec, inc.absolue = TRUE)
+}
+\arguments{
+\item{inc}{liste des inclinaisons en degrés}
+
+\item{inc.absolue}{calcul avec la valeur absolue des inclinaisons}
+
+\item{des}{liste des déclinaisons en degrés}
+}
+\value{
+en degrés
 }
 \description{
 Statistique de mcFadden sur l'inclinaison seul à partir des coordonées I et D

@@ -2,7 +2,8 @@
 % Please edit documentation in R/ArMag.R
 \name{plot.lambert.ID.grid}
 \alias{plot.lambert.ID.grid}
-\title{plot.lambert.ID.grid}
+\title{plot.lambert.ID.grid
+Trace une grille dans le repère Lambert, fonctionne avec la fonction lambert()}
 \usage{
 \method{plot}{lambert.ID.grid}(main = "", xlab = "", ylab = "",
   labels = NA, label.pos = NULL, radlab = FALSE, start = 0,
@@ -24,4 +25,5 @@ Label.pos : doit être dans l'étendu des dex.min, dec.max, inc.min, inc.max}
 }
 \description{
 plot.lambert.ID.grid
+Trace une grille dans le repère Lambert, fonctionne avec la fonction lambert()
 }

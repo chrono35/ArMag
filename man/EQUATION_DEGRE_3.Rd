@@ -2,10 +2,16 @@
 % Please edit documentation in R/ArMag.R
 \name{EQUATION_DEGRE_3}
 \alias{EQUATION_DEGRE_3}
-\title{Equation du 3 degrées}
+\title{Equation du 3 degrées
+résolution du 3 eme degres pour calcul mcFadden importé de ARMAG
+ modifier suivant livre photocopié
+ Fonction interne}
 \usage{
 EQUATION_DEGRE_3(A1, A2, A3)
 }
 \description{
 Equation du 3 degrées
+résolution du 3 eme degres pour calcul mcFadden importé de ARMAG
+ modifier suivant livre photocopié
+ Fonction interne
 }

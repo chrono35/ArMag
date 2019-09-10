@@ -6,6 +6,12 @@
 \usage{
 D.AM(d)
 }
+\arguments{
+\item{d}{déclinaison en degrés}
+}
+\value{
+angle en degré en -90° et 270°
+}
 \description{
 Convertie la déclinaison dans la convention AM
 }

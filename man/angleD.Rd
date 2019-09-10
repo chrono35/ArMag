@@ -2,10 +2,14 @@
 % Please edit documentation in R/ArMag.R
 \name{angleD}
 \alias{angleD}
-\title{Calcul de l'angle D  entre  -90 <=  angD  < +270  retourne en radian}
+\title{Calcul de l'angle D  entre  -pi <=  angD  < +3 pi  retourne en radian}
 \usage{
 angleD(X, Y)
 }
+\value{
+angle en radian
+Fonction interne
+}
 \description{
-Calcul de l'angle D  entre  -90 <=  angD  < +270  retourne en radian
+Calcul de l'angle D  entre  -pi <=  angD  < +3 pi  retourne en radian
 }

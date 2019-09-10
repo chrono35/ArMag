@@ -11,12 +11,12 @@
 #  http://www.r-project.org/Licenses/
 #  ------------------------------------------------------------------
 
-#' @Version 2019-09-06
+#' Version 2019-09-10
 #'
-#'
-#' @todo Changer le nom des fonction X() Y() et Z(), car elles sont remplacer par les variables et posent problème
 
-#' Statistique de Fisher modifié pas de pondération
+
+#' Statistique de Fisher
+#' modifié pas de pondération
 #' @param inc liste des inclinaisons en degrés
 #' @param des liste des déclinaisons en degrés
 #' @param aim liste des aimantations, facultatif
@@ -176,12 +176,12 @@ EQUATION_DEGRE_4 <- function(B1,B2,B3,B4)
 
 #' Statistique de mcFadden sur l'inclinaison seul à partir des coordonées XYZ
 #' @export
-stat.mcFadden.XYZ <- function(TabX,TabY,TabZ, showResults = TRUE)
+stat.mcFadden.XYZ <- function(TabX,TabY,TabZ)
 {
   N <- length(TabX)
   VP <- Calcul_Vecteur_Polaire(TabX,TabY,TabZ)
 
-  stat.mcFadden(inc, dec, showResults = showResults)
+  stat.mcFadden(inc, dec)
 
 }
 
@@ -192,7 +192,7 @@ stat.mcFadden.XYZ <- function(TabX,TabY,TabZ, showResults = TRUE)
 #' @return  en degrés
 #' @export
 # https://doi.org/10.1111/j.1365-246X.1990.tb05683.x
-stat.mcFadden <- function(inc, dec, inc.absolue = TRUE, digits = 3)
+stat.mcFadden <- function(inc, dec, inc.absolue = TRUE)
 {
 
   if (inc.absolue)
@@ -514,8 +514,9 @@ calcul.vecteur.polaire.F = function(X, Y, Z)
 
 # Trace des graphes
 
+
 #' plot.lambert.ID.grid
-#' @brief Trace une grille dans le repère Lambert, fonctionne avec la fonction lambert()
+#' Trace une grille dans le repère Lambert, fonctionne avec la fonction lambert()
 #' @param  radlab écrit les labels sous forme d'étoile
 #' @param  label.pos séquence de valeur à afficher en I et D, attention format particulier !!
 
@@ -1310,15 +1311,12 @@ plot.zjiderveld2<- function(Data, Y = NULL, Z = NULL, pt.names = "", main = NULL
 }
 
 #' repliement
-
-#' @brief Calcul le repliement pour les trois position à plat "P", de chant "C" et debout "D"
+#' Calcul le repliement pour les trois position à plat "P", de chant "C" et debout "D"
 #' pour les matériaux déplacés, la référence est le nord donc -angD
 #' @param  inc en degrés
 #' @param  dec en degrés
+#' @return en degrés
 #' @export
-#  Retourne des degrés
-#
-# angD:=-AngD
 repliement <- function (data, dec = NULL, aim=1, name = NA, number = NA,  position = "P")
   {
 
@@ -1456,13 +1454,13 @@ repliement <- function (data, dec = NULL, aim=1, name = NA, number = NA,  positi
   return(res.frame)
 }
 
-#' repliement automatique'
-#' @brief Recherche la position qui permet d'avoir une inclianison la plus proche de la valeur inc.critique (en degrés)
+#' repliement automatique
+#' Recherche la position qui permet d'avoir une position suivant les trois positions possible
+#' donnant l'inclinaison la plus proche de la valeur inc.critique (en degrés)
 #' @param  inc en degrés
 #' @param  dec en degrés
 #' @return I et D en degrés
 #' @export
-# Retourne des degrés
 repliement.auto <- function (data, dec = NULL, aim = 1, name = NA, number = NA, inc.critique = 90)
 {
 
@@ -1551,7 +1549,12 @@ repliement.auto <- function (data, dec = NULL, aim = 1, name = NA, number = NA, 
   return(res)
 }
 
-#' repliement sur tranche'
+#' repliement.tranche
+#' Recherche la position qui permet d'avoir une position suivant la position debout ou dechant
+#' donnant l'inclinaison la plus proche de la valeur inc.critique (en degrés)
+#' @param  inc en degrés
+#' @param  dec en degrés
+#' @return I et D en degrés
 #' @export
 repliement.tranche <- function (data, dec, aim = 1,  name = NA, number = NA, inc.critique = 90)
 {
@@ -1624,10 +1627,11 @@ repliement.tranche <- function (data, dec, aim = 1,  name = NA, number = NA, inc
   return(res)
 }
 
+#' read.AM.mesures
 #' Lecture des mesures d'un fichier AM
 #' @param encoding  Pour les fichiers du magnétomètre, il faut "macroman" -> difficle à connaitre, peut être "latin1" ou "utf8".
 #' @export
-read.AM.mesures <- function (file.AM, encoding = "macroman")
+read.AM.mesures <- function(file.AM, encoding = "macroman")
 {
   # Lecture et Copy du fichier
   lin<- NULL

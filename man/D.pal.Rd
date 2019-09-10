@@ -6,6 +6,12 @@
 \usage{
 D.pal(d)
 }
+\arguments{
+\item{d}{déclinaison en degrés}
+}
+\value{
+déclinaison entre 0 et 360°
+}
 \description{
 Convertie la déclinaison dans la convention paleomag
 }

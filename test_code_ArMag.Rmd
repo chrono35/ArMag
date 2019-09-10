@@ -13,14 +13,19 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Chargement des fonctions d'ArMag
 ```{r echo = TRUE}
-source('~/Documents/AM/R_Projects/ArMag/ArMag.R', echo=FALSE)
+# source('~/Documents/AM/R_Projects/ArMag/ArMag.R', echo=FALSE)
+if (!require(devtools))
+ {install.packages("devtools")}
+
+devtools::install_github("chrono35/ArMag") #, force = TRUE)
+library("ArMag", lib.loc="/Library/Frameworks/R.framework/Versions/3.5/Resources/library")
 ```
 
 
 # Chargement fichier test avec fonction read.AM
 ## Test écriture Fonction
 ```{r test.lecture fichier}
- file.AM <- "/Volumes/Partage_Mesures_Archeomag/Mesures/22061_Glomel/22061A.AMD"
+ file.AM <- "~/Documents/AM/22061_Glomel/22061A.AMD"
 encoding="latin1"
 
   # Lecture et Copy du fichier
@@ -130,10 +135,10 @@ file.AM <- "~/Documents/AM/GDRE1_INT.AMD"
 
 ## Test execution
 ```{r test read.AM}
-#file.AM <- "~/Documents/AM/GDRE1_INT.AMD"
- file.AM <- "/Volumes/Partage_Mesures_Archeomag/Mesures/22061_Glomel/22061A.AMD"
+file.AM <- "~/Documents/AM/GDRE1_INT.AMD"
+# file.AM <- "/Volumes/Partage_Mesures_Archeomag/Mesures/22061_Glomel/22061A.AMD"
 mes <- NULL
-mes <- read.AM.mesures (file.AM)
+mes <- read.AM.mesures(file.AM)
 mes.info <- read.AM.info (file.AM)
 ```
 

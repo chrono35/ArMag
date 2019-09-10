@@ -4,7 +4,7 @@
 \alias{stat.mcFadden.XYZ}
 \title{Statistique de mcFadden sur l'inclinaison seul à partir des coordonées XYZ}
 \usage{
-stat.mcFadden.XYZ(TabX, TabY, TabZ, showResults = TRUE)
+stat.mcFadden.XYZ(TabX, TabY, TabZ)
 }
 \description{
 Statistique de mcFadden sur l'inclinaison seul à partir des coordonées XYZ

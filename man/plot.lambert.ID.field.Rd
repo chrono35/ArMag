@@ -10,7 +10,7 @@
   bg = point.col, label.pos = NULL, show.grid = TRUE, new = TRUE)
 }
 \arguments{
-\item{-}{field : définit la zone possible du champ}
+\item{field}{définit la zone possible du champ}
 }
 \description{
 Trace un cercle avec les champs de l'inclinaison possible

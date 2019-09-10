@@ -2,15 +2,23 @@
 % Please edit documentation in R/ArMag.R
 \name{repliement.auto}
 \alias{repliement.auto}
-\title{repliement automatique'}
+\title{repliement automatique
+Recherche la position qui permet d'avoir une position suivant les trois positions possible
+donnant l'inclinaison la plus proche de la valeur inc.critique (en degrés)}
 \usage{
-repliement.auto(data, dec, aim = 1, inc.critique = 90)
+repliement.auto(data, dec = NULL, aim = 1, name = NA, number = NA,
+  inc.critique = 90)
 }
 \arguments{
 \item{dec}{en degrés}
 
 \item{inc}{en degrés}
 }
+\value{
+I et D en degrés
+}
 \description{
-repliement automatique'
+repliement automatique
+Recherche la position qui permet d'avoir une position suivant les trois positions possible
+donnant l'inclinaison la plus proche de la valeur inc.critique (en degrés)
 }

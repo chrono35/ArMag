@@ -2,10 +2,12 @@
 % Please edit documentation in R/ArMag.R
 \name{X}
 \alias{X}
-\title{Valeur de X graphique pour I et D}
+\title{Valeur de X graphique pour I et D
+Fonction interne}
 \usage{
 X(i, d, ray = 1, i.min = 0, box.range)
 }
 \description{
 Valeur de X graphique pour I et D
+Fonction interne
 }

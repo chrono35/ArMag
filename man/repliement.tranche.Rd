@@ -2,10 +2,23 @@
 % Please edit documentation in R/ArMag.R
 \name{repliement.tranche}
 \alias{repliement.tranche}
-\title{repliement sur tranche'}
+\title{repliement.tranche
+Recherche la position qui permet d'avoir une position suivant la position debout ou dechant
+donnant l'inclinaison la plus proche de la valeur inc.critique (en degrés)}
 \usage{
-repliement.tranche(data, dec, aim = 1, inc.critique = 90)
+repliement.tranche(data, dec, aim = 1, name = NA, number = NA,
+  inc.critique = 90)
+}
+\arguments{
+\item{dec}{en degrés}
+
+\item{inc}{en degrés}
+}
+\value{
+I et D en degrés
 }
 \description{
-repliement sur tranche'
+repliement.tranche
+Recherche la position qui permet d'avoir une position suivant la position debout ou dechant
+donnant l'inclinaison la plus proche de la valeur inc.critique (en degrés)
 }
