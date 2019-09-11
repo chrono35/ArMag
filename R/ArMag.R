@@ -2301,14 +2301,11 @@ desaim <- function( Data, F = NULL,  point.col = "blue3", pch = 21, type= "b",
 
   xlim <- range(tmp.frame$Etap.value)
 
-  YMax <-max(tmp.frame$F)
-
   if (normalize) {
     ylim <- c(0, 100)
-    tmp.frame$F <- tmp.frame$F/YMax * 100
 
   } else {
-    ylim <- c(0, YMax)
+    ylim <- c(0, max(tmp.frame$F))
   }
 
 
@@ -2316,14 +2313,18 @@ desaim <- function( Data, F = NULL,  point.col = "blue3", pch = 21, type= "b",
     point.col <- rep(point.col, length(tmp.frame$Etap.value) )
 
   for (i in 1 : length(list.name)) {
+    if (normalize == TRUE)
+      coefY <- 100 / max(tmp.frame$F[tmp.frame$name == list.name[i]])
+    else
+      coefY <- 1
     Xi <- tmp.frame$Etap.value[tmp.frame$name == list.name[i]]
-    Yi <- tmp.frame$F[tmp.frame$name == list.name[i]]
+    Yi <- tmp.frame$F[tmp.frame$name == list.name[i]]  * coefY
 
     if (i == 1)
-      plot(x=Xi, y=Yi, xlab = xlab, ylab = ylab, ylim = ylim, xlim = xlim, type = type, col="gray50", bg = point.col[i], pch = pch,
-           yaxt="n", bty ="n", main = main, new = new)
+      plot(x = Xi, y = Yi, xlab = xlab, ylab = ylab, ylim = ylim, xlim = xlim, type = type, col = adjustcolor( point.col[i], alpha.f = 0.7), bg = point.col[i], pch = pch,
+           yaxt = "n", bty = "n", main = main, new = new)
     else
-      lines(x=Xi, y=Yi, type = type, col="gray50", bg = point.col[i], pch = pch, yaxt="n", bty ="n")
+      lines(x = Xi, y = Yi, type = type, col = adjustcolor( point.col[i], alpha.f = 0.7), bg = point.col[i], pch = pch, yaxt = "n", bty ="n")
 
   }
 
@@ -2333,7 +2334,6 @@ desaim <- function( Data, F = NULL,  point.col = "blue3", pch = 21, type= "b",
 
 
 }
-
 
 
 #' Correction de carottage sur tranche
