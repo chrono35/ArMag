@@ -12,7 +12,7 @@ anisotropie.tensor(mesures, etape.value, etape.sigle = c("Z+", "Z-",
 
 \item{etape.value}{typiquement la température des mesures d'anisotropie}
 
-\item{etape.sigle}{sigle indiquant les étapes. les noms peuvent changer, mais pas l'ordre}
+\item{etape.sigle}{sigle indiquant les étapes. Les noms peuvent changer, mais pas l'ordre}
 
 \item{volume}{la valeur du volume du spécimen}
 

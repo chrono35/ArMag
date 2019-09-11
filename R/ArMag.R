@@ -2002,12 +2002,12 @@ anisotropie.matrix <- function(mesures, etape.value, etape.sigle = c("Z+", "Z-",
 #' Calcul du tenseur d'anisotropie partielle pour un spécimen à une certaine température
 #' @param mesures data.frame contenant les mesures
 #' @param etape.value typiquement la température des mesures d'anisotropie
-#' @param etape.sigle sigle indiquant les étapes. les noms peuvent changer, mais pas l'ordre
+#' @param etape.sigle sigle indiquant les étapes. Les noms peuvent changer, mais pas l'ordre
 #' @param volume la valeur du volume du spécimen
 #' @param TH la valeur du champ appliqué
 #' @return un data.frame avec les colonnes "L1", "L1.Inc", "L1.Dec", "L2", "L2.Inc", "L2.Dec", "L3", "L3.Inc", "L3.Dec", "F13", "F12", "F23"
 #' @export
-anisotropie.tensor <- function(mesures, etape.value, etape.sigle = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"), volume = 1, TH = 1,...)
+anisotropie.tensor <- function (mesures, etape.value, etape.sigle = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"), volume = 1, TH = 1, ...)
 {
   ani.etape <- trimws(paste(as.character(etape.value), etape.sigle, sep = "") )
 
@@ -2272,9 +2272,9 @@ desaim <- function( Data, F = NULL,  point.col = "blue3", pch = 21, type= "b",
     main <- " F vs Etap.value"
 
   if(is.data.frame(Data)) {
-    tmp.frame$name <- Data$name
-    tmp.frame$Etap.value <- Data$Etap.value
-    tmp.frame$F <- Data$F
+    tmp.frame$name <- Data$name[!is.na(Data$Etap.value)]
+    tmp.frame$Etap.value <- Data$Etap.value[!is.na(Data$Etap.value)]
+    tmp.frame$F <- Data$F[!is.na(Data$Etap.value)]
 
 
   } else {
@@ -2311,6 +2311,9 @@ desaim <- function( Data, F = NULL,  point.col = "blue3", pch = 21, type= "b",
     ylim <- c(0, YMax)
   }
 
+
+  if (length(point.col) < length(tmp.frame$Etap.value) )
+    point.col <- rep(point.col, length(tmp.frame$Etap.value) )
 
   for (i in 1 : length(list.name)) {
     Xi <- tmp.frame$Etap.value[tmp.frame$name == list.name[i]]
