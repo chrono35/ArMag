@@ -14,8 +14,14 @@ stat.mcFadden(inc, dec, inc.absolue = TRUE)
 \item{des}{liste des déclinaisons en degrés}
 }
 \value{
-en degrés
+en degrés, un data.frame "n", "imoy.McFadden", "imoy.McElhinny", "a95.mcFad", "a95.eqFish", "Kb", "Kssb", "imin", "imax", "dmin", "dmax"
 }
 \description{
 Statistique de mcFadden sur l'inclinaison seul à partir des coordonées I et D
+}
+\references{
+https://doi.org/10.1111/j.1365-246X.1990.tb05683.x
+}
+\seealso{
+stat.mcFadden.XYZ, stat.fisher
 }

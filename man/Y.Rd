@@ -7,6 +7,11 @@ Fonction interne}
 \usage{
 Y(i, d, ray = 1, i.min = 0, box.range)
 }
+\arguments{
+\item{i}{inclinaison en degrés}
+
+\item{d}{déclinaison en degrés}
+}
 \description{
 Valeur de Y graphique pour I et D
 Fonction interne

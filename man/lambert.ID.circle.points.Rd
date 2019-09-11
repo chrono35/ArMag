@@ -6,6 +6,16 @@
 \usage{
 lambert.ID.circle.points(i.mean, d.mean, delta)
 }
+\arguments{
+\item{i.mean}{inclinaison du centre du cercle}
+
+\item{d.mean}{déclinaiosn du centre du point}
+
+\item{delta}{angle d'ouverture du cercle}
+}
+\value{
+une liste de I et D en degrés
+}
 \description{
 Calcul les points pour tracer un cercle
 }

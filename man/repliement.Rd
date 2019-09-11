@@ -10,9 +10,11 @@ repliement(data, dec = NULL, aim = 1, name = NA, number = NA,
   position = "P")
 }
 \arguments{
+\item{data}{valeur de l'inclinaison, ou une data.frame en degrés}
+
 \item{dec}{en degrés}
 
-\item{inc}{en degrés}
+\item{position}{trois valeurs posible à plat "P", de chant "C" et debout "D"}
 }
 \value{
 en degrés

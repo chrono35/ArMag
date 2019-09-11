@@ -6,6 +6,16 @@
 \usage{
 anisotropie.tensors.names(names, Data.mesures, Data.info, etape.value)
 }
+\arguments{
+\item{names}{liste de noms de spécimen}
+
+\item{Data.mesures}{data.frame contenant les mesures}
+
+\item{Data.info}{data.frame possédant les champs $name, $TH et $vol}
+}
+\value{
+un data.frame avec les colonnes "L1", "L1.Inc", "L1.Dec", "L2", "L2.Inc", "L2.Dec", "L3", "L3.Inc", "L3.Dec", "F13", "F12", "F23"
+}
 \description{
 Calcul des tenseurs d'anisotropie pour une liste de nom de spécimen
 }

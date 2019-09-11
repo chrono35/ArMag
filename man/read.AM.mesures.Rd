@@ -10,6 +10,9 @@ read.AM.mesures(file.AM, encoding = "macroman")
 \arguments{
 \item{encoding}{Pour les fichiers du magnétomètre, il faut "macroman" -> difficle à connaitre, peut être "latin1" ou "utf8".}
 }
+\value{
+une data.frame
+}
 \description{
 read.AM.mesures
 Lecture des mesures d'un fichier AM

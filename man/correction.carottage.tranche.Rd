@@ -2,10 +2,12 @@
 % Please edit documentation in R/ArMag.R
 \name{correction.carottage.tranche}
 \alias{correction.carottage.tranche}
-\title{Correction de carottage sur tranche}
+\title{Correction de carottage sur tranche
+Tourne les mesures de manière à retrouver le résultat suivant la convention de carottage à plat}
 \usage{
 correction.carottage.tranche(mesures.brutes)
 }
 \description{
 Correction de carottage sur tranche
+Tourne les mesures de manière à retrouver le résultat suivant la convention de carottage à plat
 }

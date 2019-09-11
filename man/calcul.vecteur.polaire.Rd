@@ -2,10 +2,12 @@
 % Please edit documentation in R/ArMag.R
 \name{calcul.vecteur.polaire}
 \alias{calcul.vecteur.polaire}
-\title{Coordonnées polaires pour X, Y et Z}
+\title{Coordonnées polaires pour X, Y et Z
+#' @seealso polaire}
 \usage{
 calcul.vecteur.polaire(X, Y, Z)
 }
 \description{
 Coordonnées polaires pour X, Y et Z
+#' @seealso polaire
 }

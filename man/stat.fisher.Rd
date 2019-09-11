@@ -3,7 +3,7 @@
 \name{stat.fisher}
 \alias{stat.fisher}
 \title{Statistique de Fisher
-modifié pas de pondération}
+modifié, pas de pondération calcul de A95 Vrai sans simplification tel que fisher 1953}
 \usage{
 stat.fisher(inc, dec, aim = NA, pfish = 0.95, inc.absolue = TRUE)
 }
@@ -23,6 +23,9 @@ en degrés
 }
 \description{
 Statistique de Fisher
-modifié pas de pondération
+modifié, pas de pondération calcul de A95 Vrai sans simplification tel que fisher 1953
+}
+\seealso{
+stat.mcFadden
 }
 \keyword{fisher}

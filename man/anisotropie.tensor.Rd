@@ -2,11 +2,25 @@
 % Please edit documentation in R/ArMag.R
 \name{anisotropie.tensor}
 \alias{anisotropie.tensor}
-\title{Calcul de la matrice d'anisotropie}
+\title{Calcul du tenseur d'anisotropie partielle pour un spécimen à une certaine température}
 \usage{
 anisotropie.tensor(mesures, etape.value, etape.sigle = c("Z+", "Z-",
   "X+", "X-", "Y+", "Y-", "ZB"), volume = 1, TH = 1, ...)
 }
+\arguments{
+\item{mesures}{data.frame contenant les mesures}
+
+\item{etape.value}{typiquement la température des mesures d'anisotropie}
+
+\item{etape.sigle}{sigle indiquant les étapes. les noms peuvent changer, mais pas l'ordre}
+
+\item{volume}{la valeur du volume du spécimen}
+
+\item{TH}{la valeur du champ appliqué}
+}
+\value{
+un data.frame avec les colonnes "L1", "L1.Inc", "L1.Dec", "L2", "L2.Inc", "L2.Dec", "L3", "L3.Inc", "L3.Dec", "F13", "F12", "F23"
+}
 \description{
-Calcul de la matrice d'anisotropie
+Calcul du tenseur d'anisotropie partielle pour un spécimen à une certaine température
 }

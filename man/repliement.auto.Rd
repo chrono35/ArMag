@@ -10,9 +10,9 @@ repliement.auto(data, dec = NULL, aim = 1, name = NA, number = NA,
   inc.critique = 90)
 }
 \arguments{
-\item{dec}{en degrés}
+\item{data}{valeur de l'inclinaison, ou une data.frame en degrés}
 
-\item{inc}{en degrés}
+\item{dec}{en degrés}
 }
 \value{
 I et D en degrés

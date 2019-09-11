@@ -6,6 +6,9 @@
 \usage{
 read.AM.info(file.AM, encoding = "macroman")
 }
+\value{
+une data.frame avec les infos sur les spécimens
+}
 \description{
 Lecture des infos sur mesures d'un fichier AM
 }

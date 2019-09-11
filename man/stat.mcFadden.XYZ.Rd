@@ -9,3 +9,6 @@ stat.mcFadden.XYZ(TabX, TabY, TabZ)
 \description{
 Statistique de mcFadden sur l'inclinaison seul à partir des coordonées XYZ
 }
+\seealso{
+stat.mcFadden, stat.fisher
+}

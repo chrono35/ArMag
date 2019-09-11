@@ -2,10 +2,12 @@
 % Please edit documentation in R/ArMag.R
 \name{correction.carottage.enbout}
 \alias{correction.carottage.enbout}
-\title{Correction de carottage en bout}
+\title{Correction de carottage en bout
+Tourne les mesures de manière à retrouver le résultat suivant la convention de carottage à plat}
 \usage{
 correction.carottage.enbout(mesures.brutes)
 }
 \description{
 Correction de carottage en bout
+Tourne les mesures de manière à retrouver le résultat suivant la convention de carottage à plat
 }

@@ -2,10 +2,13 @@
 % Please edit documentation in R/ArMag.R
 \name{anisotropie.tensors.all}
 \alias{anisotropie.tensors.all}
-\title{Calcul des tenseurs d'anisotropie pour tous les spécimens}
+\title{Calcul des tenseurs d'anisotropie pour tous les spécimens d'une liste de mesures}
 \usage{
 anisotropie.tensors.all(Data.mesures, Data.info, etape.value)
 }
+\value{
+un data.frame avec les colonnes "L1", "L1.Inc", "L1.Dec", "L2", "L2.Inc", "L2.Dec", "L3", "L3.Inc", "L3.Dec", "F13", "F12", "F23"
+}
 \description{
-Calcul des tenseurs d'anisotropie pour tous les spécimens
+Calcul des tenseurs d'anisotropie pour tous les spécimens d'une liste de mesures
 }
