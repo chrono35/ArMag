@@ -6,7 +6,7 @@
 Recherche la position qui permet d'avoir une position suivant la position debout ou dechant
 donnant l'inclinaison la plus proche de la valeur inc.critique (en degrés)}
 \usage{
-repliement.tranche(data, dec, aim = 1, name = NA, number = NA,
+repliement.tranche(data, dec, aim = 1, name = NULL, number = NULL,
   inc.critique = 90)
 }
 \arguments{

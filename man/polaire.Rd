@@ -6,6 +6,9 @@
 \usage{
 polaire(X, Y, Z)
 }
+\value{
+degrés
+}
 \description{
 Coordonnées polaires pour X, Y et Z
 }

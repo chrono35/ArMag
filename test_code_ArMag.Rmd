@@ -17,7 +17,7 @@ knitr::opts_chunk$set(echo = TRUE)
 if (!require(devtools))
  {install.packages("devtools")}
 
-devtools::install_github("chrono35/ArMag") #, force = TRUE)
+devtools::install_github("chrono35/ArMag", force = TRUE)
 library("ArMag", lib.loc="/Library/Frameworks/R.framework/Versions/3.5/Resources/library")
 ```
 
@@ -34,12 +34,245 @@ library("ArMag", lib.loc="/Library/Frameworks/R.framework/Versions/3.5/Resources
 
 ## Test execution
 ```{r test read.AM}
-file.AM <- "~/Documents/AM/GDRE1_INT.AMD"
+#file.AM <- "~/Documents/AM/GDRE1_INT.AMD"
 # file.AM <- "/Volumes/Partage_Mesures_Archeomag/Mesures/22061_Glomel/22061A.AMD"
+# file.AM <- "~/Documents/AM/22061_Glomel/22061A.AMD"
+file.AM <- "~/Documents/AM/53130_Laval/53130_Mesures/53130B1_2019.AMD"
 mes <- NULL
 mes <- read.AM.mesures(file.AM)
 mes.info <- read.AM.info (file.AM)
 ```
+
+```{r}
+Data <- mes
+main = NULL
+
+F = NULL;  point.col = c("blue3", "red"); pch = 21; type= "b";
+                             xlab = "°C"; ylab = ""; main = NULL;
+                             names = NA; normalize = TRUE; new = TRUE
+
+ tmp.frame <- NULL
+  if (is.null(main))
+    main <- " F vs Etap.value"
+
+  if(is.data.frame(Data)) {
+    tmp.frame$name <- Data$name[!is.na(Data$Etap.value)]
+    tmp.frame$Etap.value <- Data$Etap.value[!is.na(Data$Etap.value)]
+    tmp.frame$F <- Data$F[!is.na(Data$Etap.value)]
+
+
+  } else {
+    # Création du frame interne
+    if (is.na(names))
+      tmp.frame$name <- as.character(c(1: length(Data)))
+    else
+      tmp.frame$name <- names
+
+    tmp.frame$Etap.value <- Data
+    tmp.frame$F <- F
+  }
+
+  # comptage et séparation des données
+  current <- tmp.frame$name[1]
+  list.name <- current
+
+  for (i in 1: length(tmp.frame$name)) {
+    if ( tmp.frame$name[i] != current) {
+      current <- tmp.frame$name[i]
+      list.name<- c(list.name, current)
+    }
+  }
+
+  xlim <- range(tmp.frame$Etap.value)
+
+  YMax <-max(tmp.frame$F)
+
+   if (normalize) {
+    ylim <- c(0, 100)
+
+  } else {
+    ylim <- c(0, max(tmp.frame$F))
+  }
+
+  if (length(point.col) < length(tmp.frame$Etap.value) )
+      point.col <- rep(point.col, length(tmp.frame$Etap.value) )
+
+  for (i in 1 : length(list.name)) {
+   if (normalize == TRUE)
+      coefY <- 100 / max(tmp.frame$F[tmp.frame$name == list.name[i]])
+    else 
+      coefY <- 1
+    Xi <- tmp.frame$Etap.value[tmp.frame$name == list.name[i]]
+    Yi <- tmp.frame$F[tmp.frame$name == list.name[i]]  * coefY 
+
+    if (i == 1)
+      plot(x=Xi, y=Yi, xlab = xlab, ylab = ylab, ylim = ylim, xlim = xlim, type = type, col= adjustcolor( point.col[i], alpha.f = 0.7), bg = point.col[i], pch = pch,
+           yaxt="n", bty ="n", main = main, new = new)
+    else
+      lines(x=Xi, y=Yi, type = type, col=adjustcolor( point.col[i], alpha.f = 0.7), bg = point.col[i], pch = pch, yaxt="n", bty ="n")
+
+  }
+
+  axis(2, pos = 0, cex.axis = 0.8, col = "darkgray") # Ordonnées
+
+  mtext( format(YMax, digits = 3), side = 3, col = "gray5", adj = 0, cex.axis = 0.8)
+
+
+```
+
+# codage symetrisation matrice
+```{r}
+anisotropie.matrix.symetric <- function(mesures, etape.value, etape.sigle = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"), volume = 1, TH = 1,...)
+{
+
+  ani.etape <- trimws(paste(as.character(etape.value), etape.sigle, sep = "") )
+
+  selec <- NULL
+  for (i in 1:length(ani.etape)) {
+    selec <- c( selec, which(trimws(mesures$Etap) == trimws(ani.etape[i])) )
+  }
+  res.list <- NULL
+  res.list <- mesures[selec,]
+  res.list <- res.list
+
+  mat.plus <- matrix( c( res.list$X[3], res.list$X[5], res.list$X[1],
+                         res.list$Y[3], res.list$Y[5], res.list$Y[1],
+                         res.list$Z[3], res.list$Z[5], res.list$Z[1]) , 3, 3)
+
+
+  mat.moins <- matrix( c( res.list$X[4], res.list$X[6], res.list$X[2],
+                          res.list$Y[4], res.list$Y[6], res.list$Y[2],
+                          res.list$Z[4], res.list$Z[6], res.list$Z[2]) , 3, 3)
+  mat.reel <- (mat.plus - mat.moins)/2 / (volume * 1E-6)# / coef.norm
+
+  # Symetrisation
+  coef.norm <- TH* 10/ (4*pi)
+  kxx <- mat.reel[1,1] / coef.norm
+  kyy <- mat.reel[2,2] / coef.norm
+  kzz <- mat.reel[3,3] / coef.norm
+  kxy <- (mat.reel[1,2] + mat.reel[2,1]) / 2 / coef.norm
+  kxz <- (mat.reel[1,3] + mat.reel[3,1]) / 2 / coef.norm
+  kyz <- (mat.reel[2,3] + mat.reel[3,2]) / 2 / coef.norm
+
+  # normalisation
+  suscept <- (kxx + kyy + kzz)/3
+  mat.sym.norm <- matrix( c( kxx / suscept, kxy / suscept, kxz / suscept,
+                             kxy / suscept, kyy / suscept, kyz / suscept,
+                             kxz / suscept, kyz / suscept, kzz / suscept) , 3, 3)
+
+  return(mat.sym.norm)
+
+}
+```
+
+
+# Codage correction anisotropie
+```{r}
+# calcul les nouveaux paramètres d'un echantillon avec un tenseur donnée
+#procedure Calcul_Aniso_Specimen(var R_Cal_echt:Res_Cal_xyz;Tens_ani:TENSEUR_ANISO );
+mes.sel <- NULL
+mes.sel1 <- extract.mesures.specimen.name("14D", mes)
+
+volume <- mes.info$vol[which(mes.info$name == trimws(mes.sel1$name[1]))]
+TH <- mes.info$TH[which(mes.info$name == trimws(mes.sel1$name[1]))]
+mes.sel1$X <- mes.sel1$X/volume * 1E6
+mes.sel1$Y <- mes.sel1$Y/volume * 1E6
+mes.sel1$Z <- mes.sel1$Z/volume * 1E6
+ani1 <- anisotropie.matrix.symetric(mes.sel1, etape.value = 400, TH = TH, volume = volume )
+
+mes.sel2 <- extract.mesures.specimen.name("19D", mes)
+volume <- mes.info$vol[which(mes.info$name == trimws(mes.sel2$name[1]))]
+TH <- mes.info$TH[which(mes.info$name == trimws(mes.sel2$name[1]))]
+ani2 <- anisotropie.matrix.symetric(mes.sel2, etape.value = 400, TH = TH, volume = volume )
+
+mes.sel3 <- extract.mesures.specimen.name("49D", mes)
+volume <- mes.info$vol[which(mes.info$name == trimws(mes.sel3$name[1]))]
+TH <- mes.info$TH[which(mes.info$name == trimws(mes.sel3$name[1]))]
+ani3 <- anisotropie.matrix.symetric(mes.sel3, etape.value = 400, TH = TH, volume = volume )
+
+
+mes.sel4 <- extract.mesures.specimen.name("57D", mes)
+volume <- mes.info$vol[which(mes.info$name == trimws(mes.sel4$name[1]))]
+TH <- mes.info$TH[which(mes.info$name == trimws(mes.sel3$name[1]))]
+ani4 <- anisotropie.matrix.symetric(mes.sel4, etape.value = 400, TH = TH, volume = volume )
+
+
+mes.sel.ARN <- mes.sel[mes.sel$Etap.value == 0,]
+mes.sel.ARN$X <- mes.sel.ARN$X /volume * 1E6
+mes.sel.ARN$Y <- mes.sel.ARN$Y/volume * 1E6
+mes.sel.ARN$Z <- mes.sel.ARN$Z/volume * 1E6
+
+ani <- anisotropie.matrix.symetric(mes.sel, etape.value = 400, TH = TH, volume = volume )
+ani.tens <- anisotropie.tensor(mes.sel, etape.value = 400, TH = TH, volume = volume ) # eigen.tensor
+
+# matrice moyenne
+  ani.mean <- (ani2+ ani3 + ani4)/3
+  eigen(ani.mean)
+```
+
+```{r}
+correction.anisotropie <- function(mesures.frame, ani.matrix)
+{
+
+#mesures.frame <- mes.sel
+#ani.matrix <- ani
+  if (!is.data.frame(mesures.frame))
+    warning("mesures n'est pas une data.frame")
+  if (!is.matrix(ani.matrix))
+    warning("ani.matrix n'est pas une matrice")
+  
+  nbMesures <- length(mesures.frame[,1])
+  
+  # inversion de la matrice
+  ani.inv <- solve(ani.matrix)
+
+  r_cal_echt <- NULL
+  # Calcul pour une mesure
+  correct <- function(mesure, aniso.inv) {
+    # Calcul de la correction
+    re.cal.ani <- aniso.inv %*% c( mesure$X, mesure$Y, mesure$Z)
+    # recopie des variables
+    re.cal <- mesure
+    re.cal$X <- re.cal.ani[1]
+    re.cal$Y <- re.cal.ani[2]
+    re.cal$Z <- re.cal.ani[3]
+    re.cal.ID <- polaire(re.cal$X, re.cal$Y, re.cal$Z)
+    re.cal$I <- re.cal.ID$I
+    re.cal$D <- re.cal.ID$D
+    re.cal$F <- re.cal.ID$F
+    
+    return(re.cal)
+  }
+  
+  resT <- NULL
+  for (i in 1 : nbMesures)
+    resT <- rbind(resT, correct(mesures.frame[i,], ani.inv))
+ 
+  return(resT)
+}  
+```
+
+# test correction.anisotropie
+```{r}
+mes.sel <- NULL
+mes.sel <- extract.mesures.specimen.name("49D", mes)
+volume <- mes.info$vol[which(mes.info$name == trimws(mes.sel$name[1]))]
+TH <- mes.info$TH[which(mes.info$name == trimws(mes.sel$name[1]))]
+
+mes.sel.ARN <- mes.sel[mes.sel$Etap.value == 0,]
+mes.sel.ARN$X <- mes.sel.ARN$X /volume * 1E6
+mes.sel.ARN$Y <- mes.sel.ARN$Y /volume * 1E6
+mes.sel.ARN$Z <- mes.sel.ARN$Z /volume * 1E6
+
+ani <- anisotropie.matrix.symetric(mes.sel, etape.value = 400, TH = TH, volume = volume )
+
+# normalisation des mesures en A/m
+mes.sel$X <- mes.sel$X /volume * 1E6
+mes.sel$Y <- mes.sel$Y /volume * 1E6
+mes.sel$Z <- mes.sel$Z /volume * 1E6
+correction.anisotropie(mes.sel, ani)
+```
+
 
 ```{r test extract.mesures.specimen.name}
 mes.sel <- NULL

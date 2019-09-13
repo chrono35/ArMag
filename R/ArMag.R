@@ -373,7 +373,7 @@ calcul.vecteur.cartesien <- function(inc, dec, aim=1)
   resT <- NULL
   for (i in 1:length(inc)) {
     res$X <- aim*cos(inc[i])*cos(dec[i])
-    res$Y <- aim*cos(inc[i])*cos(dec[i])
+    res$Y <- aim*cos(inc[i])*sin(dec[i])
     res$Z <- aim*sin(inc[i])
     resT <- c(resT, res)
   }
@@ -393,7 +393,7 @@ cartesien <- function(inc, dec, aim=1)
   resT <- NULL
   for (i in 1:length(inc)) {
     res$X <- aim*cos(inc[i]/180*pi)*cos(dec[i]/180*pi)
-    res$Y <- aim*cos(inc[i]/180*pi)*cos(dec[i]/180*pi)
+    res$Y <- aim*cos(inc[i]/180*pi)*sin(dec[i]/180*pi)
     res$Z <- aim*sin(inc[i]/180*pi)
     resT <- c(resT, res)
   }
@@ -508,6 +508,7 @@ calcul.vecteur.polaire <- function(X, Y, Z)
 
 # Transformation de type de coordonnée ----
 #' Coordonnées polaires pour X, Y et Z
+#' @return degrés
 #' @seealso calcul.vecteur.polaire , cartesien
 #' @export
 polaire <- function(X, Y, Z)
@@ -515,9 +516,9 @@ polaire <- function(X, Y, Z)
   res <- NULL
   resT <- NULL
   for (i in 1:length(X)) {
-    res$F <- sqrt(X[i]*X[i]+Y[i]*Y[i]+Z[i]*Z[i])
-    res$I <- n_arcsin(Z[i]/res$F)/pi*180
-    res$D <- angleD(X[i],Y[i])/pi*180
+    res$F <- sqrt(X[i]*X[i] + Y[i]*Y[i] + Z[i]*Z[i])
+    res$I <- n_arcsin(Z[i]/res$F) /pi*180
+    res$D <- angleD(X[i],Y[i]) /pi*180
     resT <- c(resT, res)
   }
 
@@ -1365,6 +1366,8 @@ zjiderveld2<- function(Data, Y = NULL, Z = NULL, pt.names = "", main = NULL, pan
 
 }
 
+# Repliement
+
 #' repliement
 #' Calcul le repliement pour les trois position à plat "P", de chant "C" et debout "D"
 #' pour les matériaux déplacés, la référence est le nord donc -angD
@@ -1373,7 +1376,7 @@ zjiderveld2<- function(Data, Y = NULL, Z = NULL, pt.names = "", main = NULL, pan
 #' @param position trois valeurs posible à plat "P", de chant "C" et debout "D"
 #' @return en degrés
 #' @export
-repliement <- function (data, dec = NULL, aim=1, name = NA, number = NA,  position = "P")
+repliement <- function (data, dec = NULL, aim = 1, name = NULL, number = NULL,  position = "P")
 {
 
   if (is.null(dec) ) {
@@ -1386,12 +1389,12 @@ repliement <- function (data, dec = NULL, aim=1, name = NA, number = NA,  positi
   else {
     inc <- data
     dec <- dec
-    if (is.na(name))
+    if (is.null(name))
       nom <- rep("", length(inc))
     else
       nom <- as.character(name)
 
-    if (is.na(number))
+    if (is.null(number))
       num <- c(1:length(inc))
     else
       num <- number
@@ -1517,7 +1520,7 @@ repliement <- function (data, dec = NULL, aim=1, name = NA, number = NA,  positi
 #' @param  dec en degrés
 #' @return I et D en degrés
 #' @export
-repliement.auto <- function (data, dec = NULL, aim = 1, name = NA, number = NA, inc.critique = 90)
+repliement.auto <- function (data, dec = NULL, aim = 1, name = NULL, number = NULL, inc.critique = 90)
 {
 
   if (is.null(dec) ) {
@@ -1530,12 +1533,12 @@ repliement.auto <- function (data, dec = NULL, aim = 1, name = NA, number = NA, 
   else {
     inc <- data
     dec <- dec
-    if (is.na(name))
+    if (is.null(name))
       nom <- rep("", length(inc))
     else
       nom <- as.character(name)
 
-    if (is.na(number))
+    if (is.null(number))
       num <- c(1:length(inc))
     else
       num <- number
@@ -1612,7 +1615,7 @@ repliement.auto <- function (data, dec = NULL, aim = 1, name = NA, number = NA, 
 #' @param  dec en degrés
 #' @return I et D en degrés
 #' @export
-repliement.tranche <- function (data, dec, aim = 1,  name = NA, number = NA, inc.critique = 90)
+repliement.tranche <- function (data, dec, aim = 1,  name = NULL, number = NULL, inc.critique = 90)
 {
 
   if (is.null(dec) ) {
@@ -1625,12 +1628,12 @@ repliement.tranche <- function (data, dec, aim = 1,  name = NA, number = NA, inc
   else {
     inc <- data
     dec <- dec
-    if (is.na(name))
+    if (is.null(name))
       nom <- rep("", length(inc))
     else
       nom <- as.character(name)
 
-    if (is.na(number))
+    if (is.null(number))
       num <- c(1:length(inc))
     else
       num <- number
@@ -1863,7 +1866,8 @@ extract.mesures.specimen.number <- function( specimen.number, list.mesure)
 
 # Fonction Anisotropie ----
 
-#' Calcul du tenseur et de la matrice d'anisotropie pour un spécimen
+#' Calcul la matrice d'anisotropie symetrisée et normalisé pour un spécimen
+#' qui sert à la correction
 #' @param mesures data.frame contenant les mesures
 #' @param etape.value typiquement la température des mesures d'anisotropie
 #' @param etape.sigle sigle indiquant les étapes. les noms peuvent changer, mais pas l'ordre
@@ -1871,7 +1875,59 @@ extract.mesures.specimen.number <- function( specimen.number, list.mesure)
 #' @param TH la valeur du champ appliqué
 #' @return un data.frame avec les colonnes "L1", "L1.Inc", "L1.Dec", "L2", "L2.Inc", "L2.Dec", "L3", "L3.Inc", "L3.Dec", "F13", "F12", "F23"
 #' @export
-anisotropie <- function(mesures, etape.value, etape.sigle = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"), volume = 1, TH = 1,...)
+anisotropie.matrix.symetric <- function(mesures, etape.value, etape.sigle = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"), volume = 1, TH = 1,...)
+{
+
+  ani.etape <- trimws(paste(as.character(etape.value), etape.sigle, sep = "") )
+
+  selec <- NULL
+  for (i in 1:length(ani.etape)) {
+    selec <- c( selec, which(trimws(mesures$Etap) == trimws(ani.etape[i])) )
+  }
+
+  res.list <- NULL
+  res.list <- mesures[selec,]
+  res.list <- res.list
+
+  mat.plus <- matrix( c( res.list$X[3], res.list$X[5], res.list$X[1],
+                         res.list$Y[3], res.list$Y[5], res.list$Y[1],
+                         res.list$Z[3], res.list$Z[5], res.list$Z[1]) , 3, 3)
+
+
+  mat.moins <- matrix( c( res.list$X[4], res.list$X[6], res.list$X[2],
+                          res.list$Y[4], res.list$Y[6], res.list$Y[2],
+                          res.list$Z[4], res.list$Z[6], res.list$Z[2]) , 3, 3)
+  mat.reel <- (mat.plus - mat.moins)/2 / (volume * 1E-6)# / coef.norm
+
+  # Symetrisation
+  coef.norm <- TH* 10/ (4*pi)
+  kxx <- mat.reel[1,1] / coef.norm
+  kyy <- mat.reel[2,2] / coef.norm
+  kzz <- mat.reel[3,3] / coef.norm
+  kxy <- (mat.reel[1,2] + mat.reel[2,1]) / 2 / coef.norm
+  kxz <- (mat.reel[1,3] + mat.reel[3,1]) / 2 / coef.norm
+  kyz <- (mat.reel[2,3] + mat.reel[3,2]) / 2 / coef.norm
+
+  # Normalisation
+  suscept <- (kxx + kyy + kzz)/3
+  mat.sym.norm <- matrix( c( kxx / suscept, kxy / suscept, kxz / suscept,
+                             kxy / suscept, kyy / suscept, kyz / suscept,
+                             kxz / suscept, kyz / suscept, kzz / suscept) , 3, 3)
+
+  return(mat.sym.norm)
+
+}
+
+
+#' Calcul du vecteur propre et de la matrice d'anisotropie pour un spécimen
+#' @param mesures data.frame contenant les mesures
+#' @param etape.value typiquement la température des mesures d'anisotropie
+#' @param etape.sigle sigle indiquant les étapes. les noms peuvent changer, mais pas l'ordre
+#' @param volume la valeur du volume du spécimen
+#' @param TH la valeur du champ appliqué
+#' @return un data.frame avec les colonnes "L1", "L1.Inc", "L1.Dec", "L2", "L2.Inc", "L2.Dec", "L3", "L3.Inc", "L3.Dec", "F13", "F12", "F23"
+#' @export
+anisotropie.eigen <- function(mesures, etape.value, etape.sigle = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"), volume = 1, TH = 1,...)
 {
 
   #etape.sigle <- c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB")
@@ -1912,7 +1968,7 @@ anisotropie <- function(mesures, etape.value, etape.sigle = c("Z+", "Z-", "X+", 
 
   # vecteurs et valeurs propres
   v <- eigen(mat.sym.norm, symmetric = TRUE)
-  #res.list <- mes.sel2[selec,]
+
   # calcul des angles I,D des vecteurs propres}
   v1 <- NULL
   v1$I<-calcul.vecteur.polaire.I(v$vectors[1, 1], v$vectors[2, 1], v$vectors[3 ,1])*180/pi
@@ -1945,15 +2001,16 @@ anisotropie <- function(mesures, etape.value, etape.sigle = c("Z+", "Z-", "X+", 
 
 }
 
-#' Calcul de la matrice d'anisotropie
+#' Calcul les coordonnées des tenseurs propres matrice d'anisotropie
 #' @param mesures data.frame contenant les mesures
 #' @param etape.value typiquement la température des mesures d'anisotropie
 #' @param etape.sigle sigle indiquant les étapes. les noms peuvent changer, mais pas l'ordre
 #' @param volume la valeur du volume du spécimen
 #' @param TH la valeur du champ appliqué
 #' @return un data.frame avec les colonnes "L1", "L1.Inc", "L1.Dec", "L2", "L2.Inc", "L2.Dec", "L3", "L3.Inc", "L3.Dec", "F13", "F12", "F23"
+#' @seealso anisotropie.eigen.tensor
 #' @export
-anisotropie.matrix <- function(mesures, etape.value, etape.sigle = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"), volume = 1, TH = 1,...)
+anisotropie.eigen.matrix <- function(mesures, etape.value, etape.sigle = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"), volume = 1, TH = 1,...)
 {
 
   ani.etape <- trimws(paste(as.character(etape.value), etape.sigle, sep = "") )
@@ -1994,20 +2051,20 @@ anisotropie.matrix <- function(mesures, etape.value, etape.sigle = c("Z+", "Z-",
   # vecteurs et valeurs propres
   v <- eigen(mat.sym.norm, symmetric = TRUE)
 
-  #ani <- c(eigen = v)
   return(as.matrix(v$vectors))
 
 }
 
-#' Calcul du tenseur d'anisotropie partielle pour un spécimen à une certaine température
+#' Calcul des directions et valeurs des vecteurs propre d'anisotropie partielle pour un spécimen à une certaine température
 #' @param mesures data.frame contenant les mesures
 #' @param etape.value typiquement la température des mesures d'anisotropie
 #' @param etape.sigle sigle indiquant les étapes. Les noms peuvent changer, mais pas l'ordre
 #' @param volume la valeur du volume du spécimen
 #' @param TH la valeur du champ appliqué
+#' @seealso anisotropie.eigen.matrix
 #' @return un data.frame avec les colonnes "L1", "L1.Inc", "L1.Dec", "L2", "L2.Inc", "L2.Dec", "L3", "L3.Inc", "L3.Dec", "F13", "F12", "F23"
 #' @export
-anisotropie.tensor <- function (mesures, etape.value, etape.sigle = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"), volume = 1, TH = 1, ...)
+anisotropie.eigen.tensor <- function (mesures, etape.value, etape.sigle = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"), volume = 1, TH = 1, ...)
 {
   ani.etape <- trimws(paste(as.character(etape.value), etape.sigle, sep = "") )
 
@@ -2122,13 +2179,13 @@ anisotropie.tensor <- function (mesures, etape.value, etape.sigle = c("Z+", "Z-"
 #' @param Data.info data.frame possédant les champs $name, $TH et $vol
 #' @return un data.frame avec les colonnes "L1", "L1.Inc", "L1.Dec", "L2", "L2.Inc", "L2.Dec", "L3", "L3.Inc", "L3.Dec", "F13", "F12", "F23"
 #' @export
-anisotropie.tensors.numbers <- function(numbers, Data.mesures, Data.info, etape.value)
+anisotropie.eigen.tensors.numbers <- function(numbers, Data.mesures, Data.info, etape.value)
 {
 
   Data <- NULL
   for (i in 1:length(numbers) ) {
     mesures <-  extract.mesures.specimen.number(numbers[i], Data.mesures)
-    ani <- anisotropie.tensor(mesures, etape.value = etape.value,
+    ani <- anisotropie.eigen.tensor(mesures, etape.value = etape.value,
                                       TH = Data.info$TH[which(Data.info$name == trimws(mesures$name[1]))],
                                       volume = Data.info$vol[which(Data.info$name == trimws(mesures$name[1]))] )
     Data <- rbind(Data, ani)
@@ -2144,13 +2201,13 @@ anisotropie.tensors.numbers <- function(numbers, Data.mesures, Data.info, etape.
 #' @param Data.info data.frame possédant les champs $name, $TH et $vol
 #' @return un data.frame avec les colonnes "L1", "L1.Inc", "L1.Dec", "L2", "L2.Inc", "L2.Dec", "L3", "L3.Inc", "L3.Dec", "F13", "F12", "F23"
 #' @export
-anisotropie.tensors.names <- function(names, Data.mesures, Data.info, etape.value)
+anisotropie.eigen.tensors.names <- function(names, Data.mesures, Data.info, etape.value)
 {
 
   Data <- NULL
   for (i in 1:length(names) ) {
     mesures <-  extract.mesures.specimen.names(names[i], Data.mesures)
-    ani <- anisotropie.tensor(mesures, etape.value = etape.value,
+    ani <- anisotropie.eigen.tensor(mesures, etape.value = etape.value,
                                       TH = Data.info$TH[which(Data.info$name == trimws(mesures$name[1]))],
                                       volume = Data.info$vol[which(Data.info$name == trimws(mesures$name[1]))] )
     Data <- rbind(Data, ani)
@@ -2162,7 +2219,7 @@ anisotropie.tensors.names <- function(names, Data.mesures, Data.info, etape.valu
 #' Calcul des tenseurs d'anisotropie pour tous les spécimens d'une liste de mesures
 #' @return un data.frame avec les colonnes "L1", "L1.Inc", "L1.Dec", "L2", "L2.Inc", "L2.Dec", "L3", "L3.Inc", "L3.Dec", "F13", "F12", "F23"
 #' @export
-anisotropie.tensors.all <- function(Data.mesures, Data.info, etape.value)
+anisotropie.eigen.tensors.all <- function(Data.mesures, Data.info, etape.value)
 {
   numbers <- NULL
   for (i in 1: length(Data.mesures$number) ) {
@@ -2173,7 +2230,7 @@ anisotropie.tensors.all <- function(Data.mesures, Data.info, etape.value)
   Data <- NULL
   for (i in 1:length(numbers) ) {
     mesures <-  extract.mesures.specimen.number(numbers[i], Data.mesures)
-    ani <- anisotropie.tensor(mesures, etape.value = etape.value,
+    ani <- anisotropie.eigen.tensor(mesures, etape.value = etape.value,
                                       TH = Data.info$TH[which(Data.info$name == trimws(mesures$name[1]))],
                                       volume = Data.info$vol[which(Data.info$name == trimws(mesures$name[1]))] )
     Data <- rbind(Data, ani)
@@ -2183,6 +2240,50 @@ anisotropie.tensors.all <- function(Data.mesures, Data.info, etape.value)
   return(as.data.frame(Data, col.names = col.names))
 
 
+}
+
+#' Corrige les mesures avec la matrice d'anisotropie donnée
+#' Il faut une matrice 3 x3
+#' @param mesures.frame data.frame avec les mesures et variables X, Y, Z, i, D, F
+#' @param ani.matric matrice 3 x 3 correspondant à la matrice (symétrique et normalisé) à utiliser pour la correction
+#' @return un data.frame du même type que mesures.frame
+#' @export
+correction.anisotropie <- function(mesures.frame, ani.matrix)
+{
+
+  if (!is.data.frame(mesures.frame))
+    warning("mesures n'est pas une data.frame")
+  if (!is.matrix(ani.matrix))
+    warning("ani.matrix n'est pas une matrice")
+
+  nbMesures <- length(mesures.frame[,1])
+
+  # inversion de la matrice
+  ani.inv <- solve(ani.matrix)
+
+  r_cal_echt <- NULL
+  # Calcul pour une mesure
+  correct <- function(mesure, aniso.inv) {
+    # Calcul de la correction
+    re.cal.ani <- aniso.inv %*% c( mesure$X, mesure$Y, mesure$Z)
+    # recopie des variables
+    re.cal <- mesure
+    re.cal$X <- re.cal.ani[1]
+    re.cal$Y <- re.cal.ani[2]
+    re.cal$Z <- re.cal.ani[3]
+    re.cal.ID <- polaire(re.cal$X, re.cal$Y, re.cal$Z)
+    re.cal$I <- re.cal.ID$I
+    re.cal$D <- re.cal.ID$D
+    re.cal$F <- re.cal.ID$F
+
+    return(re.cal)
+  }
+
+  resT <- NULL
+  for (i in 1 : nbMesures)
+    resT <- rbind(resT, correct(mesures.frame[i,], ani.inv))
+
+  return(resT)
 }
 
 #' Tracer dans le diagramme Lambert/ Stéréo d'un tenseur

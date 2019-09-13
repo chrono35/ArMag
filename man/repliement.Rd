@@ -6,7 +6,7 @@
 Calcul le repliement pour les trois position à plat "P", de chant "C" et debout "D"
 pour les matériaux déplacés, la référence est le nord donc -angD}
 \usage{
-repliement(data, dec = NULL, aim = 1, name = NA, number = NA,
+repliement(data, dec = NULL, aim = 1, name = NULL, number = NULL,
   position = "P")
 }
 \arguments{
