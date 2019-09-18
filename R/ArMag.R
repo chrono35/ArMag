@@ -226,7 +226,7 @@ stat.fisher <- function (inc, dec, aim=NA, pfish = 0.95, inc.absolue = TRUE)
     return("length (dec) diff length(inc)")
   }
   if (is.na(aim) || length(aim) != n) {
-    print("length(aim) diff length(inc)")
+    warning("length(aim) diff length(inc)")
     aim <-  rep(1, n)
   }
 
@@ -2365,7 +2365,7 @@ flin <- function( Data, Data.F12=NULL, pt.names= NULL, point.col = "blue3", pch 
 #' @export
 desaim <- function( Data, F = NULL,  point.col = "blue3", pch = 21, type= "b",
                              xlab = "°C", ylab = "", main = NULL,
-                             names = NA, normalize = TRUE, new = TRUE, ...)
+                             names = NA, normalize = TRUE, etap.J0 = NULL, new = TRUE, ...)
 {
 
   tmp.frame <- NULL
@@ -2389,6 +2389,9 @@ desaim <- function( Data, F = NULL,  point.col = "blue3", pch = 21, type= "b",
     tmp.frame$F <- F
   }
 
+  if (length(point.col) < length(tmp.frame$Etap.value) )
+    point.col <- rep(point.col, length(tmp.frame$Etap.value) )
+
   # comptage et séparation des données
   current <- tmp.frame$name[1]
   list.name <- current
@@ -2400,29 +2403,52 @@ desaim <- function( Data, F = NULL,  point.col = "blue3", pch = 21, type= "b",
     }
   }
 
-  xlim <- range(tmp.frame$Etap.value)
-
-  if (normalize) {
-    ylim <- c(0, 100)
-
+  if (is.null(etap.J0) == FALSE) {
+    if (length(etap.J0) < length(tmp.frame$Etap.value) )
+      etap.J0 <- rep(etap.J0, length(list.name) )
   } else {
-    ylim <- c(0, max(tmp.frame$F))
+    etap.J0 <- rep(NA, length(list.name) )
   }
 
+  xlim <- range(tmp.frame$Etap.value)
 
-  if (length(point.col) < length(tmp.frame$Etap.value) )
-    point.col <- rep(point.col, length(tmp.frame$Etap.value) )
+  # recherche du Ymax pour définir la taille du graphique
+  Ymax <- 0
+  J0 <- 0
+  list.mesure.i <-  NULL
+  if (normalize == TRUE) {
+    for (i in 1 : length(list.name)) {
+      list.mesure.i$F <- tmp.frame$F[tmp.frame$name == list.name[i]]
+      if (is.na(etap.J0[i]) == TRUE) {
+        J0[i] <- list.mesure.i$F[1]
+      } else {
+        tmp.etp <- list.mesure.i$F[tmp.frame$Etap.value == etap.J0[i]] # si il y a plusieurs valeur pour la même etape, comme ani
+        J0[i] <- tmp.etp[1]
+       # J0[i] <- list.mesure.i$F[tmp.frame$Etap.value == etap.J0[i]]
+      }
+      Ymax <- max(Ymax, tmp.frame$F[tmp.frame$name == list.name[i]]/J0[i] *100)
+    }
+  } else
+    Ymax <- max(tmp.frame$F)
 
+  list.mesure.i <-  NULL
   for (i in 1 : length(list.name)) {
-    if (normalize == TRUE)
-      coefY <- 100 / max(tmp.frame$F[tmp.frame$name == list.name[i]])
-    else
+    list.mesure.i$Etap.value <- tmp.frame$Etap.value[which(tmp.frame$name == list.name[i])]
+    list.mesure.i$F <- tmp.frame$F[tmp.frame$name == list.name[i]]
+    if (normalize == TRUE) {
+      coefY <- 100 / J0[i]
+
+    } else
       coefY <- 1
-    Xi <- tmp.frame$Etap.value[tmp.frame$name == list.name[i]]
-    Yi <- tmp.frame$F[tmp.frame$name == list.name[i]]  * coefY
+
+    Xi <- list.mesure.i$Etap.value
+    Yi <- list.mesure.i$F  * coefY
+
+    ylim <- c(0, Ymax)
 
     if (i == 1)
-      plot(x = Xi, y = Yi, xlab = xlab, ylab = ylab, ylim = ylim, xlim = xlim, type = type, col = adjustcolor( point.col[i], alpha.f = 0.7), bg = point.col[i], pch = pch,
+      plot(x = Xi, y = Yi, xlab = xlab, ylab = ylab, ylim = ylim, xlim = xlim, type = type,
+           col = adjustcolor( point.col[i], alpha.f = 0.7), bg = point.col[i], pch = pch,
            yaxt = "n", bty = "n", main = main, new = new)
     else
       lines(x = Xi, y = Yi, type = type, col = adjustcolor( point.col[i], alpha.f = 0.7), bg = point.col[i], pch = pch, yaxt = "n", bty ="n")
@@ -2431,7 +2457,11 @@ desaim <- function( Data, F = NULL,  point.col = "blue3", pch = 21, type= "b",
 
   axis(2, pos = 0, cex.axis = 0.8, col = "darkgray") # Ordonnées
 
-  mtext( format(YMax, digits = 3), side = 3, col = "gray5", adj = 0, cex.axis = 0.8)
+  if (normalize == TRUE) {
+    mtext( paste(format(Ymax, digits = 3),"%"), side = 3, col = "gray5", adj = 0, cex.axis = 0.8)
+  } else {
+    mtext( format(Ymax, digits = 3, scientific = TRUE), side = 3, col = "gray5", adj = 0, cex.axis = 0.8)
+  }
 
 
 }
