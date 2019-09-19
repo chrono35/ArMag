@@ -23,7 +23,7 @@ library("ArMag", lib.loc="/Library/Frameworks/R.framework/Versions/3.5/Resources
 
 # Chargement des fonctions d'ArMag via source
 ```{r echo = TRUE}
-# source('~/Documents/AM/R_Projects/ArMag/ArMag.R', echo=FALSE)
+ source('~/Documents/AM/R_Projects/ArMag/R/ArMag.R', echo=FALSE)
 
 ```
 
@@ -36,8 +36,8 @@ library("ArMag", lib.loc="/Library/Frameworks/R.framework/Versions/3.5/Resources
 ```{r test read.AM}
 #file.AM <- "~/Documents/AM/GDRE1_INT.AMD"
 # file.AM <- "/Volumes/Partage_Mesures_Archeomag/Mesures/22061_Glomel/22061A.AMD"
-# file.AM <- "~/Documents/AM/22061_Glomel/22061A.AMD"
-file.AM <- "~/Documents/AM/53130_Laval/53130_Mesures/53130B1_2019.AMD"
+ file.AM <- "~/Documents/AM/22061_Glomel/22061A.AMD"
+#file.AM <- "~/Documents/AM/53130_Laval/53130_Mesures/53130B1_2019.AMD"
 mes <- NULL
 mes <- read.AM.mesures(file.AM)
 mes.info <- read.AM.info (file.AM)
@@ -401,87 +401,61 @@ mes.seltt <- rbind(mes.sel1, mes.sel2)
  
 ```
 
+
+
+
 ```{r}
+mes.sel2 <- extract.mesures.specimen.name("1T", mes)
+mes.sel3 <- extract.mesures.specimen.name("17T", mes)
+desaim(mes.sel2, etap.J0 = NULL)
+desaim(mes, etap.J0 = 0, point.col = rainbow(length(mes.info$name)))
+desaim(rbind(mes.sel2, mes.sel3), normalize = TRUE)
 
-Data <- mes.seltt
-
-
- point.col = c("blue3", "red")
- pch = 21; type= "b";
-                       xlab = "°C"; ylab = ""; main = NULL; absolue = TRUE; new = TRUE; names = NA
- normalize = TRUE
-
- tmp.frame <- NULL
- if (is.null(main))
-      main <- " F vs Etap.value"
- 
-  if(is.data.frame(Data)) {
-
-    tmp.frame$name <- Data$name
-    tmp.frame$Etap.value <- Data$Etap.value
-    tmp.frame$F <- Data$F
-    
-    
-  } else {
-    # Création du frame interne
-    if (is.na(names))
-      tmp.frame$name <- as.character(c(1: length(Data)))
-    else
-      tmp.frame$name <- names
-    
-    tmp.frame$Etap.value <- Data
-    tmp.frame$F <- F
-  }
-
- # comptage et séparation des données
- current <- tmp.frame$name[1]
- list.name <- current
- 
- for (i in 1: length(tmp.frame$name)) {
-   if ( tmp.frame$name[i] != current) {
-     current <- tmp.frame$name[i]
-     list.name<- c(list.name, current)
-   }
- }
- 
- xlim <- range(tmp.frame$Etap.value)
- 
- YMax <-max(tmp.frame$F)
- 
- if (normalize) {
-   ylim <- c(0, 100)
-   tmp.frame$F <- tmp.frame$F/YMax * 100
- } else {
-   ylim <- c(0, YMax)
- }
-   
- 
- for (i in 1 : length(list.name)) {
-   Xi <- tmp.frame$Etap.value[tmp.frame$name == list.name[i]]
-   Yi <- tmp.frame$F[tmp.frame$name == list.name[i]]
-
-   if (i == 1)
-     plot(x=Xi, y=Yi, xlab = xlab, ylab = ylab, ylim = ylim, xlim = xlim, type = type, col="gray50", bg = point.col[i], pch = pch,
-         yaxt="n", bty ="n", main = main, new = new)
-   else
-     lines(x=Xi, y=Yi, type = type, col="gray50", bg = point.col[i], pch = pch, yaxt="n", bty ="n")
-   
-   new <- FALSE
-   main <- ""
- }  
- 
-  axis(2, pos = 0, cex.axis = 0.8, col = "darkgray") # Ordonnées
-
-  mtext( format(YMax, digits = 3), side = 3, col = "gray5", adj = 0, cex.axis = 0.8)
-
-
+composante.partiel(mes.sel2$X, mes.sel2$Y, mes.sel2$Z)
+zijderveld1.T1T2(mes.sel2)
 ```
 
+```{r composante de tout le site}
+sp.res <- NULL
+for (sp in 1: length(mes.info$number)){
+  sp.mes <- extract.mesures.specimen.number(mes.info$number[sp], mes)
 
-```{r}
-mes.sel2 <- extract.mesures.specimen.name("19D", mes2)
-plot.desaim(mes.sel1)
-plot.desaim(mes.sel3, new =FALSE)
+
+  # correction d'anisotropie
+  volume <- mes.info$vol[which(mes.info$name == trimws(mes.sp$name[1]))]
+  TH <- mes.info$TH[which(mes.info$name == trimws(mes.sp$name[1]))]
+  
+  # normalisation des mesures en A/m
+  sp.mes$X <- sp.mes$X /volume * 1E6
+  sp.mes$Y <- sp.mes$Y /volume * 1E6
+  sp.mes$Z <- sp.mes$Z /volume * 1E6
+  
+  # récupération de l'ARN
+  #sp.mes.ARN <- sp.mes[sp.mes$Etap.value == 0,]
+  
+
+  # évaluation de l'anisotropie
+  sp.ani <- anisotropie.matrix.symetric(sp.mes, etape.value = 500, TH = TH, volume = volume )
+ 
+  # suppression des étapes d'anisotropie
+  sp.mes <- supprime.etape(sp.mes) 
+    
+  # correction de l'anisotropie  
+  sp.cor <- correction.anisotropie(sp.mes, sp.ani)
+  
+  # determination de la composante
+  sp.cp <- composante.partiel(sp.cor$X, sp.cor$Y, sp.cor$Z)
+  
+  # repliement
+  sp.cp <- repliement.auto(sp.cp$I, sp.cp$D, name = sp.mes$name)
+  sp.res <- rbind.data.frame(sp.res, cbind(name =mes.info$name[sp], sp.cp) )
+}
+
+
+stat.mcFadden(sp.res$I, sp.res$D)
+
+
+lambert(sp.res, inc.lim = c(0,90))
 ```
 
 
@@ -515,5 +489,209 @@ for (i in 1:length(list.ech)) {
 filCon <- file(file.AM, encoding="UTF8")
    writeLines(txt.mesures, filCon) 
 close(filCon) 
+```
+
+# Calcul vecteur partiel
+```{r code trace vecteur partiel}
+# Procedure Calcul_vecteur_partiel(TabX,TabY,TabZ:array of Real; VAR MAD,SL,Xp,Yp,Zp:Real;en0:boolean;var Xm,Ym,Zm:Real);
+# X, Y, Z, les coordonnées cartésiennes du vecteur partiel
+en0 <- FALSE
+T1 <- 200
+T2 <- 400
+
+withAni = FALSE
+etape.sigle <- c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB")
+mes.sel2 <- extract.mesures.specimen.name("1T", mes)
+ani.etape.value <- NULL
+
+
+res.list <- mes.sel2
+
+if (withAni == FALSE) { # suppression des étape d anisotropie
+ if (is.null(ani.etape.value)) {
+   for (i in 1:length(Data$Etap)) {
+     if (substring(Data$Etap[i], 4) == etape.sigle[3])
+       ani.etape.value <- Data$Etap.value[i]
+   }
+ }
+  ani.etape <- trimws(paste(ani.etape.value, etape.sigle, sep = ""))
+
+ 
+ selec <- NULL
+ for (i in 1:length(ani.etape)) {
+   selec <- c( selec, which(trimws(mes.sel2$Etap) == trimws(ani.etape[i])) )
+ }
+ 
+ if (length(selec) > 0)
+    res.list <- mes.sel2[-selec,]
+}
+         
+Data <- res.list
+# recherche étape en dessous de T1
+iT1 <- 1
+while(Data$Etap.value[iT1] < T1) {
+  iT1 <- iT1 + 1
+}
+
+# recherche étape au dessus de T2
+iT2 <- length(Data$Etap.value)
+while(Data$Etap.value[iT2] > T2) {
+  iT2 <- iT2 -1
+}
+
+# Calcul de la composante partielle
+
+TabX <- Data$X[iT1:iT2]
+TabY <- Data$Y[iT1:iT2]
+TabZ <- Data$Z[iT1:iT2]
+
+vp <- composante.partiel(TabX, TabY, TabZ, en0 = en0)
+#ntab <- length(TabX)
+
+ somx <- 0; somy <- 0; somz <- 0
+ 
+ if (en0 == FALSE) {
+   somx <- sum(TabX)
+   somy <- sum(TabY)
+   somz <- sum(TabZ)
+ } 
+    
+  xm <- somx/ ntab
+  ym <- somy/ ntab
+  zm <- somz/ ntab
+
+  
+  
+  # a, b : Valeurs indiquant le point d’interception sur l’axe des y et la pente de la droite -> y = a + bx
+  # droite sur les déviations
+  bd <- vp$X/vp$Y
+  ad <- xm - bd*ym
+   # droite sur les inclinaisons, +Z est négatif
+  bi <- -vp$Z/vp$Y
+  ai <- -zm - bi*ym
+  
+  Y.r <- range(Data$X)
+  Z.r <- range(Data$Z)
+  ylim <- c(min(Y.r[1], -Z.r[2]), max(Y.r[2], -Z.r[1]))
+  
+  if (ylim[1]>0)
+    ylim[1]<-0
+  
+  if (ylim[2]<0)
+    ylim[2]<-0
+
+  
+  zijderveld1(Data$X[1:iT1], Data$Y[1:iT1], Data$Z[1:iT1],  ylim = ylim) 
+  zijderveld1(Data$X[iT1:iT2], Data$Y[iT1:iT2], Data$Z[iT1:iT2], pt.col = c("red", "red") , new = FALSE)
+  zijderveld1(Data$X[iT2:length(Data$X)], Data$Y[iT2:length(Data$X)], Data$Z[iT2:length(Data$X)], new = FALSE)
+  abline(ad, bd)
+  abline(ai, bi)
+```
+
+
+```{r code vecteur partiel}
+# debut code
+vecteur.partiel <- function(TabX, TabY, TabZ, en0 = TRUE) 
+{
+  col.names <- c("X", "Y", "Z", "I", "D", "F", "Sl", "MAD")
+  ntab <- length(TabX);
+  
+  if ( (ntab<1) || (ntab!=length(TabY)) || (ntab!=length(TabZ))) {
+      Data <- c( X = 0, Y = 0, Z = 0,
+           I = 0, D = 0, F = 0,
+            Sl = NA, MAD = NA )
+  
+        return(as.data.frame(t(Data), col.names = col.names))  #il faut au moins 2 étapes
+  }
+       
+ # calcul du barycentre du nuage de points si 'en0' false
+ somx <- 0; somy <- 0; somz <- 0
+ 
+ if (en0 == FALSE) {
+   somx <- sum(TabX)
+   somy <- sum(TabY)
+   somz <- sum(TabZ)
+ } 
+    
+  xm <- somx/ ntab
+  ym <- somy/ ntab
+  zm <- somz/ ntab
+
+  Mom <-0; # variable pour Kirschink
+  # calcul du moment suivant kischvink
+  #  c.à.d. longueur du chemin total entre les points 
+  for ( j in 2 : ntab) {
+    Mom <- Mom + sqrt( (TabX[j]-TabX[j-1])^2
+                       + (TabY[j]-TabY[j-1])^2
+                       + (TabZ[j]-TabZ[j-1])^2 )
+  }
+
+  # Longueur du plus court chemin
+  Sl <- sqrt( (TabX[ntab]-TabX[1])^2
+             + (TabY[ntab]-TabY[1])^2
+             + (TabZ[ntab]-TabZ[1])^2);
+  # Rapport des distances
+  Sl <- Sl/Mom;
+
+  
+ sxx <- sum((TabX-xm)^2); sxy <- sum((TabX-xm)*(TabY-ym)); sxz <- sum((TabX-xm)*(TabZ-zm))
+                          syy <- sum((TabY-ym)^2);         syz <- sum((TabY-ym)*(TabZ-zm))
+                                                           szz <- sum((TabZ-zm)^2);
+ # Matrice d inertie des points x, y, z pour le calcul de la droite
+    Ixx = syy+szz;  Ixy = -sxy;     Ixz = -sxz;
+                    Iyy = sxx+szz;  Iyz = -syz;
+                                    Izz = sxx+syy;
+
+    
+  #  MAD
+
+  mat.sym.norm <- matrix( c( sxx, sxy, sxz,
+                             0,  syy, syz,
+                             0, 0, szz) , 3, 3)
+
+  # vecteurs et valeurs propres pour MAD
+  v.mad <- eigen(mat.sym.norm, symmetric = TRUE)
+    
+  
+  if (( v.mad$values[1] == 0) || ((v.mad$values[2] + v.mad$values[3])/ v.mad$values[1] < 0)) {
+    warning('MAD non calculable')
+    MAD <- NA
+  } else {
+    MAD <- atan(sqrt( ((v.mad$values[2] + v.mad$values[3])/ v.mad$values[1]) ));
+  } 
+
+  #   Calcul composante partielle
+  # Matrice d'inertie des points x,y,z
+
+  # La direction correspond au vecteur propre minimum
+  mat.sym.norm <- matrix( c( Ixx , Ixy , Ixz ,
+                             0,  Iyy , Iyz ,
+                             0, 0, Izz ) , 3, 3)
+  
+  # vecteurs et valeurs propres pour MAD
+  v.cp <- eigen(mat.sym.norm, symmetric = TRUE)
+  v3 <- polaire(v.cp$vectors[1, 3],  v.cp$vectors[2, 3],  v.cp$vectors[3 ,3])
+  
+  vcorrect<- NULL
+  vcorrect$I <- sign(TabZ[1] - TabZ[ntab]) * abs(v3$I)
+  vcorrect$D <- v3$D
+  
+  if (sign(vcorrect$I) !=  sign(v3$I)) {
+    vcorrect$D <- D.AM(v3$D +180)
+  }
+ 
+ 
+ # mise en forme du résultat
+  MAD <- MAD * 180 /pi 
+  
+ col.names <- c("X", "Y", "Z", "I", "D", "F", "Sl", "MAD")
+ Data <- c( X = v.cp$vectors[1, 3], Y = v.cp$vectors[2, 3], Z = v.cp$vectors[3, 3],
+          I = vcorrect$I, D = vcorrect$D, F = v3$F,
+          Sl = Sl, MAD = MAD )
+
+ #res <- as.data.frame(t(Data), col.names = col.names)
+ return(as.data.frame(t(Data), col.names = col.names))
+}
+
 ```
 
