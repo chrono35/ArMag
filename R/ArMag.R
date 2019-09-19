@@ -2669,7 +2669,7 @@ zijderveld1.T1T2 <- function(Data, T1=NULL, T2=NULL, withAni = FALSE, ani.etape.
   TabZ <- Data$Z[iT1:iT2]
 
   vp <- composante.partielle(TabX, TabY, TabZ, en0 = en0)
-  #ntab <- length(TabX)
+  ntab <- length(TabX)
 
   somx <- 0; somy <- 0; somz <- 0
 
