@@ -6,7 +6,7 @@
 \usage{
 desaim(Data, F = NULL, point.col = "blue3", pch = 21, type = "b",
   xlab = "°C", ylab = "", main = NULL, names = NA,
-  normalize = TRUE, new = TRUE, ...)
+  normalize = TRUE, etap.J0 = NULL, new = TRUE, ...)
 }
 \arguments{
 \item{normalize}{permet de comparer l'évolution de l'aimanation quelque soit l'amplitude en visualisant le résultat comme un pourcentage du maximum}

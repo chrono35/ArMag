@@ -444,7 +444,7 @@ for (sp in 1: length(mes.info$number)){
   sp.cor <- correction.anisotropie(sp.mes, sp.ani)
   
   # determination de la composante
-  sp.cp <- composante.partiel(sp.cor$X, sp.cor$Y, sp.cor$Z)
+  sp.cp <- composante.partielle(sp.cor$X, sp.cor$Y, sp.cor$Z)
   
   # repliement
   sp.cp <- repliement.auto(sp.cp$I, sp.cp$D, name = sp.mes$name)
