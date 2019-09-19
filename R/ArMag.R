@@ -226,7 +226,7 @@ stat.fisher <- function (inc, dec, aim=NA, pfish = 0.95, inc.absolue = TRUE)
     return("length (dec) diff length(inc)")
   }
   if (is.na(aim) || length(aim) != n) {
-    warning("length(aim) diff length(inc)")
+   # message("length(aim) diff length(inc)")
     aim <-  rep(1, n)
   }
 
@@ -1252,7 +1252,7 @@ lambert.ID.specimen <- function( Data, D , pt.names = "", labels = NA, label.pos
 #' @param pt.name = "": n'affiche rien. pt.name = NULL: affiche les étapes si Data est une data.frame
 #' @param legend.pos = NULL : n'affiche pas la legende. legend.pos = "topleft" affiche en haut à gauche
 #' @export
-zjiderveld1<- function(Data, Y = NULL, Z = NULL, pt.names = "", main = NULL, panel.first = NULL, pt.col = c("forestgreen", "blue3"),
+zijderveld1<- function(Data, Y = NULL, Z = NULL, pt.names = "", main = NULL, panel.first = NULL, pt.col = c("forestgreen", "blue3"),
                             isometric = TRUE, ylim = NULL, legend.pos = NULL, legend.txt = c("(Y, X)", "(Y, Z)"), new = TRUE, ...)
 {
   eta <- NULL
@@ -1290,28 +1290,36 @@ zjiderveld1<- function(Data, Y = NULL, Z = NULL, pt.names = "", main = NULL, pan
 
   }
 
-  plot(Y, X, type = "o", pch = 21, main = main, col = pt.col[1],  bg = adjustcolor( pt.col[1], alpha.f = 0.8), axes = FALSE,
-       panel.first = panel.first, xlab = "", ylab = "", ylim = ylim, asp = asp, xaxt="n", yaxt="n", new = new, ...)
+  if (new == TRUE) {
+    plot(Y, X, type = "o", pch = 21, main = main, col = pt.col[1],  bg = adjustcolor( pt.col[1], alpha.f = 0.8), axes = FALSE,
+         panel.first = panel.first, xlab = "", ylab = "", ylim = ylim, asp = asp, xaxt="n", yaxt="n", new = new, ...)
+
+    text(jitter(Y, 5, amount = 0), jitter(X, 5, amount = 0), eta)
+
+    if (!is.null(legend.pos))
+      legend(legend.pos, legend.txt, pch = c(19, 21), col = pt.col, bg = c(par("bg"), adjustcolor( pt.col[1], alpha.f = 0.8), adjustcolor( pt.col, alpha.f = 0.05)),
+             box.col = par("bg"), title = "")
+
+    ax1 <- axis(1, pos = 0, cex.axis = 0.8, col = "darkgray")
+    ax2 <- axis(2, pos = 0, cex.axis = 0.8, col = "darkgray") # Ordonnées
+
+    text(0, ax2[length(ax2)], "+X", col = "gray5", adj = c(-.5, 1))
+    text(0, ax2[1], "+Z", col = "gray5", adj = c(-.5, 0))
+    text( ax1[length(ax1)], 0, "+Y", col = "gray5", adj = c(1, -.5))
+
+  } else {
+    lines(Y, X, type = "o", pch = 21, col = pt.col[1], bg = adjustcolor( pt.col[1], alpha.f = 0.8), ...)
+  }
+
   lines(Y, -Z, type = "o", pch = 21, col = pt.col[2], bg = adjustcolor( pt.col[2], alpha.f = 0.05), ...)
 
-  text(jitter(Y, 5, amount = 0), jitter(X, 5, amount = 0), eta)
 
-  if (!is.null(legend.pos))
-    legend(legend.pos, legend.txt, pch = c(19, 21), col = pt.col, bg = c(par("bg"), adjustcolor( pt.col[1], alpha.f = 0.8), adjustcolor( pt.col, alpha.f = 0.05)),
-           box.col = par("bg"), title = "")
-
-  ax1 <- axis(1, pos = 0, cex.axis = 0.8, col = "darkgray")
-  ax2 <- axis(2, pos = 0, cex.axis = 0.8, col = "darkgray") # Ordonnées
-
-  text(0, ax2[length(ax2)], "+X", col = "gray5", adj = c(-.5, 1))
-  text(0, ax2[1], "+Z", col = "gray5", adj = c(-.5, 0))
-  text( ax1[length(ax1)], 0, "+Y", col = "gray5", adj = c(1, -.5))
 
 }
 
 #' Trace un diagramme de Zijderveld type 2
 #' @export
-zjiderveld2<- function(Data, Y = NULL, Z = NULL, pt.names = "", main = NULL, panel.first = NULL, pt.col = c("forestgreen", "blue3"), isometric = TRUE,
+zijderveld2<- function(Data, Y = NULL, Z = NULL, pt.names = "", main = NULL, panel.first = NULL, pt.col = c("forestgreen", "blue3"), isometric = TRUE,
                             ylim = NULL, legend.pos = NULL, new = TRUE, ...)
 {
   eta <- NULL
@@ -1405,9 +1413,9 @@ repliement <- function (data, dec = NULL, aim = 1, name = NULL, number = NULL,  
   if (length(position) < length(inc))
     position <- rep(position, length(inc))
 
-  X <- calcul.vecteur.cartesien.X(inc, dec, aim)
-  Y <- calcul.vecteur.cartesien.Y(inc, dec, aim)
-  Z <- calcul.vecteur.cartesien.Z(inc, dec, aim)
+  X <- calcul.vecteur.cartesien.X(inc/180*pi, dec/180*pi, aim)
+  Y <- calcul.vecteur.cartesien.Y(inc/180*pi, dec/180*pi, aim)
+  Z <- calcul.vecteur.cartesien.Z(inc/180*pi, dec/180*pi, aim)
 
   res <- NULL
 
@@ -2077,7 +2085,6 @@ anisotropie.eigen.tensor <- function (mesures, etape.value, etape.sigle = c("Z+"
   res.list <- mesures[selec,]
   res.list <- res.list
 
-
   col.names <- c("L1", "L1.Inc", "L1.Dec", "L2", "L2.Inc", "L2.Dec", "L3", "L3.Inc", "L3.Dec", "F13", "F12", "F23")
 
   # vérification de l'existence de tous les termes
@@ -2499,3 +2506,240 @@ correction.carottage.enbout <- function(mesures.brutes)
   }
   return(mesures.convent)
 }
+
+#' Calcul les directions du vecteur partiel pour une série d'étape
+#' @return une data.frame "X", "Y", "Z", "I", "D", "F", "Sl", "MAD"
+#' @export
+vecteur.partiel <- function(TabX, TabY, TabZ, en0 = TRUE)
+{
+  col.names <- c("X", "Y", "Z", "I", "D", "F", "Sl", "MAD")
+  ntab <- length(TabX);
+
+  if ( (ntab<1) || (ntab!=length(TabY)) || (ntab!=length(TabZ))) {
+    Data <- c( X = 0, Y = 0, Z = 0,
+               I = 0, D = 0, F = 0,
+               Sl = NA, MAD = NA )
+
+    return(as.data.frame(t(Data), col.names = col.names))  #il faut au moins 2 étapes
+  }
+
+  # calcul du barycentre du nuage de points si 'en0' false
+  somx <- 0; somy <- 0; somz <- 0
+
+  if (en0 == FALSE) {
+    somx <- sum(TabX)
+    somy <- sum(TabY)
+    somz <- sum(TabZ)
+  }
+
+  xm <- somx/ ntab
+  ym <- somy/ ntab
+  zm <- somz/ ntab
+
+  Mom <-0; # variable pour Kirschink
+  # calcul du moment suivant kischvink
+  #  c.à.d. longueur du chemin total entre les points
+  for ( j in 2 : ntab) {
+    Mom <- Mom + sqrt( (TabX[j]-TabX[j-1])^2
+                       + (TabY[j]-TabY[j-1])^2
+                       + (TabZ[j]-TabZ[j-1])^2 )
+  }
+
+  # Longueur du plus court chemin
+  Sl <- sqrt( (TabX[ntab]-TabX[1])^2
+              + (TabY[ntab]-TabY[1])^2
+              + (TabZ[ntab]-TabZ[1])^2);
+  # Rapport des distances
+  Sl <- Sl/Mom;
+
+
+  sxx <- sum((TabX-xm)^2); sxy <- sum((TabX-xm)*(TabY-ym)); sxz <- sum((TabX-xm)*(TabZ-zm))
+  syy <- sum((TabY-ym)^2);         syz <- sum((TabY-ym)*(TabZ-zm))
+  szz <- sum((TabZ-zm)^2);
+  # Matrice d inertie des points x, y, z pour le calcul de la droite
+  Ixx = syy+szz;  Ixy = -sxy;     Ixz = -sxz;
+  Iyy = sxx+szz;  Iyz = -syz;
+  Izz = sxx+syy;
+
+
+  #  MAD
+
+  mat.sym.norm <- matrix( c( sxx, sxy, sxz,
+                             0,  syy, syz,
+                             0, 0, szz) , 3, 3)
+
+  # vecteurs et valeurs propres pour MAD
+  v.mad <- eigen(mat.sym.norm, symmetric = TRUE)
+
+
+  if (( v.mad$values[1] == 0) || ((v.mad$values[2] + v.mad$values[3])/ v.mad$values[1] < 0)) {
+    warning('MAD non calculable')
+    MAD <- NA
+  } else {
+    MAD <- atan(sqrt( ((v.mad$values[2] + v.mad$values[3])/ v.mad$values[1]) ));
+  }
+
+  #   Calcul composante partielle
+  # Matrice d'inertie des points x,y,z
+
+  # La direction correspond au vecteur propre minimum
+  mat.sym.norm <- matrix( c( Ixx , Ixy , Ixz ,
+                             0,  Iyy , Iyz ,
+                             0, 0, Izz ) , 3, 3)
+
+  # vecteurs et valeurs propres pour MAD
+  v.cp <- eigen(mat.sym.norm, symmetric = TRUE)
+  v3 <- polaire(v.cp$vectors[1, 3],  v.cp$vectors[2, 3],  v.cp$vectors[3 ,3])
+
+  vcorrect<- NULL
+  vcorrect$I <- sign(TabZ[1] - TabZ[ntab]) * abs(v3$I)
+  vcorrect$D <- v3$D
+
+  if (sign(vcorrect$I) !=  sign(v3$I)) {
+    vcorrect$D <- D.AM(v3$D +180)
+  }
+
+
+  # mise en forme du résultat
+  MAD <- MAD * 180 /pi
+
+  col.names <- c("X", "Y", "Z", "I", "D", "F", "Sl", "MAD")
+  Data <- c( X = v.cp$vectors[1, 3], Y = v.cp$vectors[2, 3], Z = v.cp$vectors[3, 3],
+             I = vcorrect$I, D = vcorrect$D, F = v3$F,
+             Sl = Sl, MAD = MAD )
+
+
+  return(as.data.frame(t(Data), col.names = col.names))
+}
+
+#' Calcul le vecteur de la composante partielle
+#' et retourne aussi le MAD
+#' @param en0 permet de calculer la composante qui passe par l'origine (0, 0)
+#' @return une data.frame "X", "Y", "Z", "I", "D", "F", "Sl", "MAD", "DANG"
+#' @export
+composante.partielle <- function(TabX, TabY, TabZ, en0 = FALSE)
+{
+  vp <- vecteur.partiel(TabX, TabY, TabZ, en0 = en0)
+  ntab <- length(TabX)
+
+  # Calcul de l'angle entre le vecteur passant par zéro et le vecteur ne passant pas par zéro
+  # d'aprés Lisa Tauxe
+  v.true <- vecteur.partiel(TabX, TabY, TabZ, en0 = TRUE)
+  v.false <- vecteur.partiel(TabX, TabY, TabZ, en0 = FALSE)
+
+  # produit scalaire x*xp+y*yp+z*zp=cos(teta)*(x2+y2+z2)*(xp2+yp2+zp2);
+  DANG <- v.true$X * v.false$X + v.true$Y * v.false$Y + v.true$Z * v.false$Z
+  DANG <- DANG / (sqrt( v.true$X^2 + v.true$Y^2 + v.true$Z^2)* sqrt( v.false$X^2+ v.false$Y^2+ v.false$Z^2) )
+  DANG <- n_arccos(DANG) *180/pi
+  return( cbind.data.frame(vp, DANG))
+}
+
+#' trace un diagramme de zijderveld en calculant la composante entre les étapes T1 et T2
+#' @export
+zijderveld1.T1T2 <- function(Data, T1=NULL, T2=NULL, withAni = FALSE, ani.etape.value= NULL, etape.sigle = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"),
+                             en0 = FALSE )
+{
+  if (is.null(T1))
+    T1 <- Data$Etap.value[1]
+  if (is.null(T2))
+    T2 <- Data$Etap.value[length(Data$Etap.value)]
+
+
+  res.list <- Data
+
+  if (withAni == FALSE) { # suppression des étape d anisotropie
+    Data <- supprime.etape(Data, ani.etape.value= ani.etape.value, etape.sigle=etape.sigle)
+  }
+  # recherche étape en dessous de T1
+  iT1 <- 1
+  while(Data$Etap.value[iT1] < T1) {
+    iT1 <- iT1 + 1
+  }
+
+  # recherche étape au dessus de T2
+  iT2 <- length(Data$Etap.value)
+  while(Data$Etap.value[iT2] > T2) {
+    iT2 <- iT2 -1
+  }
+
+  # Calcul de la composante partielle
+
+  TabX <- Data$X[iT1:iT2]
+  TabY <- Data$Y[iT1:iT2]
+  TabZ <- Data$Z[iT1:iT2]
+
+  vp <- composante.partielle(TabX, TabY, TabZ, en0 = en0)
+  #ntab <- length(TabX)
+
+  somx <- 0; somy <- 0; somz <- 0
+
+  if (en0 == FALSE) {
+    somx <- sum(TabX)
+    somy <- sum(TabY)
+    somz <- sum(TabZ)
+  }
+
+  xm <- somx/ ntab
+  ym <- somy/ ntab
+  zm <- somz/ ntab
+
+
+
+  # a, b : Valeurs indiquant le point d’interception sur l’axe des y et la pente de la droite -> y = a + bx
+  # droite sur les déviations
+  bd <- vp$X/vp$Y
+  ad <- xm - bd*ym
+  # droite sur les inclinaisons, +Z est négatif
+  bi <- -vp$Z/vp$Y
+  ai <- -zm - bi*ym
+
+  Y.r <- range(Data$X)
+  Z.r <- range(Data$Z)
+  ylim <- c(min(Y.r[1], -Z.r[2]), max(Y.r[2], -Z.r[1]))
+
+  if (ylim[1]>0)
+    ylim[1]<-0
+
+  if (ylim[2]<0)
+    ylim[2]<-0
+
+
+  zijderveld1(Data$X[1:iT1], Data$Y[1:iT1], Data$Z[1:iT1],  ylim = ylim)
+  if (iT2 != length(Data$X))
+    zijderveld1(Data$X[iT2:length(Data$X)], Data$Y[iT2:length(Data$X)], Data$Z[iT2:length(Data$X)], new = FALSE)
+
+  zijderveld1(Data$X[iT1:iT2], Data$Y[iT1:iT2], Data$Z[iT1:iT2], pt.col = c("red", "red") , new = FALSE)
+
+
+  abline(ad, bd)
+  abline(ai, bi)
+}
+
+#' supprime les étapes à la valeur ani.etape.value et avec les sigles etape.sigle
+#' Utiliser pour supprimer l'anisotropie
+#' @param Data un data.frame possédant la variable $Etap de type chr
+#' @export
+supprime.etape <- function(Data, ani.etape.value= NULL, etape.sigle = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB") )
+{
+  if (is.null(ani.etape.value)) {
+    for (i in 1:length(Data$Etap)) {
+      if (substring(Data$Etap[i], 4) == etape.sigle[3])
+        ani.etape.value <- Data$Etap.value[i]
+    }
+  }
+  ani.etape <- trimws(paste(ani.etape.value, etape.sigle, sep = ""))
+
+
+  selec <- NULL
+  for (i in 1:length(ani.etape)) {
+    selec <- c( selec, which(trimws(Data$Etap) == trimws(ani.etape[i])) )
+  }
+
+  if (length(selec) > 0)
+    res.list <- Data[-selec,]
+  else
+    res.list <- Data
+
+  return(res.list)
+}
+
