@@ -1303,9 +1303,9 @@ zijderveld1<- function(Data, Y = NULL, Z = NULL, pt.names = "", main = NULL, pan
     ax1 <- axis(1, pos = 0, cex.axis = 0.8, col = "darkgray")
     ax2 <- axis(2, pos = 0, cex.axis = 0.8, col = "darkgray") # Ordonnées
 
-    text(0, ax2[length(ax2)], "+X", col = "gray5", adj = c(-.5, 1))
-    text(0, ax2[1], "+Z", col = "gray5", adj = c(-.5, 0))
-    text( ax1[length(ax1)], 0, "+Y", col = "gray5", adj = c(1, -.5))
+    text(0, ax2[length(ax2)], "+X", col = "gray5", adj = c(-.5, 1), cex = par("cex.lab"))
+    text(0, ax2[1], "+Z", col = "gray5", adj = c(-.5, 0), cex = par("cex.lab"))
+    text( ax1[length(ax1)], 0, "+Y", col = "gray5", adj = c(1, -.5), cex = par("cex.lab"))
 
   } else {
     lines(Y, X, type = "o", pch = 21, col = pt.col[1], bg = adjustcolor( pt.col[1], alpha.f = 0.8), ...)
@@ -1355,22 +1355,30 @@ zijderveld2<- function(Data, Y = NULL, Z = NULL, pt.names = "", main = NULL, pan
     }
   }
 
-  plot(-X, Y, main = main, type = "o", pch = 21, col = pt.col[1], bg = adjustcolor( pt.col[1], alpha.f = 0.8), axes = FALSE,
-       panel.first = panel.first, xlab = "", ylab = "", ylim = ylim, asp = asp, new = new)
+  if (new == TRUE) {
+    plot(-X, Y, main = main, type = "o", pch = 21, col = pt.col[1], bg = adjustcolor( pt.col[1], alpha.f = 0.8), axes = FALSE,
+         panel.first = panel.first, xlab = "", ylab = "", ylim = ylim, asp = asp, new = new)
+
+    text(jitter(-X, 5, amount = 0), jitter(Y, 5, amount = 0), eta)
+
+    if (!is.null(legend.pos))
+      legend(legend.pos, c("(-X, Y)", "(-X, Z)"), pch = c(19, 21), col = pt.col, bg = c(par("bg"), adjustcolor( pt.col[1], alpha.f = 0.8), adjustcolor( pt.col, alpha.f = 0.05)),
+             box.col = par("bg"), title = "")
+
+    ax1 <- axis(1, pos = 0,  col = "darkgray") # cex.axis = 0.8,
+    ax2 <- axis(2, pos = 0,  col = "darkgray") # Ordonnées
+
+    text(0, ax2[length(ax2)], "+Y", col = "gray5", adj = c(-.5, 1), cex = par("cex.lab"))
+    text(0, ax2[1], "+Z", col = "gray5", adj = c(-.5, 0), cex = par("cex.lab"))
+    text( ax1[length(ax1)] , 0, "-X", col = "gray5", adj = c(1, -.5), cex = par("cex.lab"))
+
+
+  } else {
+    lines(-X, Y, type = "o", pch = 21, col = pt.col[1], bg = adjustcolor( pt.col[1], alpha.f = 0.8), ...)
+  }
+
   lines(-X, -Z, type = "o", pch = 21, col = pt.col[2], bg = adjustcolor( pt.col[2], alpha.f = 0.05))
 
-  text(jitter(-X, 5, amount = 0), jitter(Y, 5, amount = 0), eta)
-
-  if (!is.null(legend.pos))
-    legend(legend.pos, c("(-X, Y)", "(-X, Z)"), pch = c(19, 21), col = pt.col, bg = c(par("bg"), adjustcolor( pt.col[1], alpha.f = 0.8), adjustcolor( pt.col, alpha.f = 0.05)),
-           box.col = par("bg"), title = "")
-
-  ax1 <- axis(1, pos = 0, cex.axis = 0.8, col = "darkgray")
-  ax2 <- axis(2, pos = 0, cex.axis = 0.8, col = "darkgray") # Ordonnées
-
-  text(0, ax2[length(ax2)], "+Y", col = "gray5", adj = c(-.5, 1))
-  text(0, ax2[1], "+Z", col = "gray5", adj = c(-.5, 0))
-  text( ax1[length(ax1)] , 0, "-X", col = "gray5", adj = c(1, -.5))
 
 }
 
@@ -2370,7 +2378,7 @@ flin <- function( Data, Data.F12=NULL, pt.names= NULL, point.col = "blue3", pch 
 #' Tracer d'un diagramme de désaimantation
 #' @param normalize permet de comparer l'évolution de l'aimanation quelque soit l'amplitude en visualisant le résultat comme un pourcentage du maximum
 #' @export
-desaim <- function( Data, F = NULL,  point.col = "blue3", pch = 21, type= "b",
+desaim <- function( Data, F = NULL,  point.col = "blue3", pch = 21, type = "b",
                              xlab = "°C", ylab = "", main = NULL,
                              names = NA, normalize = TRUE, etap.J0 = NULL, new = TRUE, ...)
 {
@@ -2462,12 +2470,12 @@ desaim <- function( Data, F = NULL,  point.col = "blue3", pch = 21, type= "b",
 
   }
 
-  axis(2, pos = 0, cex.axis = 0.8, col = "darkgray") # Ordonnées
+  axis(2, pos = 0, col = "darkgray") #cex.axis = 0.8) # Ordonnées
 
   if (normalize == TRUE) {
-    mtext( paste(format(Ymax, digits = 3),"%"), side = 3, col = "gray5", adj = 0, cex.axis = 0.8)
+    mtext( paste(format(Ymax, digits = 3), "%"), side = 3, col = "gray5", adj = 0, cex = par("cex.lab"))
   } else {
-    mtext( format(Ymax, digits = 3, scientific = TRUE), side = 3, col = "gray5", adj = 0, cex.axis = 0.8)
+    mtext( format(Ymax, digits = 3, scientific = TRUE), side = 3, col = "gray5", adj = 0, cex = par("cex.lab"))
   }
 
 
@@ -2489,6 +2497,8 @@ correction.carottage.tranche <- function(mesures.brutes)
   }
   return(mesures.convent)
 }
+
+# Composante partielle ----
 
 #' Correction de carottage en bout
 #' Tourne les mesures de manière à retrouver le résultat suivant la convention de carottage à plat
@@ -2634,7 +2644,7 @@ composante.partielle <- function(TabX, TabY, TabZ, en0 = FALSE)
   return( cbind.data.frame(vp, DANG))
 }
 
-#' trace un diagramme de zijderveld en calculant la composante entre les étapes T1 et T2
+#' trace un diagramme de zijderveld1 en calculant la composante entre les étapes T1 et T2
 #' @export
 zijderveld1.T1T2 <- function(Data, T1=NULL, T2=NULL, withAni = FALSE, ani.etape.value= NULL, etape.sigle = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"),
                              en0 = FALSE )
@@ -2683,13 +2693,11 @@ zijderveld1.T1T2 <- function(Data, T1=NULL, T2=NULL, withAni = FALSE, ani.etape.
   ym <- somy/ ntab
   zm <- somz/ ntab
 
-
-
   # a, b : Valeurs indiquant le point d’interception sur l’axe des y et la pente de la droite -> y = a + bx
-  # droite sur les déviations
+  # droite sur les déviations axe (Y, X)
   bd <- vp$X/vp$Y
   ad <- xm - bd*ym
-  # droite sur les inclinaisons, +Z est négatif
+  # droite sur les inclinaisons axe (Y, Z), +Z est négatif
   bi <- -vp$Z/vp$Y
   ai <- -zm - bi*ym
 
@@ -2710,6 +2718,83 @@ zijderveld1.T1T2 <- function(Data, T1=NULL, T2=NULL, withAni = FALSE, ani.etape.
 
   zijderveld1(Data$X[iT1:iT2], Data$Y[iT1:iT2], Data$Z[iT1:iT2], pt.col = c("red", "red") , new = FALSE)
 
+  abline(ad, bd)
+  abline(ai, bi)
+}
+
+#' trace un diagramme de zijderveld en calculant la composante entre les étapes T1 et T2
+#' @export
+zijderveld2.T1T2 <- function(Data, T1 = NULL, T2 = NULL, withAni = FALSE, ani.etape.value = NULL, etape.sigle = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"),
+                             en0 = FALSE )
+{
+  if (is.null(T1))
+    T1 <- Data$Etap.value[1]
+  if (is.null(T2))
+    T2 <- Data$Etap.value[length(Data$Etap.value)]
+
+
+  res.list <- Data
+
+  if (withAni == FALSE) { # suppression des étape d anisotropie
+    Data <- supprime.etape(Data, ani.etape.value= ani.etape.value, etape.sigle=etape.sigle)
+  }
+  # recherche étape en dessous de T1
+  iT1 <- 1
+  while(Data$Etap.value[iT1] < T1) {
+    iT1 <- iT1 + 1
+  }
+
+  # recherche étape au dessus de T2
+  iT2 <- length(Data$Etap.value)
+  while(Data$Etap.value[iT2] > T2) {
+    iT2 <- iT2 -1
+  }
+
+  # Calcul de la composante partielle
+
+  TabX <- Data$X[iT1:iT2]
+  TabY <- Data$Y[iT1:iT2]
+  TabZ <- Data$Z[iT1:iT2]
+
+  vp <- composante.partielle(TabX, TabY, TabZ, en0 = en0)
+  ntab <- length(TabX)
+
+  somx <- 0; somy <- 0; somz <- 0
+
+  if (en0 == FALSE) {
+    somx <- sum(TabX)
+    somy <- sum(TabY)
+    somz <- sum(TabZ)
+  }
+
+  xm <- somx/ ntab
+  ym <- somy/ ntab
+  zm <- somz/ ntab
+
+  # a, b : Valeurs indiquant le point d’interception sur l’axe des y et la pente de la droite -> y = a + bx
+  # droite sur les déviations axe (Y, X)
+  bd <- vp$Y/(-vp$X)
+  ad <- ym + bd*xm
+  # droite sur les inclinaisons axe (Y, Z), +Z est négatif
+  bi <- -vp$Z/(-vp$X)
+  ai <- -zm + bi*xm
+
+  Y.r <- range(Data$X)
+  Z.r <- range(Data$Z)
+  ylim <- c(min(Y.r[1], -Z.r[2]), max(Y.r[2], -Z.r[1]))
+
+  if (ylim[1]>0)
+    ylim[1]<-0
+
+  if (ylim[2]<0)
+    ylim[2]<-0
+
+
+  zijderveld2(Data$X[1:iT1], Data$Y[1:iT1], Data$Z[1:iT1],  ylim = ylim)
+  if (iT2 != length(Data$X))
+    zijderveld2(Data$X[iT2:length(Data$X)], Data$Y[iT2:length(Data$X)], Data$Z[iT2:length(Data$X)], new = FALSE)
+
+  zijderveld2(Data$X[iT1:iT2], Data$Y[iT1:iT2], Data$Z[iT1:iT2], pt.col = c("red", "red") , new = FALSE)
 
   abline(ad, bd)
   abline(ai, bi)
