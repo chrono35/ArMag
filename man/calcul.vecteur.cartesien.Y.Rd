@@ -7,9 +7,9 @@
 calcul.vecteur.cartesien.Y(inc, dec, aim = 1)
 }
 \arguments{
-\item{inc}{liste des inclinaisons en radian}
+\item{inc}{liste des inclinaisons en degré}
 
-\item{des}{liste des déclinaisons en radian}
+\item{des}{liste des déclinaisons en degré}
 }
 \description{
 Valeur de Y pour I et D

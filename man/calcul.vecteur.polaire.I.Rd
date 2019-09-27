@@ -6,6 +6,9 @@
 \usage{
 calcul.vecteur.polaire.I(X, Y, Z)
 }
+\value{
+angle en degré
+}
 \description{
 inclinaison pour X, Y et Z
 }

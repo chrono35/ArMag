@@ -2,10 +2,12 @@
 % Please edit documentation in R/ArMag.R
 \name{calcul.vecteur.polaire.D}
 \alias{calcul.vecteur.polaire.D}
-\title{Déclinaison pour X, Y et Z}
+\title{Déclinaison pour X, Y et Z
+#' @return angle en degré}
 \usage{
 calcul.vecteur.polaire.D(X, Y, Z)
 }
 \description{
 Déclinaison pour X, Y et Z
+#' @return angle en degré
 }

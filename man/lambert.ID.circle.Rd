@@ -5,13 +5,13 @@
 \title{Trace un cercle sur le diagramme lambert}
 \usage{
 lambert.ID.circle(i.mean, d.mean, delta, inc.lim = NULL, dec.min = -90,
-  dec.max = 180, col = par("fg"), clockwise = TRUE, absolue = TRUE,
+  dec.max = 270, col = par("fg"), clockwise = TRUE, absolue = TRUE,
   ...)
 }
 \arguments{
-\item{absolue}{permet de tracer la partie inclinaison négative des cercles}
+\item{col}{définie la couleur de la ligne}
 
-\item{line.col}{définie la couleur de la ligne}
+\item{absolue}{permet de tracer la partie inclinaison négative des cercles}
 }
 \description{
 Trace un cercle sur le diagramme lambert

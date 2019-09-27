@@ -6,7 +6,7 @@
 qui sert à la correction}
 \usage{
 anisotropie.matrix.symetric(mesures, etape.value, etape.sigle = c("Z+",
-  "Z-", "X+", "X-", "Y+", "Y-", "ZB"), volume = 1, TH = 1, ...)
+  "Z-", "X+", "X-", "Y+", "Y-", "ZB"), ...)
 }
 \arguments{
 \item{mesures}{data.frame contenant les mesures}

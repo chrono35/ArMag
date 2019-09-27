@@ -6,6 +6,9 @@
 \usage{
 lambert.ID.tensors(Data, point.col = "blue3", new = TRUE, ...)
 }
+\arguments{
+\item{Data}{un data.frame avec les variables "L1.Inc", "L1.Dec", "L2.Inc", "L2.Dec", "L3.Inc", "L3.Dec"}
+}
 \description{
 Tracer dans le diagramme Lambert/ Stéréo d'un tenseur
 }

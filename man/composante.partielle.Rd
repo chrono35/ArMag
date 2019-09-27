@@ -17,3 +17,6 @@ une data.frame "X", "Y", "Z", "I", "D", "F", "Sl", "MAD", "DANG"
 Calcul le vecteur de la composante partielle
 et retourne aussi le MAD
 }
+\seealso{
+composante.partielle.T1T2
+}

@@ -4,10 +4,10 @@
 \alias{stat.mcFadden}
 \title{Statistique de mcFadden sur l'inclinaison seul à partir des coordonées I et D}
 \usage{
-stat.mcFadden(inc, dec, inc.absolue = TRUE)
+stat.mcFadden(Data, dec = NULL, inc.absolue = TRUE)
 }
 \arguments{
-\item{inc}{liste des inclinaisons en degrés}
+\item{Data}{liste des inclinaisons en degrésou une data.frame avec les variables $I et $D}
 
 \item{inc.absolue}{calcul avec la valeur absolue des inclinaisons}
 

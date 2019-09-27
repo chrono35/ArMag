@@ -2,12 +2,28 @@
 % Please edit documentation in R/ArMag.R
 \name{zijderveld1.T1T2}
 \alias{zijderveld1.T1T2}
-\title{trace un diagramme de zijderveld en calculant la composante entre les étapes T1 et T2}
+\title{Trace un diagramme de zijderveld1 en calculant la composante entre les étapes T1 et T2
+par défaut la fonction n'affiche pas les étapes d'anisotropie et ne corrige pas les directions de l'anisotropie}
 \usage{
 zijderveld1.T1T2(Data, T1 = NULL, T2 = NULL, withAni = FALSE,
   ani.etape.value = NULL, etape.sigle = c("Z+", "Z-", "X+", "X-", "Y+",
   "Y-", "ZB"), en0 = FALSE)
 }
+\arguments{
+\item{T1}{correspond à etape.value ou température la plus basse}
+
+\item{T2}{correspond à etape.value ou température la plus haute}
+
+\item{withAni}{permet de voir les étapes d'anisotropie}
+
+\item{ani.etape.value}{correspond à l'etape.valeu ou la température de la détermination de l'anisotropie}
+
+\item{etape.sigle}{chaîne de caractère représentant les étapes de l'anisotropie "Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB". Cette ordre est obligatoire}
+}
 \description{
-trace un diagramme de zijderveld en calculant la composante entre les étapes T1 et T2
+Trace un diagramme de zijderveld1 en calculant la composante entre les étapes T1 et T2
+par défaut la fonction n'affiche pas les étapes d'anisotropie et ne corrige pas les directions de l'anisotropie
+}
+\seealso{
+composante.partielle.T1T2, zijderveld2.T1T2
 }

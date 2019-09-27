@@ -10,7 +10,7 @@ flin(Data, Data.F12 = NULL, pt.names = NULL, point.col = "blue3",
   main = "Flin diagram", absolue = TRUE, new = TRUE)
 }
 \arguments{
-\item{Data}{soit correspond à un data.frame avec $F23 et $F12, soit seulement des valeurs de F23 dans ce cas reseignez Data.F12}
+\item{Data}{soit correspond à un data.frame avec les variables $F23 et $F12, soit seulement des valeurs de F23 dans ce cas renseignez Data.F12}
 
 \item{Data.F12}{des valeurs pour F12}
 

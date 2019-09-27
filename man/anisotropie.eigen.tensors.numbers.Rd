@@ -4,18 +4,16 @@
 \alias{anisotropie.eigen.tensors.numbers}
 \title{Calcul des tenseurs d'anisotropie pour une liste de numéro de spécimen}
 \usage{
-anisotropie.eigen.tensors.numbers(numbers, Data.mesures, Data.info,
-  etape.value)
+anisotropie.eigen.tensors.numbers(numbers, Data.mesures, etape.value,
+  etape.sigle = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"))
 }
 \arguments{
 \item{Data.mesures}{data.frame contenant les mesures}
 
-\item{Data.info}{data.frame possédant les champs $name, $TH et $vol}
-
 \item{names}{liste de numéro de spécimen}
 }
 \value{
-un data.frame avec les colonnes "L1", "L1.Inc", "L1.Dec", "L2", "L2.Inc", "L2.Dec", "L3", "L3.Inc", "L3.Dec", "F13", "F12", "F23"
+un data.frame avec les colonnes "L1", "L2", "L3", "L1.Inc", "L1.Dec", "L2.Inc", "L2.Dec", "L3.Inc", "L3.Dec", "F13", "F12", "F23"
 }
 \description{
 Calcul des tenseurs d'anisotropie pour une liste de numéro de spécimen

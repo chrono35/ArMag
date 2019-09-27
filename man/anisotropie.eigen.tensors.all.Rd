@@ -4,10 +4,11 @@
 \alias{anisotropie.eigen.tensors.all}
 \title{Calcul des tenseurs d'anisotropie pour tous les spécimens d'une liste de mesures}
 \usage{
-anisotropie.eigen.tensors.all(Data.mesures, Data.info, etape.value)
+anisotropie.eigen.tensors.all(Data.mesures, Data.number, etape.value,
+  etape.sigle = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"))
 }
 \value{
-un data.frame avec les colonnes "L1", "L1.Inc", "L1.Dec", "L2", "L2.Inc", "L2.Dec", "L3", "L3.Inc", "L3.Dec", "F13", "F12", "F23"
+un data.frame avec les colonnes "L1", "L2", "L3", "L1.Inc", "L1.Dec", "L2.Inc", "L2.Dec", "L3.Inc", "L3.Dec", "F13", "F12", "F23"
 }
 \description{
 Calcul des tenseurs d'anisotropie pour tous les spécimens d'une liste de mesures

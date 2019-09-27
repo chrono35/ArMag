@@ -411,52 +411,23 @@ desaim(mes.sel2, etap.J0 = NULL)
 desaim(mes, etap.J0 = 0, point.col = rainbow(length(mes.info$name)))
 desaim(rbind(mes.sel2, mes.sel3), normalize = TRUE)
 
-composante.partiel(mes.sel2$X, mes.sel2$Y, mes.sel2$Z)
+composante.partielle(mes.sel2$X, mes.sel2$Y, mes.sel2$Z)
+```
+
+```{r assemblé}
+
+par(mfrow = c(2, 2), cex.lab = 0.7, cex.axis = .7, cex = 0.7, cex.main = 1, cex.sub = 0.1,
+    mai = c(0.5, 0.5, 0.7, 0.3), oma = c(0, 1, 1, 1))#, pty ="s" )
 zijderveld1.T1T2(mes.sel2)
+zijderveld2.T1T2(mes.sel2)
+
+# suppression des étapes d'anisotropie
+mes.sel2 <- supprime.etape(mes.sel2) 
+lambert(mes.sel2, inc.lim = c(0, 90))
+desaim(mes.sel2, etap.J0 = NULL)
 ```
 
-```{r composante de tout le site}
-sp.res <- NULL
-for (sp in 1: length(mes.info$number)){
-  sp.mes <- extract.mesures.specimen.number(mes.info$number[sp], mes)
 
-
-  # correction d'anisotropie
-  volume <- mes.info$vol[which(mes.info$name == trimws(mes.sp$name[1]))]
-  TH <- mes.info$TH[which(mes.info$name == trimws(mes.sp$name[1]))]
-  
-  # normalisation des mesures en A/m
-  sp.mes$X <- sp.mes$X /volume * 1E6
-  sp.mes$Y <- sp.mes$Y /volume * 1E6
-  sp.mes$Z <- sp.mes$Z /volume * 1E6
-  
-  # récupération de l'ARN
-  #sp.mes.ARN <- sp.mes[sp.mes$Etap.value == 0,]
-  
-
-  # évaluation de l'anisotropie
-  sp.ani <- anisotropie.matrix.symetric(sp.mes, etape.value = 500, TH = TH, volume = volume )
- 
-  # suppression des étapes d'anisotropie
-  sp.mes <- supprime.etape(sp.mes) 
-    
-  # correction de l'anisotropie  
-  sp.cor <- correction.anisotropie(sp.mes, sp.ani)
-  
-  # determination de la composante
-  sp.cp <- composante.partielle(sp.cor$X, sp.cor$Y, sp.cor$Z)
-  
-  # repliement
-  sp.cp <- repliement.auto(sp.cp$I, sp.cp$D, name = sp.mes$name)
-  sp.res <- rbind.data.frame(sp.res, cbind(name =mes.info$name[sp], sp.cp) )
-}
-
-
-stat.mcFadden(sp.res$I, sp.res$D)
-
-
-lambert(sp.res, inc.lim = c(0,90))
-```
 
 
 
@@ -490,6 +461,8 @@ filCon <- file(file.AM, encoding="UTF8")
    writeLines(txt.mesures, filCon) 
 close(filCon) 
 ```
+
+
 
 # Calcul vecteur partiel
 ```{r code trace vecteur partiel}
@@ -695,3 +668,45 @@ vecteur.partiel <- function(TabX, TabY, TabZ, en0 = TRUE)
 
 ```
 
+```{r composante de tout le site}
+sp.res <- NULL
+for (sp in 1: length(mes.info$number)){
+  sp.mes <- extract.mesures.specimen.number(mes.info$number[sp], mes)
+
+
+  # correction d'anisotropie
+  volume <- mes.info$vol[which(mes.info$name == trimws(mes.sp$name[1]))]
+  TH <- mes.info$TH[which(mes.info$name == trimws(mes.sp$name[1]))]
+  
+  # normalisation des mesures en A/m
+  sp.mes$X <- sp.mes$X /volume * 1E6
+  sp.mes$Y <- sp.mes$Y /volume * 1E6
+  sp.mes$Z <- sp.mes$Z /volume * 1E6
+  
+  # récupération de l'ARN
+  #sp.mes.ARN <- sp.mes[sp.mes$Etap.value == 0,]
+  
+
+  # évaluation de l'anisotropie
+  sp.ani <- anisotropie.matrix.symetric(sp.mes, etape.value = 500, TH = TH, volume = volume )
+ 
+  # suppression des étapes d'anisotropie
+  sp.mes <- supprime.etape(sp.mes) 
+    
+  # correction de l'anisotropie  
+  sp.cor <- correction.anisotropie(sp.mes, sp.ani)
+  
+  # determination de la composante
+  sp.cp <- composante.partielle(sp.cor$X, sp.cor$Y, sp.cor$Z)
+  
+  # repliement
+  sp.cp <- repliement.auto(sp.cp$I, sp.cp$D, name = sp.mes$name)
+  sp.res <- rbind.data.frame(sp.res, cbind(name =mes.info$name[sp], sp.cp) )
+}
+
+
+stat.mcFadden(sp.res$I, sp.res$D)
+
+
+lambert(sp.res, inc.lim = c(0,90))
+```

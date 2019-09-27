@@ -2,16 +2,20 @@
 % Please edit documentation in R/ArMag.R
 \name{supprime.etape}
 \alias{supprime.etape}
-\title{supprime les étapes à la valeur ani.etape.value et avec les sigles etape.sigle
-Utiliser pour supprimer l'anisotropie}
+\title{Supprime les étapes à la valeur ani.etape.value et avec les sigles etape.sigle
+Utiliser par défaut pour supprimer les étapes d'anisotropie}
 \usage{
 supprime.etape(Data, ani.etape.value = NULL, etape.sigle = c("Z+",
   "Z-", "X+", "X-", "Y+", "Y-", "ZB"))
 }
 \arguments{
 \item{Data}{un data.frame possédant la variable $Etap de type chr}
+
+\item{ani.etape.value}{valeur de la température d'anisotropie. Par defaut NUll, alors la tempértature est retrouvée automatiquement avec les etape.sigle définis}
+
+\item{etape.sigle}{chaîne de caractère représentant les étapes de l'anisotropie "Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"}
 }
 \description{
-supprime les étapes à la valeur ani.etape.value et avec les sigles etape.sigle
-Utiliser pour supprimer l'anisotropie
+Supprime les étapes à la valeur ani.etape.value et avec les sigles etape.sigle
+Utiliser par défaut pour supprimer les étapes d'anisotropie
 }
