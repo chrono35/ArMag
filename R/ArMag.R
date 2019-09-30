@@ -2298,8 +2298,8 @@ anisotropie.mean.matrix <- function(Data.mesures, Data.number, etape.value, etap
   ani.moyen <- matrix(c(0, 0, 0, 0, 0, 0, 0, 0, 0), nrow = 3, ncol = 3)
   for (spe in 1: length(Data.number))
   {
-    spe.mes <- extract.mesures.specimen.number(Data.number[spe], A.AMD)
-    ani.moyen <- ani.moyen + anisotropie.matrix.symetric(mesures = spe.mes, etape.value = 500, etape.sigle = etape.sigle)
+    spe.mes <- extract.mesures.specimen.number(Data.number[spe], Data.mesures)
+    ani.moyen <- ani.moyen + anisotropie.matrix.symetric(mesures = spe.mes, etape.value = etape.value, etape.sigle = etape.sigle)
   }
 
   ani.moyen <- ani.moyen/ length(Data.number)
