@@ -104,6 +104,64 @@ EQUATION_DEGRE_4 <- function(B1, B2, B3, B4)
 
 }
 
+#' Calcul l'arc sinus d'un réel renvoie un angle entre -PI/2 et +PI/2
+#' @return angle en radian
+#' Fonction interne
+n_arcsin <- function(x)
+{
+  n <- NA
+  if ( abs(x) < 1) {
+    n <- atan(x/sqrt(1-x*x))
+  }
+  else {
+    if (x>=1)
+    {n <- pi/2}
+    else
+    {n <- -pi/2}
+  }
+  return(n)
+}
+
+
+#' Calcul l'arc cosinus d'un réel renvoie un angle entre 0 et +PI
+#' @return angle en radian
+#' Fonction interne
+n_arccos <- function(x)
+{
+  n <- NA
+  if (abs(x)<1)
+    n <- (pi/2-atan(x/sqrt(1-x*x)) )
+
+  else
+    if (x>=1)
+      n <- 0
+
+    else
+      n <- pi
+
+    return(n)
+}
+
+#' Calcul de l'angle D  entre  -pi <=  angD  < +3 pi  retourne en radian
+#' @return angle en radian
+#' Fonction interne
+angleD <- function(X, Y)
+{
+  res <- NULL
+  for (i in 1:length(X)) {
+    if (X[i] == 0)
+      res <- c(res, sign(Y[i])*pi/2)
+    else {
+      if (X[i]<0)
+        res <- c(res, atan(Y[i]/X[i]) + pi)
+      else
+        res <- c(res, atan(Y[i]/X[i]) )
+    }
+  }
+
+  return(res)
+}
+
 #' Statistique de mcFadden sur l'inclinaison seul à partir des coordonées XYZ
 #' @seealso stat.mcFadden, stat.fisher
 #' @export
@@ -214,7 +272,6 @@ stat.mcFadden <- function(Data, dec = NULL, inc.absolue = TRUE)
 
   }
 
-
 #' Statistique de Fisher
 #' modifié, pas de pondération calcul de A95 Vrai sans simplification tel que fisher 1953
 #' @param inc liste des inclinaisons en degrés
@@ -228,7 +285,6 @@ stat.mcFadden <- function(Data, dec = NULL, inc.absolue = TRUE)
 #' @export
 stat.fisher <- function (inc, dec, aim=NA, pfish = 0.95, inc.absolue = TRUE)
 {
-
   n <- length(inc)
   if (length(dec) != n) {
     return("length (dec) diff length(inc)")
@@ -237,7 +293,6 @@ stat.fisher <- function (inc, dec, aim=NA, pfish = 0.95, inc.absolue = TRUE)
    # message("length(aim) diff length(inc)")
     aim <-  rep(1, n)
   }
-
 
   imin <- min(inc)
   imax <- max(inc)
@@ -269,7 +324,6 @@ stat.fisher <- function (inc, dec, aim=NA, pfish = 0.95, inc.absolue = TRUE)
   # correction du biais
   KF <- ((n-1)/n) * KF
 
-
   delta <- log(1+(1-pfish) * (exp(2*KF)-1)) /KF
   delta <- acos(delta-1)
 
@@ -290,7 +344,6 @@ stat.fisher <- function (inc, dec, aim=NA, pfish = 0.95, inc.absolue = TRUE)
 #' Fonction interne
 find.extremum <- function(i.min = 0, i.max = 90, d.min = -90, d.max = 270)
 {
-
   d.seq <- seq( d.min, d.max, length.out = 300)
   x1.seq <- sin(d.seq*pi/180 ) * (1 - (i.min-i.min)/(90-i.min))
   x2.seq <- sin(d.seq*pi/180 ) * (1 - (i.max-i.min)/(90-i.min))
@@ -376,6 +429,32 @@ DD.to.DMS <- function(degre)
   return(res)
 }
 
+#' Convertie la déclinaison dans la convention AM
+#' @param d déclinaison en degrés
+#' @return angle en degré en -90° et 270°
+#' @export
+D.AM <- function(d)
+{
+  res <- d
+  if (d< (-90))
+    res <- 360 + d
+
+  if (d>270)
+    res <- d-360
+
+  return(res)
+}
+
+#' Convertie la déclinaison dans la convention paleomag
+#' @param d déclinaison en degrés
+#' @return déclinaison entre 0 et 360°
+#' @export
+D.pal <- function(d)
+{
+  if ( d>270)
+    return(d-360)
+}
+
 ## Calcul vecteur cartesien ----
 #' Valeur de Y pour I et D
 #' @param inc liste des inclinaisons en degré
@@ -419,9 +498,7 @@ calcul.vecteur.cartesien <- function(inc, dec, aim=1)
     res$Z <- aim*sin(inc[i]/180*pi)
     resT <- c(resT, res)
   }
-
   return( resT )
-
 }
 
 #' Valeur de X, Y et Z pour I et D
@@ -439,96 +516,9 @@ cartesien <- function(inc, dec, aim=1)
     res$Z <- aim*sin(inc[i]/180*pi)
     resT <- c(resT, res)
   }
-
   return( resT )
-
 }
 
-#' Calcul l'arc sinus d'un réel renvoie un angle entre -PI/2 et +PI/2
-#' @return angle en radian
-#' Fonction interne
-n_arcsin <- function(x)
-{
-  n <- NA
-  if ( abs(x) < 1) {
-    n <- atan(x/sqrt(1-x*x))
-  }
-  else {
-      if (x>=1)
-        {n <- pi/2}
-      else
-        {n <- -pi/2}
-  }
-  return(n)
-}
-
-
-#' Calcul l'arc cosinus d'un réel renvoie un angle entre 0 et +PI
-#' @return angle en radian
-#' Fonction interne
-n_arccos <- function(x)
-{
-  n <- NA
-  if (abs(x)<1)
-    n <- (pi/2-atan(x/sqrt(1-x*x)) )
-
-  else
-    if (x>=1)
-      n <- 0
-
-    else
-      n <- pi
-
-  return(n)
-}
-
-
-#' Calcul de l'angle D  entre  -pi <=  angD  < +3 pi  retourne en radian
-#' @return angle en radian
-#' Fonction interne
-angleD <- function(X, Y)
-{
-  res <- NULL
-  for (i in 1:length(X)) {
-    if (X[i] == 0)
-      res <- c(res, sign(Y[i])*pi/2)
-    else {
-      if (X[i]<0)
-        res <- c(res, atan(Y[i]/X[i]) + pi)
-      else
-        res <- c(res, atan(Y[i]/X[i]) )
-    }
-  }
-
-  return(res)
-}
-
-#' Convertie la déclinaison dans la convention AM
-#' @param d déclinaison en degrés
-#' @return angle en degré en -90° et 270°
-#' @export
-D.AM <- function(d)
-{
-  res <- d
-  if (d< (-90))
-    res <- 360 + d
-
-  if (d>270)
-    res <- d-360
-
-  return(res)
-}
-
-#' Convertie la déclinaison dans la convention paleomag
-#' @param d déclinaison en degrés
-#' @return déclinaison entre 0 et 360°
-#' @export
-D.pal <- function(d)
-{
-  if ( d>270)
-    return(d-360)
-
-}
 
 # Transformation de type de coordonnée ----
 #' Coordonnées polaires pour X, Y et Z
@@ -545,7 +535,6 @@ calcul.vecteur.polaire <- function(X, Y, Z)
     res$D <- angleD(X[i],Y[i])/pi*180
     resT <- c(resT, res)
   }
-
   return( resT )
 }
 
@@ -564,7 +553,6 @@ polaire <- function(X, Y, Z)
     res$D <- angleD(X[i],Y[i]) /pi*180
     resT <- c(resT, res)
   }
-
   return( resT )
 }
 
@@ -605,8 +593,9 @@ calcul.vecteur.polaire.F = function(X, Y, Z)
   return(res)
 }
 
-# Trace des graphes
+# Trace des graphes ----
 
+## Plot Lambert directionnel ID ----
 
 #' lambert.ID.grid
 #' Trace une grille dans le repère Lambert, fonctionne avec la fonction lambert()
@@ -766,7 +755,6 @@ lambert.ID.grid <- function (main = "", xlab = "", ylab = "", labels = NA, label
      par(xpd = FALSE)
 }
 
-## Plot Lambert directionnel ID ----
 #' Place des points I et D dans un repère Lambert avec un data.frame
 #' @param inclinaisons, declinaisons : les listes des données d'inclinaison et de déclinaison
 #' @param pt.names : Correspond à la liste des noms des points. Laissée vide n'affiche rien. Si on met pt.names = "", cela affiche les noms
@@ -1430,7 +1418,7 @@ zijderveld2<- function(Data, Y = NULL, Z = NULL, pt.names = "", main = NULL, pan
 
 }
 
-# Repliement
+# Repliement ----
 
 #' repliement
 #' Calcul le repliement pour les trois position à plat "P", de chant "C" et debout "D"
@@ -1749,6 +1737,8 @@ repliement.tranche <- function (data, dec, aim = 1,  name = NULL, number = NULL,
 
   return(res)
 }
+
+# Fonction sur fichiers ----
 
 #' read.AM.mesures
 #' Lecture des mesures d'un fichier AM
@@ -2771,7 +2761,8 @@ composante.partielle <- function(TabX, TabY, TabZ, en0 = FALSE)
 #' @return une data.frame "X", "Y", "Z", "I", "D", "F", "Sl", "MAD", "DANG"
 #' @seealso composante.partielle, zijderveld1.T1T2
 #' @export
-composante.partielle.T1T2 <- function(Data, T1=NULL, T2=NULL, corr.ani = FALSE, ani.etape.value= NULL, etape.sigle = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"),
+composante.partielle.T1T2 <- function(Data, T1=NULL, T2=NULL, corr.ani = FALSE, ani.etape.value= NULL,
+                                      etape.sigle = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"),
                                       en0 = FALSE )
 {
 
@@ -2862,7 +2853,9 @@ composante.partielle.T1T2 <- function(Data, T1=NULL, T2=NULL, corr.ani = FALSE, 
 #' @param etape.sigle chaîne de caractère représentant les étapes de l'anisotropie "Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB". Cette ordre est obligatoire
 #' @seealso composante.partielle.T1T2, zijderveld2.T1T2
 #' @export
-zijderveld1.T1T2 <- function(Data, T1 = NULL, T2 = NULL, withAni = FALSE, ani.etape.value= NULL, etape.sigle = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"),
+zijderveld1.T1T2 <- function(Data, T1 = NULL, T2 = NULL, withAni = FALSE, ani.etape.value= NULL,
+                             etape.sigle = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"),
+                             legend.pos = NULL, legend.txt = c("(Y, X)", "(Y, Z)"),
                              en0 = FALSE )
 {
   if (is.null(T1))
@@ -2928,7 +2921,7 @@ zijderveld1.T1T2 <- function(Data, T1 = NULL, T2 = NULL, withAni = FALSE, ani.et
     ylim[2]<-0
 
 
-  zijderveld1(Data$X[1:iT1], Data$Y[1:iT1], Data$Z[1:iT1],  ylim = ylim)
+  zijderveld1(Data$X[1:iT1], Data$Y[1:iT1], Data$Z[1:iT1],  ylim = ylim, legend.pos = legend.pos, legend.txt = legend.txt )
   if (iT2 != length(Data$X))
     zijderveld1(Data$X[iT2:length(Data$X)], Data$Y[iT2:length(Data$X)], Data$Z[iT2:length(Data$X)], new = FALSE)
 
@@ -2940,7 +2933,9 @@ zijderveld1.T1T2 <- function(Data, T1 = NULL, T2 = NULL, withAni = FALSE, ani.et
 
 #' trace un diagramme de zijderveld en calculant la composante entre les étapes T1 et T2
 #' @export
-zijderveld2.T1T2 <- function(Data, T1 = NULL, T2 = NULL, withAni = FALSE, ani.etape.value = NULL, etape.sigle = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"),
+zijderveld2.T1T2 <- function(Data, T1 = NULL, T2 = NULL, withAni = FALSE, ani.etape.value = NULL,
+                             etape.sigle = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"),
+                             legend.pos = NULL, legend.txt = c("(Y, X)", "(Y, Z)"),
                              en0 = FALSE )
 {
   if (is.null(T1))
@@ -3006,7 +3001,7 @@ zijderveld2.T1T2 <- function(Data, T1 = NULL, T2 = NULL, withAni = FALSE, ani.et
     ylim[2]<-0
 
 
-  zijderveld2(Data$X[1:iT1], Data$Y[1:iT1], Data$Z[1:iT1],  ylim = ylim)
+  zijderveld2(Data$X[1:iT1], Data$Y[1:iT1], Data$Z[1:iT1],  ylim = ylim, legend.pos = legend.pos, legend.txt = legend.txt )
   if (iT2 != length(Data$X))
     zijderveld2(Data$X[iT2:length(Data$X)], Data$Y[iT2:length(Data$X)], Data$Z[iT2:length(Data$X)], new = FALSE)
 
