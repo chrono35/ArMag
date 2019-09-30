@@ -6,7 +6,8 @@
 \usage{
 zijderveld2.T1T2(Data, T1 = NULL, T2 = NULL, withAni = FALSE,
   ani.etape.value = NULL, etape.sigle = c("Z+", "Z-", "X+", "X-", "Y+",
-  "Y-", "ZB"), en0 = FALSE)
+  "Y-", "ZB"), legend.pos = NULL, legend.txt = c("(Y, X)", "(Y, Z)"),
+  en0 = FALSE)
 }
 \description{
 trace un diagramme de zijderveld en calculant la composante entre les étapes T1 et T2

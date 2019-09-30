@@ -7,7 +7,8 @@ par défaut la fonction n'affiche pas les étapes d'anisotropie et ne corrige pa
 \usage{
 zijderveld1.T1T2(Data, T1 = NULL, T2 = NULL, withAni = FALSE,
   ani.etape.value = NULL, etape.sigle = c("Z+", "Z-", "X+", "X-", "Y+",
-  "Y-", "ZB"), en0 = FALSE)
+  "Y-", "ZB"), legend.pos = NULL, legend.txt = c("(Y, X)", "(Y, Z)"),
+  en0 = FALSE)
 }
 \arguments{
 \item{T1}{correspond à etape.value ou température la plus basse}
