@@ -3011,23 +3011,13 @@ zijderveld2.T1T2 <- function(Data, T1 = NULL, T2 = NULL, show.etape = FALSE, wit
   bi <- -vp$Z/(-vp$X)
   ai <- -zm + bi*xm
 
-  Y.r <- range(Data$X)
-  Z.r <- range(Data$Z)
-  ylim <- c(min(Y.r[1], -Z.r[2]), max(Y.r[2], -Z.r[1]))
-
-  if (ylim[1]>0)
-    ylim[1]<-0
-
-  if (ylim[2]<0)
-    ylim[2]<-0
-
   if (show.etape == TRUE) {
     pt.names <- Data$etape
   } else {
     pt.names <- rep("", length(Data$X) )
   }
 
-  zijderveld2(Data$X[1:iT1], Data$Y[1:iT1], Data$Z[1:iT1], pt.names = pt.names[1:iT1], ylim = ylim, legend.pos = legend.pos, legend.txt = legend.txt )
+  zijderveld2(Data$X[1:iT1], Data$Y[1:iT1], Data$Z[1:iT1], pt.names = pt.names[1:iT1], legend.pos = legend.pos, legend.txt = legend.txt )
   if (iT2 != length(Data$X))
     zijderveld2(Data$X[iT2:length(Data$X)], Data$Y[iT2:length(Data$X)], Data$Z[iT2:length(Data$X)], pt.names = pt.names[iT2:length(Data$X)], new = FALSE)
 
