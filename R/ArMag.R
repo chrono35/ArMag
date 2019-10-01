@@ -1298,6 +1298,9 @@ zijderveld1<- function(Data, Y = NULL, Z = NULL, pt.names = "", main = NULL, pan
     Z <- Data$Z
     if (is.null(pt.names))
       eta <- Data$etape
+    else
+      eta <- pt.names
+
     if (is.null(main))
       main <- as.character(Data$name[1])
   } else {
@@ -1330,7 +1333,7 @@ zijderveld1<- function(Data, Y = NULL, Z = NULL, pt.names = "", main = NULL, pan
     plot(Y, X, type = "o", pch = 21, main = main, col = pt.col[1],  bg = adjustcolor( pt.col[1], alpha.f = 0.8), axes = FALSE,
          panel.first = panel.first, xlab = "", ylab = "", ylim = ylim, asp = asp, xaxt="n", yaxt="n", new = new, ...)
 
-    text(jitter(Y, 5, amount = 0), jitter(X, 5, amount = 0), eta)
+
 
     if (!is.null(legend.pos))
       legend(legend.pos, legend.txt, pch = c(19, 21), col = pt.col, bg = c(par("bg"), adjustcolor( pt.col[1], alpha.f = 0.8), adjustcolor( pt.col, alpha.f = 0.05)),
@@ -1349,7 +1352,7 @@ zijderveld1<- function(Data, Y = NULL, Z = NULL, pt.names = "", main = NULL, pan
 
   lines(Y, -Z, type = "o", pch = 21, col = pt.col[2], bg = adjustcolor( pt.col[2], alpha.f = 0.05), ...)
 
-
+  text(jitter(Y, 5, amount = 0), jitter(X, 5, amount = 0), eta)
 
 }
 
@@ -2922,19 +2925,22 @@ zijderveld1.T1T2 <- function(Data, T1 = NULL, T2 = NULL, show.etape = FALSE, wit
   if (ylim[2]<0)
     ylim[2]<-0
 
-  if (show.etape == TRUE)
+  if (show.etape == TRUE) {
     pt.names <- Data$etape
-  else
-    pt.names <- NULL
+  } else {
+    pt.names <- rep("", length(Data$X) )
+  }
 
-  zijderveld1(Data$X[1:iT1], Data$Y[1:iT1], Data$Z[1:iT1],  ylim = ylim, pt.names = pt.names, legend.pos = legend.pos, legend.txt = legend.txt )
+  zijderveld1(Data$X[1:iT1], Data$Y[1:iT1], Data$Z[1:iT1],  ylim = ylim, pt.names = pt.names[1:iT1], legend.pos = legend.pos, legend.txt = legend.txt )
   if (iT2 != length(Data$X))
-    zijderveld1(Data$X[iT2:length(Data$X)], Data$Y[iT2:length(Data$X)], Data$Z[iT2:length(Data$X)], pt.names = pt.names, new = FALSE)
+    zijderveld1(Data$X[iT2:length(Data$X)], Data$Y[iT2:length(Data$X)], Data$Z[iT2:length(Data$X)], pt.names = pt.names[iT2:length(Data$X)], new = FALSE)
 
-  zijderveld1(Data$X[iT1:iT2], Data$Y[iT1:iT2], Data$Z[iT1:iT2], pt.col = c("red", "red") , pt.names = pt.names, new = FALSE)
+  zijderveld1(Data$X[iT1:iT2], Data$Y[iT1:iT2], Data$Z[iT1:iT2], pt.col = c("red", "red") , pt.names = pt.names[iT1:iT2], new = FALSE)
 
   abline(ad, bd)
   abline(ai, bi)
+
+  Data$etape
 }
 
 #' trace un diagramme de zijderveld en calculant la composante entre les étapes T1 et T2
@@ -3014,10 +3020,11 @@ zijderveld2.T1T2 <- function(Data, T1 = NULL, T2 = NULL, show.etape = FALSE, wit
   if (ylim[2]<0)
     ylim[2]<-0
 
-  if (show.etape == TRUE)
+  if (show.etape == TRUE) {
     pt.names <- Data$etape
-  else
-    pt.names <- NULL
+  } else {
+    pt.names <- rep("", length(Data$X) )
+  }
 
   zijderveld2(Data$X[1:iT1], Data$Y[1:iT1], Data$Z[1:iT1], pt.names = pt.names, ylim = ylim, legend.pos = legend.pos, legend.txt = legend.txt )
   if (iT2 != length(Data$X))
