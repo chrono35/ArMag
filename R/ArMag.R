@@ -2759,7 +2759,7 @@ composante.partielle <- function(TabX, TabY, TabZ, en0 = FALSE)
 }
 
 #' Calcul le vecteur de la composante partielle en calculant la composante entre les étapes T1 et T2
-#' par défaut la fonction n'affiche pas les étapes d'anisotropie
+#' la fonction ne tient pas compte des étapes d'anisotropie, si step.code est bien rensiegné
 #' @param en0 permet de calculer la composante qui passe par l'origine (0, 0)
 #' @param corr.ani corrige de l'anisotropie
 #' @return une data.frame "X", "Y", "Z", "I", "D", "F", "Sl", "MAD", "DANG"
