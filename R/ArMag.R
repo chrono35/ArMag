@@ -2784,7 +2784,7 @@ composante.partielle.T1T2 <- function(Data, T1=NULL, T2=NULL, corr.ani = FALSE, 
           ani.etape.value <- Data$Etap.value[i]
       }
     }
-    ani <- anisotropie.matrix.symetric(Data, etape.value = ani.etape.value, etape.sigle = etape.sigle, TH=50)
+    ani <- anisotropie.matrix.symetric(Data, etape.value = ani.etape.value, etape.sigle = etape.sigle)
   }
 
   Data <- supprime.etape(Data, ani.etape.value = ani.etape.value, etape.sigle = etape.sigle)
@@ -2848,12 +2848,14 @@ composante.partielle.T1T2 <- function(Data, T1=NULL, T2=NULL, corr.ani = FALSE, 
 #' par défaut la fonction n'affiche pas les étapes d'anisotropie et ne corrige pas les directions de l'anisotropie
 #' @param T1 correspond à etape.value ou température la plus basse
 #' @param T2 correspond à etape.value ou température la plus haute
+#' @param en0 booléen permettant de forcer la composante partielle de passer par l'origine
+#' @param show.etape booléen permettant l'affichage des étapes
 #' @param withAni permet de voir les étapes d'anisotropie
 #' @param ani.etape.value correspond à l'etape.valeu ou la température de la détermination de l'anisotropie
 #' @param etape.sigle chaîne de caractère représentant les étapes de l'anisotropie "Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB". Cette ordre est obligatoire
 #' @seealso composante.partielle.T1T2, zijderveld2.T1T2
 #' @export
-zijderveld1.T1T2 <- function(Data, T1 = NULL, T2 = NULL, withAni = FALSE, ani.etape.value= NULL,
+zijderveld1.T1T2 <- function(Data, T1 = NULL, T2 = NULL, show.etape = FALSE, withAni = FALSE, ani.etape.value = NULL,
                              etape.sigle = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"),
                              legend.pos = NULL, legend.txt = c("(Y, X)", "(Y, Z)"),
                              en0 = FALSE )
@@ -2867,7 +2869,7 @@ zijderveld1.T1T2 <- function(Data, T1 = NULL, T2 = NULL, withAni = FALSE, ani.et
   res.list <- Data
 
   if (withAni == FALSE) { # suppression des étape d anisotropie
-    Data <- supprime.etape(Data, ani.etape.value= ani.etape.value, etape.sigle=etape.sigle)
+    Data <- supprime.etape(Data, ani.etape.value = ani.etape.value, etape.sigle = etape.sigle)
   }
   # recherche étape en dessous de T1
   iT1 <- 1
@@ -2920,20 +2922,32 @@ zijderveld1.T1T2 <- function(Data, T1 = NULL, T2 = NULL, withAni = FALSE, ani.et
   if (ylim[2]<0)
     ylim[2]<-0
 
+  if (show.etape == TRUE)
+    pt.names <- Data$etape
+  else
+    pt.names <- NULL
 
-  zijderveld1(Data$X[1:iT1], Data$Y[1:iT1], Data$Z[1:iT1],  ylim = ylim, legend.pos = legend.pos, legend.txt = legend.txt )
+  zijderveld1(Data$X[1:iT1], Data$Y[1:iT1], Data$Z[1:iT1],  ylim = ylim, pt.names = pt.names, legend.pos = legend.pos, legend.txt = legend.txt )
   if (iT2 != length(Data$X))
-    zijderveld1(Data$X[iT2:length(Data$X)], Data$Y[iT2:length(Data$X)], Data$Z[iT2:length(Data$X)], new = FALSE)
+    zijderveld1(Data$X[iT2:length(Data$X)], Data$Y[iT2:length(Data$X)], Data$Z[iT2:length(Data$X)], pt.names = pt.names, new = FALSE)
 
-  zijderveld1(Data$X[iT1:iT2], Data$Y[iT1:iT2], Data$Z[iT1:iT2], pt.col = c("red", "red") , new = FALSE)
+  zijderveld1(Data$X[iT1:iT2], Data$Y[iT1:iT2], Data$Z[iT1:iT2], pt.col = c("red", "red") , pt.names = pt.names, new = FALSE)
 
   abline(ad, bd)
   abline(ai, bi)
 }
 
 #' trace un diagramme de zijderveld en calculant la composante entre les étapes T1 et T2
+#' @param T1 correspond à etape.value ou température la plus basse
+#' @param T2 correspond à etape.value ou température la plus haute
+#' @param en0 booléen permettant de forcer la composante partielle de passer par l'origine
+#' @param show.etape booléen permettant l'affichage des étapes
+#' @param withAni permet de voir les étapes d'anisotropie
+#' @param ani.etape.value correspond à l'etape.valeu ou la température de la détermination de l'anisotropie
+#' @param etape.sigle chaîne de caractère représentant les étapes de l'anisotropie "Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB". Cette ordre est obligatoire
+#' @seealso composante.partielle.T1T2, zijderveld2.T1T2
 #' @export
-zijderveld2.T1T2 <- function(Data, T1 = NULL, T2 = NULL, withAni = FALSE, ani.etape.value = NULL,
+zijderveld2.T1T2 <- function(Data, T1 = NULL, T2 = NULL, show.etape = FALSE, withAni = FALSE, ani.etape.value = NULL,
                              etape.sigle = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"),
                              legend.pos = NULL, legend.txt = c("(Y, X)", "(Y, Z)"),
                              en0 = FALSE )
@@ -2947,7 +2961,7 @@ zijderveld2.T1T2 <- function(Data, T1 = NULL, T2 = NULL, withAni = FALSE, ani.et
   res.list <- Data
 
   if (withAni == FALSE) { # suppression des étape d anisotropie
-    Data <- supprime.etape(Data, ani.etape.value= ani.etape.value, etape.sigle=etape.sigle)
+    Data <- supprime.etape(Data, ani.etape.value = ani.etape.value, etape.sigle = etape.sigle)
   }
   # recherche étape en dessous de T1
   iT1 <- 1
@@ -3000,12 +3014,16 @@ zijderveld2.T1T2 <- function(Data, T1 = NULL, T2 = NULL, withAni = FALSE, ani.et
   if (ylim[2]<0)
     ylim[2]<-0
 
+  if (show.etape == TRUE)
+    pt.names <- Data$etape
+  else
+    pt.names <- NULL
 
-  zijderveld2(Data$X[1:iT1], Data$Y[1:iT1], Data$Z[1:iT1],  ylim = ylim, legend.pos = legend.pos, legend.txt = legend.txt )
+  zijderveld2(Data$X[1:iT1], Data$Y[1:iT1], Data$Z[1:iT1], pt.names = pt.names, ylim = ylim, legend.pos = legend.pos, legend.txt = legend.txt )
   if (iT2 != length(Data$X))
-    zijderveld2(Data$X[iT2:length(Data$X)], Data$Y[iT2:length(Data$X)], Data$Z[iT2:length(Data$X)], new = FALSE)
+    zijderveld2(Data$X[iT2:length(Data$X)], Data$Y[iT2:length(Data$X)], Data$Z[iT2:length(Data$X)], pt.names = pt.names, new = FALSE)
 
-  zijderveld2(Data$X[iT1:iT2], Data$Y[iT1:iT2], Data$Z[iT1:iT2], pt.col = c("red", "red") , new = FALSE)
+  zijderveld2(Data$X[iT1:iT2], Data$Y[iT1:iT2], Data$Z[iT1:iT2], pt.col = c("red", "red") , pt.names = pt.names, new = FALSE)
 
   abline(ad, bd)
   abline(ai, bi)
