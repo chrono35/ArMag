@@ -4,15 +4,15 @@
 \alias{anisotropie.mean.eigen.tensor}
 \title{Calcul de la direction et des valeurs du vecteur propre d'anisotropie moyen}
 \usage{
-anisotropie.mean.eigen.tensor(Data.mesures, Data.number, etape.value,
-  etape.sigle = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"))
+anisotropie.mean.eigen.tensor(Data.mesures, Data.number, step.value,
+  step.code = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"))
 }
 \arguments{
 \item{Data.mesures}{data.frame contenant les mesures}
 
 \item{Data.number}{numéro des échantillons}
 
-\item{etape.value}{typiquement la température des mesures d'anisotropie}
+\item{step.value}{typiquement la température des mesures d'anisotropie}
 }
 \value{
 un data.frame avec les colonnes "L1", "L2", "L3", "L1.Inc", "L1.Dec", "L2.Inc", "L2.Dec", "L3.Inc", "L3.Dec", "F13", "F12", "F23"

@@ -4,8 +4,8 @@
 \alias{anisotropie.eigen.tensors.names}
 \title{Calcul des tenseurs d'anisotropie pour une liste de nom de spécimen}
 \usage{
-anisotropie.eigen.tensors.names(names, Data.mesures, etape.value,
-  etape.sigle = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"))
+anisotropie.eigen.tensors.names(names, Data.mesures, step.value,
+  step.code = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"))
 }
 \arguments{
 \item{names}{liste de noms de spécimen}

@@ -4,8 +4,8 @@
 \alias{anisotropie.eigen.tensors.numbers}
 \title{Calcul des tenseurs d'anisotropie pour une liste de numéro de spécimen}
 \usage{
-anisotropie.eigen.tensors.numbers(numbers, Data.mesures, etape.value,
-  etape.sigle = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"))
+anisotropie.eigen.tensors.numbers(numbers, Data.mesures, step.value,
+  step.code = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"))
 }
 \arguments{
 \item{Data.mesures}{data.frame contenant les mesures}

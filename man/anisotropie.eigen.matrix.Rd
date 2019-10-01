@@ -4,15 +4,15 @@
 \alias{anisotropie.eigen.matrix}
 \title{Calcul les coordonnées des tenseurs propres matrice d'anisotropie}
 \usage{
-anisotropie.eigen.matrix(mesures, etape.value, etape.sigle = c("Z+",
-  "Z-", "X+", "X-", "Y+", "Y-", "ZB"), volume = 1, TH = 1, ...)
+anisotropie.eigen.matrix(mesures, step.value, step.code = c("Z+", "Z-",
+  "X+", "X-", "Y+", "Y-", "ZB"), volume = 1, TH = 1, ...)
 }
 \arguments{
 \item{mesures}{data.frame contenant les mesures}
 
-\item{etape.value}{typiquement la température des mesures d'anisotropie}
+\item{step.value}{typiquement la température des mesures d'anisotropie}
 
-\item{etape.sigle}{sigle indiquant les étapes. les noms peuvent changer, mais pas l'ordre}
+\item{step.code}{code indiquant les étapes. les noms peuvent changer, mais pas l'ordre}
 
 \item{volume}{la valeur du volume du spécimen}
 

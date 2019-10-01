@@ -5,15 +5,15 @@
 \title{Calcul la matrice d'anisotropie symetrisée et normalisé pour un spécimen
 qui sert à la correction}
 \usage{
-anisotropie.matrix.symetric(mesures, etape.value, etape.sigle = c("Z+",
+anisotropie.matrix.symetric(mesures, step.value, step.code = c("Z+",
   "Z-", "X+", "X-", "Y+", "Y-", "ZB"), ...)
 }
 \arguments{
 \item{mesures}{data.frame contenant les mesures}
 
-\item{etape.value}{typiquement la température des mesures d'anisotropie}
+\item{step.value}{typiquement la température des mesures d'anisotropie}
 
-\item{etape.sigle}{sigle indiquant les étapes. les noms peuvent changer, mais pas l'ordre}
+\item{step.code}{code indiquant les étapes. les noms peuvent changer, mais pas l'ordre}
 
 \item{volume}{la valeur du volume du spécimen}
 

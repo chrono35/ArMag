@@ -5,25 +5,25 @@
 \title{Trace un diagramme de zijderveld1 en calculant la composante entre les étapes T1 et T2
 par défaut la fonction n'affiche pas les étapes d'anisotropie et ne corrige pas les directions de l'anisotropie}
 \usage{
-zijderveld1.T1T2(Data, T1 = NULL, T2 = NULL, show.etape = FALSE,
-  withAni = FALSE, ani.etape.value = NULL, etape.sigle = c("Z+",
-  "Z-", "X+", "X-", "Y+", "Y-", "ZB"), legend.pos = NULL,
+zijderveld1.T1T2(Data, T1 = NULL, T2 = NULL, show.step = FALSE,
+  ignore.ani = TRUE, ani.step.value = NULL, step.code = c("Z+", "Z-",
+  "X+", "X-", "Y+", "Y-", "ZB"), legend.pos = NULL,
   legend.txt = c("(Y, X)", "(Y, Z)"), en0 = FALSE)
 }
 \arguments{
-\item{T1}{correspond à etape.value ou température la plus basse}
+\item{T1}{correspond à step.value ou température la plus basse}
 
-\item{T2}{correspond à etape.value ou température la plus haute}
+\item{T2}{correspond à step.value ou température la plus haute}
 
-\item{show.etape}{booléen permettant l'affichage des étapes}
+\item{show.step}{booléen permettant l'affichage des étapes}
 
-\item{withAni}{permet de voir les étapes d'anisotropie}
+\item{ani.step.value}{correspond à l'step.value ou la température de la détermination de l'anisotropie}
 
-\item{ani.etape.value}{correspond à l'etape.value ou la température de la détermination de l'anisotropie}
-
-\item{etape.sigle}{chaîne de caractère représentant les étapes de l'anisotropie "Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB". Cette ordre est obligatoire}
+\item{step.code}{chaîne de caractère représentant les étapes de l'anisotropie "Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB". Cette ordre est obligatoire}
 
 \item{en0}{booléen permettant de forcer la composante partielle de passer par l'origine}
+
+\item{withAni}{permet de voir les étapes d'anisotropie}
 }
 \description{
 Trace un diagramme de zijderveld1 en calculant la composante entre les étapes T1 et T2

@@ -6,8 +6,8 @@
 par défaut la fonction n'affiche pas les étapes d'anisotropie}
 \usage{
 composante.partielle.T1T2(Data, T1 = NULL, T2 = NULL,
-  corr.ani = FALSE, ani.etape.value = NULL, etape.sigle = c("Z+",
-  "Z-", "X+", "X-", "Y+", "Y-", "ZB"), en0 = FALSE)
+  corr.ani = FALSE, ani.step.value = NULL, step.code = c("Z+", "Z-",
+  "X+", "X-", "Y+", "Y-", "ZB"), en0 = FALSE)
 }
 \arguments{
 \item{corr.ani}{corrige de l'anisotropie}

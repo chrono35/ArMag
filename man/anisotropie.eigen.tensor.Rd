@@ -4,15 +4,15 @@
 \alias{anisotropie.eigen.tensor}
 \title{Calcul des directions et valeurs des vecteurs propres d'anisotropie partielle pour un spécimen à une certaine température}
 \usage{
-anisotropie.eigen.tensor(mesures, etape.value, etape.sigle = c("Z+",
-  "Z-", "X+", "X-", "Y+", "Y-", "ZB"))
+anisotropie.eigen.tensor(mesures, step.value, step.code = c("Z+", "Z-",
+  "X+", "X-", "Y+", "Y-", "ZB"))
 }
 \arguments{
 \item{mesures}{data.frame contenant les mesures}
 
-\item{etape.value}{typiquement la température des mesures d'anisotropie}
+\item{step.value}{typiquement la température des mesures d'anisotropie}
 
-\item{etape.sigle}{sigle indiquant les étapes. Les noms peuvent changer, mais pas l'ordre}
+\item{step.code}{code indiquant les étapes. Les noms peuvent changer, mais pas l'ordre}
 }
 \value{
 un data.frame avec les colonnes "L1", "L1.Inc", "L1.Dec", "L2", "L2.Inc", "L2.Dec", "L3", "L3.Inc", "L3.Dec", "F13", "F12", "F23"
