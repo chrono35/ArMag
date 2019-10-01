@@ -1418,6 +1418,7 @@ zijderveld2<- function(Data, Y = NULL, Z = NULL, pt.names = "", main = NULL, pan
 
   lines(-X, -Z, type = "o", pch = 21, col = pt.col[2], bg = adjustcolor( pt.col[2], alpha.f = 0.05))
 
+  text(jitter(-X, 5, amount = 0), jitter(Y, 5, amount = 0), eta)
 
 }
 
@@ -3026,11 +3027,11 @@ zijderveld2.T1T2 <- function(Data, T1 = NULL, T2 = NULL, show.etape = FALSE, wit
     pt.names <- rep("", length(Data$X) )
   }
 
-  zijderveld2(Data$X[1:iT1], Data$Y[1:iT1], Data$Z[1:iT1], pt.names = pt.names, ylim = ylim, legend.pos = legend.pos, legend.txt = legend.txt )
+  zijderveld2(Data$X[1:iT1], Data$Y[1:iT1], Data$Z[1:iT1], pt.names = pt.names[1:iT1], ylim = ylim, legend.pos = legend.pos, legend.txt = legend.txt )
   if (iT2 != length(Data$X))
-    zijderveld2(Data$X[iT2:length(Data$X)], Data$Y[iT2:length(Data$X)], Data$Z[iT2:length(Data$X)], pt.names = pt.names, new = FALSE)
+    zijderveld2(Data$X[iT2:length(Data$X)], Data$Y[iT2:length(Data$X)], Data$Z[iT2:length(Data$X)], pt.names = pt.names[iT2:length(Data$X)], new = FALSE)
 
-  zijderveld2(Data$X[iT1:iT2], Data$Y[iT1:iT2], Data$Z[iT1:iT2], pt.col = c("red", "red") , pt.names = pt.names, new = FALSE)
+  zijderveld2(Data$X[iT1:iT2], Data$Y[iT1:iT2], Data$Z[iT1:iT2], pt.col = c("red", "red") , pt.names = pt.names[iT1:iT2], new = FALSE)
 
   abline(ad, bd)
   abline(ai, bi)
