@@ -4,11 +4,29 @@
 \alias{zijderveld2.T1T2}
 \title{trace un diagramme de zijderveld en calculant la composante entre les étapes T1 et T2}
 \usage{
-zijderveld2.T1T2(Data, T1 = NULL, T2 = NULL, withAni = FALSE,
-  ani.etape.value = NULL, etape.sigle = c("Z+", "Z-", "X+", "X-", "Y+",
-  "Y-", "ZB"), legend.pos = NULL, legend.txt = c("(Y, X)", "(Y, Z)"),
-  en0 = FALSE)
+zijderveld2.T1T2(Data, T1 = NULL, T2 = NULL, show.etape = FALSE,
+  withAni = FALSE, ani.etape.value = NULL, etape.sigle = c("Z+",
+  "Z-", "X+", "X-", "Y+", "Y-", "ZB"), legend.pos = NULL,
+  legend.txt = c("(Y, X)", "(Y, Z)"), en0 = FALSE)
+}
+\arguments{
+\item{T1}{correspond à etape.value ou température la plus basse}
+
+\item{T2}{correspond à etape.value ou température la plus haute}
+
+\item{show.etape}{booléen permettant l'affichage des étapes}
+
+\item{withAni}{permet de voir les étapes d'anisotropie}
+
+\item{ani.etape.value}{correspond à l'etape.valeu ou la température de la détermination de l'anisotropie}
+
+\item{etape.sigle}{chaîne de caractère représentant les étapes de l'anisotropie "Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB". Cette ordre est obligatoire}
+
+\item{en0}{booléen permettant de forcer la composante partielle de passer par l'origine}
 }
 \description{
 trace un diagramme de zijderveld en calculant la composante entre les étapes T1 et T2
+}
+\seealso{
+composante.partielle.T1T2, zijderveld2.T1T2
 }

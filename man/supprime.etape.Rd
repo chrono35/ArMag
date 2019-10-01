@@ -9,7 +9,7 @@ supprime.etape(Data, ani.etape.value = NULL, etape.sigle = c("Z+",
   "Z-", "X+", "X-", "Y+", "Y-", "ZB"))
 }
 \arguments{
-\item{Data}{un data.frame possédant la variable $Etap de type chr}
+\item{Data}{un data.frame possédant la variable $etape de type chr}
 
 \item{ani.etape.value}{valeur de la température d'anisotropie. Par defaut NUll, alors la tempértature est retrouvée automatiquement avec les etape.sigle définis}
 

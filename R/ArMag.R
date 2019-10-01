@@ -1220,7 +1220,7 @@ lambert.XYZ.specimen <- function( Data, Y , Z, pt.names = "", labels = NA, label
     Y <- Data$Y
     Z <- Data$Z
     if (is.null(pt.names))
-      eta <- Data$Etap
+      eta <- Data$etape
     if (is.null(main))
       main <- as.character(Data$name[1])
   } else {
@@ -1260,7 +1260,7 @@ lambert.ID.specimen <- function( Data, D , pt.names = "", labels = NA, label.pos
     I <- Data$I
     D <- Data$D
     if (is.null(pt.names))
-      eta <- Data$Etap
+      eta <- Data$etape
     if (is.null(main))
       main <- as.character(Data$name[1])
   } else {
@@ -1297,7 +1297,7 @@ zijderveld1<- function(Data, Y = NULL, Z = NULL, pt.names = "", main = NULL, pan
     Y <- Data$Y
     Z <- Data$Z
     if (is.null(pt.names))
-      eta <- Data$Etap
+      eta <- Data$etape
     if (is.null(main))
       main <- as.character(Data$name[1])
   } else {
@@ -1366,7 +1366,7 @@ zijderveld2<- function(Data, Y = NULL, Z = NULL, pt.names = "", main = NULL, pan
     if (is.null(main))
       main <- as.character(Data$name[1])
     if (is.null(pt.names))
-      eta <- Data$Etap
+      eta <- Data$etape
   } else {
     X <- Data
     if (!is.null(pt.names))
@@ -1817,7 +1817,7 @@ read.AM.mesures <- function(file.AM, encoding = "macroman")
       tQual <- c(tQual, lQual)
       tApp <- c(tApp, lApp)
       tSuscep <- c(tSuscep, lSuscep)
-      lmes <- data.frame(number = i, name = lname[i], Etap = tEtap, Etap.value = as.numeric(tEtap.val),
+      lmes <- data.frame(number = i, name = lname[i], etape = tEtap, etape.value = as.numeric(tEtap.val),
                          X = as.numeric(tX), Y = as.numeric(tY), Z = as.numeric(tZ),
                          I = as.numeric(tI), D = as.numeric(tD), F = as.numeric(tF),
                          Quality = as.numeric(tQual), App = tApp, Suscep = as.numeric(tSuscep), stringsAsFactors = FALSE)
@@ -1943,7 +1943,7 @@ anisotropie.matrix.symetric <- function(mesures, etape.value, etape.sigle = c("Z
 
   selec <- NULL
   for (i in 1:length(ani.etape)) {
-    selec <- c( selec, which(trimws(mesures$Etap) == trimws(ani.etape[i])) )
+    selec <- c( selec, which(trimws(mesures$etape) == trimws(ani.etape[i])) )
   }
 
   res.list <- NULL
@@ -1996,7 +1996,7 @@ anisotropie.eigen <- function(mesures, etape.value, etape.sigle = c("Z+", "Z-", 
 
   selec <- NULL
   for (i in 1:length(ani.etape)) {
-    selec <- c( selec, which(trimws(mesures$Etap) == trimws(ani.etape[i])) )
+    selec <- c( selec, which(trimws(mesures$etape) == trimws(ani.etape[i])) )
   }
   res.list <- NULL
   res.list <- mesures[selec,]
@@ -2078,7 +2078,7 @@ anisotropie.eigen.matrix <- function(mesures, etape.value, etape.sigle = c("Z+",
 
   selec <- NULL
   for (i in 1:length(ani.etape)) {
-    selec <- c( selec, which(trimws(mesures$Etap) == trimws(ani.etape[i])) )
+    selec <- c( selec, which(trimws(mesures$etape) == trimws(ani.etape[i])) )
   }
   res.list <- NULL
   res.list <- mesures[selec,]
@@ -2129,7 +2129,7 @@ anisotropie.eigen.tensor <- function (mesures, etape.value, etape.sigle = c("Z+"
 
   selec <- NULL
   for (i in 1:length(ani.etape)) {
-    selec <- c( selec, which(trimws(mesures$Etap) == trimws(ani.etape[i])) )
+    selec <- c( selec, which(trimws(mesures$etape) == trimws(ani.etape[i])) )
   }
 
   res.list <- NULL
@@ -2489,17 +2489,17 @@ flin <- function( Data, Data.F12=NULL, pt.names= NULL, point.col = "blue3", pch 
 #' @export
 desaim <- function( Data, F = NULL,  point.col = "blue3", pch = 21, type = "b",
                              xlab = "°C", ylab = "", main = NULL,
-                             names = NA, normalize = TRUE, etap.J0 = NULL, new = TRUE, ...)
+                             names = NA, normalize = TRUE, etape.J0 = NULL, new = TRUE, ...)
 {
 
   tmp.frame <- NULL
   if (is.null(main))
-    main <- " F vs Etap.value"
+    main <- " F vs etape.value"
 
   if(is.data.frame(Data)) {
-    tmp.frame$name <- Data$name[!is.na(Data$Etap.value)]
-    tmp.frame$Etap.value <- Data$Etap.value[!is.na(Data$Etap.value)]
-    tmp.frame$F <- Data$F[!is.na(Data$Etap.value)]
+    tmp.frame$name <- Data$name[!is.na(Data$etape.value)]
+    tmp.frame$etape.value <- Data$etape.value[!is.na(Data$etape.value)]
+    tmp.frame$F <- Data$F[!is.na(Data$etape.value)]
 
 
   } else {
@@ -2509,12 +2509,12 @@ desaim <- function( Data, F = NULL,  point.col = "blue3", pch = 21, type = "b",
     else
       tmp.frame$name <- names
 
-    tmp.frame$Etap.value <- Data
+    tmp.frame$etape.value <- Data
     tmp.frame$F <- F
   }
 
-  if (length(point.col) < length(tmp.frame$Etap.value) )
-    point.col <- rep(point.col, length(tmp.frame$Etap.value) )
+  if (length(point.col) < length(tmp.frame$etape.value) )
+    point.col <- rep(point.col, length(tmp.frame$etape.value) )
 
   # comptage et séparation des données
   current <- tmp.frame$name[1]
@@ -2527,14 +2527,14 @@ desaim <- function( Data, F = NULL,  point.col = "blue3", pch = 21, type = "b",
     }
   }
 
-  if (is.null(etap.J0) == FALSE) {
-    if (length(etap.J0) < length(tmp.frame$Etap.value) )
-      etap.J0 <- rep(etap.J0, length(list.name) )
+  if (is.null(etape.J0) == FALSE) {
+    if (length(etape.J0) < length(tmp.frame$etape.value) )
+      etape.J0 <- rep(etape.J0, length(list.name) )
   } else {
-    etap.J0 <- rep(NA, length(list.name) )
+    etape.J0 <- rep(NA, length(list.name) )
   }
 
-  xlim <- range(tmp.frame$Etap.value)
+  xlim <- range(tmp.frame$etape.value)
 
   # recherche du Ymax pour définir la taille du graphique
   Ymax <- 0
@@ -2543,12 +2543,12 @@ desaim <- function( Data, F = NULL,  point.col = "blue3", pch = 21, type = "b",
   if (normalize == TRUE) {
     for (i in 1 : length(list.name)) {
       list.mesure.i$F <- tmp.frame$F[tmp.frame$name == list.name[i]]
-      if (is.na(etap.J0[i]) == TRUE) {
+      if (is.na(etape.J0[i]) == TRUE) {
         J0[i] <- list.mesure.i$F[1]
       } else {
-        tmp.etp <- list.mesure.i$F[tmp.frame$Etap.value == etap.J0[i]] # si il y a plusieurs valeurs pour la même étape, comme ani
+        tmp.etp <- list.mesure.i$F[tmp.frame$etape.value == etape.J0[i]] # si il y a plusieurs valeurs pour la même étape, comme ani
         J0[i] <- tmp.etp[1]
-       # J0[i] <- list.mesure.i$F[tmp.frame$Etap.value == etap.J0[i]]
+       # J0[i] <- list.mesure.i$F[tmp.frame$etape.value == etape.J0[i]]
       }
       Ymax <- max(Ymax, tmp.frame$F[tmp.frame$name == list.name[i]]/J0[i] *100)
     }
@@ -2557,7 +2557,7 @@ desaim <- function( Data, F = NULL,  point.col = "blue3", pch = 21, type = "b",
 
   list.mesure.i <-  NULL
   for (i in 1 : length(list.name)) {
-    list.mesure.i$Etap.value <- tmp.frame$Etap.value[which(tmp.frame$name == list.name[i])]
+    list.mesure.i$etape.value <- tmp.frame$etape.value[which(tmp.frame$name == list.name[i])]
     list.mesure.i$F <- tmp.frame$F[tmp.frame$name == list.name[i]]
     if (normalize == TRUE) {
       coefY <- 100 / J0[i]
@@ -2565,7 +2565,7 @@ desaim <- function( Data, F = NULL,  point.col = "blue3", pch = 21, type = "b",
     } else
       coefY <- 1
 
-    Xi <- list.mesure.i$Etap.value
+    Xi <- list.mesure.i$etape.value
     Yi <- list.mesure.i$F  * coefY
 
     ylim <- c(0, Ymax)
@@ -2770,18 +2770,18 @@ composante.partielle.T1T2 <- function(Data, T1=NULL, T2=NULL, corr.ani = FALSE, 
     warning("Data n'est pas une data.frame")
 
   if (is.null(T1))
-    T1 <- Data$Etap.value[1]
+    T1 <- Data$etape.value[1]
   if (is.null(T2))
-    T2 <- Data$Etap.value[length(Data$Etap.value)]
+    T2 <- Data$etape.value[length(Data$etape.value)]
 
 
   res.list <- Data
   if (corr.ani == TRUE) {
 
     if (is.null(ani.etape.value)) { # recherche des étapes d'anisotropie
-      for (i in 1:length(Data$Etap)) {
-        if (substring(Data$Etap[i], 4) == etape.sigle[3])
-          ani.etape.value <- Data$Etap.value[i]
+      for (i in 1:length(Data$etape)) {
+        if (substring(Data$etape[i], 4) == etape.sigle[3])
+          ani.etape.value <- Data$etape.value[i]
       }
     }
     ani <- anisotropie.matrix.symetric(Data, etape.value = ani.etape.value, etape.sigle = etape.sigle)
@@ -2791,13 +2791,13 @@ composante.partielle.T1T2 <- function(Data, T1=NULL, T2=NULL, corr.ani = FALSE, 
 
   # recherche étape en dessous de T1
   iT1 <- 1
-  while(Data$Etap.value[iT1] < T1) {
+  while(Data$etape.value[iT1] < T1) {
     iT1 <- iT1 + 1
   }
 
   # recherche étape au dessus de T2
-  iT2 <- length(Data$Etap.value)
-  while(Data$Etap.value[iT2] > T2) {
+  iT2 <- length(Data$etape.value)
+  while(Data$etape.value[iT2] > T2) {
     iT2 <- iT2 -1
   }
 
@@ -2851,7 +2851,7 @@ composante.partielle.T1T2 <- function(Data, T1=NULL, T2=NULL, corr.ani = FALSE, 
 #' @param en0 booléen permettant de forcer la composante partielle de passer par l'origine
 #' @param show.etape booléen permettant l'affichage des étapes
 #' @param withAni permet de voir les étapes d'anisotropie
-#' @param ani.etape.value correspond à l'etape.valeu ou la température de la détermination de l'anisotropie
+#' @param ani.etape.value correspond à l'etape.value ou la température de la détermination de l'anisotropie
 #' @param etape.sigle chaîne de caractère représentant les étapes de l'anisotropie "Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB". Cette ordre est obligatoire
 #' @seealso composante.partielle.T1T2, zijderveld2.T1T2
 #' @export
@@ -2861,9 +2861,9 @@ zijderveld1.T1T2 <- function(Data, T1 = NULL, T2 = NULL, show.etape = FALSE, wit
                              en0 = FALSE )
 {
   if (is.null(T1))
-    T1 <- Data$Etap.value[1]
+    T1 <- Data$etape.value[1]
   if (is.null(T2))
-    T2 <- Data$Etap.value[length(Data$Etap.value)]
+    T2 <- Data$etape.value[length(Data$etape.value)]
 
 
   res.list <- Data
@@ -2873,13 +2873,13 @@ zijderveld1.T1T2 <- function(Data, T1 = NULL, T2 = NULL, show.etape = FALSE, wit
   }
   # recherche étape en dessous de T1
   iT1 <- 1
-  while(Data$Etap.value[iT1] < T1) {
+  while(Data$etape.value[iT1] < T1) {
     iT1 <- iT1 + 1
   }
 
   # recherche étape au dessus de T2
-  iT2 <- length(Data$Etap.value)
-  while(Data$Etap.value[iT2] > T2) {
+  iT2 <- length(Data$etape.value)
+  while(Data$etape.value[iT2] > T2) {
     iT2 <- iT2 -1
   }
 
@@ -2953,9 +2953,9 @@ zijderveld2.T1T2 <- function(Data, T1 = NULL, T2 = NULL, show.etape = FALSE, wit
                              en0 = FALSE )
 {
   if (is.null(T1))
-    T1 <- Data$Etap.value[1]
+    T1 <- Data$etape.value[1]
   if (is.null(T2))
-    T2 <- Data$Etap.value[length(Data$Etap.value)]
+    T2 <- Data$etape.value[length(Data$etape.value)]
 
 
   res.list <- Data
@@ -2965,13 +2965,13 @@ zijderveld2.T1T2 <- function(Data, T1 = NULL, T2 = NULL, show.etape = FALSE, wit
   }
   # recherche étape en dessous de T1
   iT1 <- 1
-  while(Data$Etap.value[iT1] < T1) {
+  while(Data$etape.value[iT1] < T1) {
     iT1 <- iT1 + 1
   }
 
   # recherche étape au dessus de T2
-  iT2 <- length(Data$Etap.value)
-  while(Data$Etap.value[iT2] > T2) {
+  iT2 <- length(Data$etape.value)
+  while(Data$etape.value[iT2] > T2) {
     iT2 <- iT2 -1
   }
 
@@ -3031,16 +3031,16 @@ zijderveld2.T1T2 <- function(Data, T1 = NULL, T2 = NULL, show.etape = FALSE, wit
 
 #' Supprime les étapes à la valeur ani.etape.value et avec les sigles etape.sigle
 #' Utiliser par défaut pour supprimer les étapes d'anisotropie
-#' @param Data un data.frame possédant la variable $Etap de type chr
+#' @param Data un data.frame possédant la variable $etape de type chr
 #' @param ani.etape.value valeur de la température d'anisotropie. Par defaut NUll, alors la tempértature est retrouvée automatiquement avec les etape.sigle définis
 #' @param etape.sigle chaîne de caractère représentant les étapes de l'anisotropie "Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"
 #' @export
 supprime.etape <- function(Data, ani.etape.value= NULL, etape.sigle = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB") )
 {
   if (is.null(ani.etape.value)) {
-    for (i in 1:length(Data$Etap)) {
-      if (substring(Data$Etap[i], 4) == etape.sigle[3])
-        ani.etape.value <- Data$Etap.value[i]
+    for (i in 1:length(Data$etape)) {
+      if (substring(Data$etape[i], 4) == etape.sigle[3])
+        ani.etape.value <- Data$etape.value[i]
     }
   }
   ani.etape <- trimws(paste(ani.etape.value, etape.sigle, sep = ""))
@@ -3048,7 +3048,7 @@ supprime.etape <- function(Data, ani.etape.value= NULL, etape.sigle = c("Z+", "Z
 
   selec <- NULL
   for (i in 1:length(ani.etape)) {
-    selec <- c( selec, which(trimws(Data$Etap) == trimws(ani.etape[i])) )
+    selec <- c( selec, which(trimws(Data$etape) == trimws(ani.etape[i])) )
   }
 
   if (length(selec) > 0)
