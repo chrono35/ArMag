@@ -2773,12 +2773,6 @@ composante.partielle.T1T2 <- function(Data, T1=NULL, T2=NULL, corr.ani = FALSE, 
   if (!is.data.frame(Data))
     warning("Data n'est pas une data.frame")
 
-  if (is.null(T1))
-    T1 <- Data$step.value[1]
-  if (is.null(T2))
-    T2 <- Data$step.value[length(Data$step.value)]
-
-
   res.list <- Data
   if (corr.ani == TRUE) {
 
@@ -2794,14 +2788,24 @@ composante.partielle.T1T2 <- function(Data, T1=NULL, T2=NULL, corr.ani = FALSE, 
   Data <- remove.step(Data, ani.step.value = ani.step.value, step.code = step.code)
 
   # recherche étape en dessous de T1
+
+  if (is.null(T1) | T1 == 0)
+    T1 <- Data$step.value[1]
+
+  if (is.null(T2))
+    T2 <- Data$step.value[length(Data$step.value)]
+
+  if (T2 < T1)
+    warning(" T2 < T1 ")
+
   iT1 <- 1
-  while(Data$step.value[iT1] < T1) {
+  while(iT1 <= length(Data$step.value) &  Data$step.value[iT1] < T1 ) {
     iT1 <- iT1 + 1
   }
 
   # recherche étape au dessus de T2
   iT2 <- length(Data$step.value)
-  while(Data$step.value[iT2] > T2) {
+  while(iT2 > 0 & Data$step.value[iT2] > T2) {
     iT2 <- iT2 -1
   }
 
