@@ -2790,11 +2790,11 @@ composante.partielle.T1T2 <- function(Data, T1 = NULL, T2 = NULL, corr.ani = FAL
   # recherche étape en dessous de T1
 
   if (is.null(T1) | T1 == 0)
-    T1 <- Data$step.value[1]
+    T1 <- 0 #Data$step.value[1]
   else T1=0
 
   if (is.null(T2))
-    T2 <- Data$step.value[length(Data$step.value)]
+    T2 <- 700 #Data$step.value[length(Data$step.value)]
   else T2 = 700
 
   if (T2 < T1)
