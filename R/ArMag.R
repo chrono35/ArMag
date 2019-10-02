@@ -2765,7 +2765,7 @@ composante.partielle <- function(TabX, TabY, TabZ, en0 = FALSE)
 #' @return une data.frame "X", "Y", "Z", "I", "D", "F", "Sl", "MAD", "DANG"
 #' @seealso composante.partielle, zijderveld1.T1T2
 #' @export
-composante.partielle.T1T2 <- function(Data, T1=NULL, T2=NULL, corr.ani = FALSE, ani.step.value= NULL,
+composante.partielle.T1T2 <- function(Data, T1 = NULL, T2 = NULL, corr.ani = FALSE, ani.step.value = NULL,
                                       step.code = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"),
                                       en0 = FALSE )
 {
@@ -2791,9 +2791,11 @@ composante.partielle.T1T2 <- function(Data, T1=NULL, T2=NULL, corr.ani = FALSE, 
 
   if (is.null(T1) | T1 == 0)
     T1 <- Data$step.value[1]
+  else T1=0
 
   if (is.null(T2))
     T2 <- Data$step.value[length(Data$step.value)]
+  else T2 = 700
 
   if (T2 < T1)
     warning(" T2 < T1 ")
