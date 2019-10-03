@@ -2639,12 +2639,24 @@ vecteur.partiel <- function(TabX, TabY, TabZ, en0 = TRUE)
   ntab <- length(TabX);
 
   if ( (ntab<1) || (ntab!=length(TabY)) || (ntab!=length(TabZ))) {
+    warning("Pas de mesure, pour le calcul du vecteur.partiel")
     Data <- c( X = 0, Y = 0, Z = 0,
                I = 0, D = 0, F = 0,
                Sl = NA, MAD = NA )
 
     return(as.data.frame(t(Data), col.names = col.names))  #il faut au moins 2 étapes
   }
+
+  if ( ntab == 1) {
+    message("une mesure, pour le calcul du vecteur.partiel")
+    vp1 <- polaire(TabX[1], TabY[1], TabZ[1])
+    Data <- c( X = TabX[1], Y = TabY[1], Z = TabZ[1],
+               I = vp1$I, D = vp1$D, F = vp1$F,
+               Sl = 1, MAD = 0 )
+
+    return(as.data.frame(t(Data), col.names = col.names))  #il faut au moins 2 étapes
+  }
+
 
   # calcul du barycentre du nuage de points si 'en0' false
   somx <- 0; somy <- 0; somz <- 0
@@ -2727,7 +2739,6 @@ vecteur.partiel <- function(TabX, TabY, TabZ, en0 = TRUE)
   # mise en forme du résultat
   MAD <- MAD * 180 /pi
 
-  col.names <- c("X", "Y", "Z", "I", "D", "F", "Sl", "MAD")
   Data <- c( X = v.cp$vectors[1, 3], Y = v.cp$vectors[2, 3], Z = v.cp$vectors[3, 3],
              I = vcorrect$I, D = vcorrect$D, F = v3$F,
              Sl = Sl, MAD = MAD )
@@ -2790,12 +2801,12 @@ composante.partielle.T1T2 <- function(Data, T1 = NULL, T2 = NULL, corr.ani = FAL
   # recherche étape en dessous de T1
 
   if (is.null(T1) | T1 == 0)
-    T1 <- 0 #Data$step.value[1]
-  else T1=0
+    T1 <- Data$step.value[1]
+
 
   if (is.null(T2))
-    T2 <- 700 #Data$step.value[length(Data$step.value)]
-  else T2 = 700
+    T2 <- Data$step.value[length(Data$step.value)]
+
 
   if (T2 < T1)
     warning(" T2 < T1 ")
