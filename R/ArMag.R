@@ -2807,9 +2807,13 @@ composante.partielle.T1T2 <- function(Data, T1 = NULL, T2 = NULL, corr.ani = FAL
   if (is.null(T2) | is.na(T2))
     T2 <- Data$step.value[length(Data$step.value)]
 
+T2
+T1
 
-  if (T2 < T1)
+  if (T2 < T1) {
     warning(" T2 < T1 ")
+  }
+
 
   iT1 <- 1
   while(iT1 <= length(Data$step.value) &  Data$step.value[iT1] < T1 ) {
