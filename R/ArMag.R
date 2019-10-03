@@ -2800,11 +2800,11 @@ composante.partielle.T1T2 <- function(Data, T1 = NULL, T2 = NULL, corr.ani = FAL
 
   # recherche étape en dessous de T1
 
-  if (is.null(T1) | T1 == 0)
+  if (is.null(T1) | T1 == 0 | is.na(T1))
     T1 <- Data$step.value[1]
 
 
-  if (is.null(T2))
+  if (is.null(T2) | is.na(T2))
     T2 <- Data$step.value[length(Data$step.value)]
 
 
@@ -2828,7 +2828,7 @@ composante.partielle.T1T2 <- function(Data, T1 = NULL, T2 = NULL, corr.ani = FAL
   TabY <- Data$Y[iT1:iT2]
   TabZ <- Data$Z[iT1:iT2]
 
-  # Correction des direction par l'anisotropie
+  # Correction des directions par l'anisotropie
   if (corr.ani == TRUE) {
     # inversion de la matrice
     aniso.inv <- solve(ani)
