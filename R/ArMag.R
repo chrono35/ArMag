@@ -163,7 +163,7 @@ angleD <- function(X, Y)
 }
 
 #' Statistique de mcFadden sur l'inclinaison seul à partir des coordonées XYZ
-#' @seealso stat.mcFadden, stat.fisher
+#' @seealso \code{\link{stat.mcFadden}}, \code{\link{stat.fisher}}
 #' @export
 stat.mcFadden.XYZ <- function(TabX, TabY, TabZ)
 {
@@ -179,7 +179,7 @@ stat.mcFadden.XYZ <- function(TabX, TabY, TabZ)
 #' @param des liste des déclinaisons en degrés
 #' @param inc.absolue calcul avec la valeur absolue des inclinaisons
 #' @return  en degrés, un data.frame "n", "imoy.McFadden", "imoy.McElhinny", "a95.mcFad", "a95.eqFish", "Kb", "Kssb", "imin", "imax", "dmin", "dmax"
-#' @seealso stat.mcFadden.XYZ, stat.fisher
+#' @seealso \code{\link{stat.mcFadden.XYZ}}, \code{\link{stat.fisher}}
 #' @references https://doi.org/10.1111/j.1365-246X.1990.tb05683.x
 #' @export
 stat.mcFadden <- function(Data, dec = NULL, inc.absolue = TRUE)
@@ -280,7 +280,7 @@ stat.mcFadden <- function(Data, dec = NULL, inc.absolue = TRUE)
 #' @param pfish pourcentage de confiance
 #' @param inc.absolue calcul avec la valeur absolue des inclinaisons
 #' @return  en degrés
-#' @seealso stat.mcFadden
+#' @seealso \code{\link{stat.mcFadden}}
 #' @keywords fisher
 #' @export
 stat.fisher <- function (inc, dec, aim=NA, pfish = 0.95, inc.absolue = TRUE)
@@ -401,7 +401,7 @@ Y <- function(i, d, ray=1, i.min = 0, box.range)
 #' @param degre degrés entier
 #' @param minute minute entière
 #' @param second seconde en décimal
-#' @seealso DD.to.DMS
+#' @seealso \code{\link{DD.to.DMS}}
 #' @export
 DMS.to.DD <- function(degre, minute, second)
 {
@@ -415,7 +415,7 @@ DMS.to.DD <- function(degre, minute, second)
 
 #' Conversion de Degré Décimal en Degres minute second
 #' @param degre degrés décimal
-#' @seealso DMS.to.DD
+#' @seealso \code{\link{DMS.to.DD}}
 #' @export
 DD.to.DMS <- function(degre)
 {
@@ -486,7 +486,7 @@ calcul.vecteur.cartesien.Z <- function(inc, dec, aim=1)
 #' Valeur de X, Y et Z pour I et D
 #' @param inc liste des inclinaisons en degré
 #' @param des liste des déclinaisons en degré
-#' @seealso cartesien , polaire
+#' @seealso \code{\link{cartesien}} , \code{\link{polaire}}
 #' @export
 calcul.vecteur.cartesien <- function(inc, dec, aim=1)
 {
@@ -504,7 +504,7 @@ calcul.vecteur.cartesien <- function(inc, dec, aim=1)
 #' Valeur de X, Y et Z pour I et D
 #' @param inc liste des inclinaisons en degrés
 #' @param des liste des déclinaisons en degrés
-#' @seealso calcul.vecteur.cartesien , polaire
+#' @seealso \code{\link{calcul.vecteur.cartesien}} , \code{\link{polaire}}
 #' @export
 cartesien <- function(inc, dec, aim=1)
 {
@@ -523,7 +523,7 @@ cartesien <- function(inc, dec, aim=1)
 # Transformation de type de coordonnée ----
 #' Coordonnées polaires pour X, Y et Z
 #' @return angle en degré
-#' @seealso polaire
+#' @seealso \code{\link{polaire}}
 #' @export
 calcul.vecteur.polaire <- function(X, Y, Z)
 { #en A/m
@@ -541,7 +541,7 @@ calcul.vecteur.polaire <- function(X, Y, Z)
 # Transformation de type de coordonnée ----
 #' Coordonnées polaires pour X, Y et Z
 #' @return degrés
-#' @seealso calcul.vecteur.polaire , cartesien
+#' @seealso \code{\link{calcul.vecteur.polaire}} , \code{\link{cartesien}}
 #' @export
 polaire <- function(X, Y, Z)
 { #en A/m
@@ -756,16 +756,17 @@ lambert.ID.grid <- function (main = "", xlab = "", ylab = "", labels = NA, label
 }
 
 #' Place des points I et D dans un repère Lambert avec un data.frame
-#' @param inclinaisons, declinaisons : les listes des données d'inclinaison et de déclinaison
-#' @param pt.names : Correspond à la liste des noms des points. Laissée vide n'affiche rien. Si on met pt.names = "", cela affiche les noms
-#' @param label.pos : Séquence de valeur à afficher en I et D, voir fonction lambert.ID.grid
-#' @param point.symbols : défini la forme de points, correspond exactement au pch de la fonction points()
+#' @param data data.frame avec les variables $I d'inclinaison et $D de déclinaison
+#' @param pt.names  Correspond à la liste des noms des points. Laissée vide n'affiche rien. Si on met pt.names = "", cela affiche les noms
+#' @param label.pos  Séquence de valeur à afficher en I et D, voir fonction lambert.ID.grid
+#' @param point.symbols défini la forme de points, correspond exactement au pch de la fonction points()
 #' @param pch : permet de changer la forme du symbole
-#' @param show.grid :  permet d'afficher une grille en toile d'araigné sur le fond. Mettre à FALSE, si on superpose des diagrammes
-#' @param show.grid.labels = 10 : permet de changer échelle des graduations
-#' @param new : permet d'initialiser la sortie graphique. Mettre à FALSE, si on superpose des diagrammes.
-#' @param inc.lim : permet de restraire l'affichage sur une étendue d'inclinaison. Ex: inc.lim = c(45, 90). Laissée à NULL, le diagramme s'addapte aux données
-#' @param dec.min = -90, dec.max = 180 : permet de restraire l'étendue en déclianison
+#' @param show.grid permet d'afficher une grille en toile d'araigné sur le fond. Mettre à FALSE, si on superpose des diagrammes
+#' @param show.grid.labels permet de changer échelle des graduations
+#' @param inc.lim permet de restreindre l'affichage sur une étendue d'inclinaison. Ex: inc.lim = c(45, 90). Laissée à NULL, le diagramme s'addapte aux données
+#' @param dec.min
+#' @param dec.max permet de restreindre l'étendue en déclinaison
+#' @param new permet d'initialiser la sortie graphique. Mettre à FALSE, si on superpose des diagrammes.
 #' @export
 lambert <- function (data , pt.names = NULL, labels = NA, label.pos = NULL,
                              radlab = FALSE, start = 0, clockwise = TRUE,
@@ -2073,7 +2074,7 @@ anisotropie.eigen <- function(mesures, step.value, step.code = c("Z+", "Z-", "X+
 #' @param volume la valeur du volume du spécimen
 #' @param TH la valeur du champ appliqué
 #' @return un data.frame avec les colonnes "L1", "L1.Inc", "L1.Dec", "L2", "L2.Inc", "L2.Dec", "L3", "L3.Inc", "L3.Dec", "F13", "F12", "F23"
-#' @seealso anisotropie.eigen.tensor
+#' @seealso \code{\link{anisotropie.eigen.tensor}}
 #' @export
 anisotropie.eigen.matrix <- function(mesures, step.value, step.code = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"), volume = 1, TH = 1,...)
 {
@@ -2124,7 +2125,7 @@ anisotropie.eigen.matrix <- function(mesures, step.value, step.code = c("Z+", "Z
 #' @param mesures data.frame contenant les mesures
 #' @param step.value typiquement la température des mesures d'anisotropie
 #' @param step.code code indiquant les étapes. Les noms peuvent changer, mais pas l'ordre
-#' @seealso anisotropie.eigen.matrix
+#' @seealso \code{\link{anisotropie.eigen.matrix}}
 #' @return un data.frame avec les colonnes "L1", "L1.Inc", "L1.Dec", "L2", "L2.Inc", "L2.Dec", "L3", "L3.Inc", "L3.Dec", "F13", "F12", "F23"
 #' @export
 anisotropie.eigen.tensor <- function (mesures, step.value, step.code = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB") )
@@ -2294,7 +2295,7 @@ anisotropie.eigen.tensors.all <- function(Data.mesures, Data.number, step.value,
 #' @param Data.mesures data.frame contenant les mesures
 #' @param step.value typiquement la température des mesures d'anisotropie
 #' @param Data.number numéro des échantillons
-#' @seealso anisotropie.mean.eigen.tensor
+#' @seealso \code{\link{anisotropie.mean.eigen.tensor}}
 #' @return une matrice carrée 3 x3
 #' @export
 anisotropie.mean.matrix <- function(Data.mesures, Data.number, step.value, step.code = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"))
@@ -2329,7 +2330,7 @@ anisotropie.mean.matrix <- function(Data.mesures, Data.number, step.value, step.
 #' @param Data.mesures data.frame contenant les mesures
 #' @param step.value typiquement la température des mesures d'anisotropie
 #' @param Data.number numéro des échantillons
-#' @seealso anisotropie.eigen.matrix, anisotropie.mean.matrix
+#' @seealso \code{\link{anisotropie.eigen.matrix}}, \code{\link{anisotropie.mean.matrix}}
 #' @return un data.frame avec les colonnes "L1", "L2", "L3", "L1.Inc", "L1.Dec", "L2.Inc", "L2.Dec", "L3.Inc", "L3.Dec", "F13", "F12", "F23"
 #' @export
 anisotropie.mean.eigen.tensor <- function(Data.mesures, Data.number, step.value, step.code = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"))
@@ -2750,7 +2751,7 @@ vecteur.partiel <- function(TabX, TabY, TabZ, en0 = TRUE)
 #' et retourne aussi le MAD
 #' @param en0 permet de calculer la composante qui passe par l'origine (0, 0)
 #' @return une data.frame "X", "Y", "Z", "I", "D", "F", "Sl", "MAD", "DANG"
-#' @seealso composante.partielle.T1T2
+#' @seealso \code{\link{composante.partielle.T1T2}}
 #' @export
 composante.partielle <- function(TabX, TabY, TabZ, en0 = FALSE)
 {
@@ -2774,7 +2775,7 @@ composante.partielle <- function(TabX, TabY, TabZ, en0 = FALSE)
 #' @param en0 permet de calculer la composante qui passe par l'origine (0, 0)
 #' @param corr.ani corrige de l'anisotropie
 #' @return une data.frame "X", "Y", "Z", "I", "D", "F", "Sl", "MAD", "DANG"
-#' @seealso composante.partielle, zijderveld1.T1T2
+#' @seealso \code{\link{composante.partielle, zijderveld1.T1T2}}
 #' @export
 composante.partielle.T1T2 <- function(Data, T1 = NULL, T2 = NULL, corr.ani = FALSE, ani.step.value = NULL,
                                       step.code = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"),
@@ -2807,9 +2808,9 @@ composante.partielle.T1T2 <- function(Data, T1 = NULL, T2 = NULL, corr.ani = FAL
   if (is.null(T2) | is.na(T2))
     T2 <- Data$step.value[length(Data$step.value)]
 
-#  if (T2 < T1) {
- #   warning(" T2 < T1 ")
-  #}
+  if (T2 < T1) {
+    warning(" T2 < T1 ")
+  }
 
 
   iT1 <- 1
@@ -2875,9 +2876,9 @@ composante.partielle.T1T2 <- function(Data, T1 = NULL, T2 = NULL, corr.ani = FAL
 #' @param withAni permet de voir les étapes d'anisotropie
 #' @param ani.step.value correspond à l'step.value ou la température de la détermination de l'anisotropie
 #' @param step.code chaîne de caractère représentant les étapes de l'anisotropie "Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB". Cette ordre est obligatoire
-#' @seealso composante.partielle.T1T2, zijderveld2.T1T2
+#' @seealso \code{\link{composante.partielle.T1T2, zijderveld2.T1T2}}
 #' @export
-zijderveld1.T1T2 <- function(Data, T1 = NULL, T2 = NULL, show.step = FALSE, ignore.ani = TRUE, ani.step.value = NULL,
+zijderveld1.T1T2 <- function(Data, T1 = NULL, T2 = NULL, show.step = FALSE, ignore.ani = TRUE, ani.step.value = NULL, main = "",
                              step.code = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"),
                              legend.pos = NULL, legend.txt = c("(Y, X)", "(Y, Z)"),
                              en0 = FALSE )
@@ -2950,7 +2951,7 @@ zijderveld1.T1T2 <- function(Data, T1 = NULL, T2 = NULL, show.step = FALSE, igno
     pt.names <- rep("", length(Data$X) )
   }
 
-  zijderveld1(Data$X[1:iT1], Data$Y[1:iT1], Data$Z[1:iT1],  ylim = ylim, pt.names = pt.names[1:iT1], legend.pos = legend.pos, legend.txt = legend.txt )
+  zijderveld1(Data$X[1:iT1], Data$Y[1:iT1], Data$Z[1:iT1],  ylim = ylim, pt.names = pt.names[1:iT1], legend.pos = legend.pos, legend.txt = legend.txt, main = main )
   if (iT2 != length(Data$X))
     zijderveld1(Data$X[iT2:length(Data$X)], Data$Y[iT2:length(Data$X)], Data$Z[iT2:length(Data$X)], pt.names = pt.names[iT2:length(Data$X)], new = FALSE)
 
@@ -2969,9 +2970,9 @@ zijderveld1.T1T2 <- function(Data, T1 = NULL, T2 = NULL, show.step = FALSE, igno
 #' @param TRUE permet de voir les étapes d'anisotropie
 #' @param ani.step.value correspond à l'step.value ou la température de la détermination de l'anisotropie
 #' @param step.code chaîne de caractère représentant les étapes de l'anisotropie "Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB". Cette ordre est obligatoire
-#' @seealso composante.partielle.T1T2, zijderveld2.T1T2
+#' @seealso \code{\link{composante.partielle.T1T2, zijderveld2.T1T2}}
 #' @export
-zijderveld2.T1T2 <- function(Data, T1 = NULL, T2 = NULL, show.step = FALSE, ignore.ani = TRUE, ani.step.value = NULL,
+zijderveld2.T1T2 <- function(Data, T1 = NULL, T2 = NULL, show.step = FALSE, ignore.ani = TRUE, ani.step.value = NULL, main = "",
                              step.code = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"),
                              legend.pos = NULL, legend.txt = c("(Y, X)", "(Y, Z)"),
                              en0 = FALSE )
@@ -3034,7 +3035,7 @@ zijderveld2.T1T2 <- function(Data, T1 = NULL, T2 = NULL, show.step = FALSE, igno
     pt.names <- rep("", length(Data$X) )
   }
 
-  zijderveld2(Data$X[1:iT1], Data$Y[1:iT1], Data$Z[1:iT1], pt.names = pt.names[1:iT1], legend.pos = legend.pos, legend.txt = legend.txt )
+  zijderveld2(Data$X[1:iT1], Data$Y[1:iT1], Data$Z[1:iT1], pt.names = pt.names[1:iT1], legend.pos = legend.pos, legend.txt = legend.txt, main = main )
   if (iT2 != length(Data$X))
     zijderveld2(Data$X[iT2:length(Data$X)], Data$Y[iT2:length(Data$X)], Data$Z[iT2:length(Data$X)], pt.names = pt.names[iT2:length(Data$X)], new = FALSE)
 
