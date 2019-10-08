@@ -10,7 +10,7 @@
 #  http://www.r-project.org/Licenses/
 #  ------------------------------------------------------------------
 
-# Version 2019-09-27
+# Version 2019-10-08
 #
 
 #' @author "Philippe DUFRESNE"
@@ -1905,6 +1905,143 @@ genere.AMD <- function(file.AMD = "fichier.AMD", list.ech, shape = "Cyl" , encod
   close(filCon)
 }
 
+#' read.AM.mesures
+#' Lecture des mesures d'un fichier Pal (*.txt)
+#' @param encoding  Pour les fichiers du magnétomètre, il faut "macroman" -> difficle à connaitre, peut être "latin1" ou "utf8".
+#' @return une data.frame
+#' @export
+read.Pal.mesures <- function(file.Pal, encoding = "macroman")
+{
+  # Lecture et Copy du fichier
+  lin<- NULL
+  fil <- file(file.Pal, "r", encoding = encoding)
+  lin <- readLines(fil)
+  close(fil)
+  # Recherche position-ligne des noms
+  g <- NULL
+  for (i in 1:length(lin))
+    if (grepl("Id:", lin[i])==TRUE)
+      g<-c(g,i )
+
+  # Lecture mesure par nom
+  lname <- trimws(substr(lin[g],4, 15))
+  list.mesure <- NULL
+  lmes <- NULL
+
+  first.mesure <- NULL
+  last.mesure <- NULL
+  for (i in 1:length(g)) {
+    first.mesure <- g[i] + 2
+    if (i<length(g))
+      last.mesure <- g[i+1] - 1
+    else
+      last.mesure<- length(lin)
+
+    tEtap <- NULL
+    tEtap.val <- NULL
+    tX <- NULL
+    tY <- NULL
+    tZ <- NULL
+    tI <- NULL
+    tD <- NULL
+    tF <- NULL
+    tQual <- NULL
+    tApp <- NULL
+    tSuscep <- NULL
+    for (j in first.mesure:last.mesure) {
+      lEtap <- substr(lin[j], 3, 7)
+      lEtap.val <- substr(lin[j], 3, 5)
+      lX <- substr(lin[j], 9, 18)
+      lY <- substr(lin[j], 20, 29)
+      lZ <- substr(lin[j], 31, 40)
+      lQual <- substr(lin[j], 43, 44)
+      lApp <- substr(lin[j], 46, 46)
+      lSuscep <- substr(lin[j], 48, 52)
+      if ( is.na(as.numeric(lX)) || is.na(as.numeric(lY)) || is.na(as.numeric(lY)) ) {
+        lX <- 0
+        lY <- 0
+        lZ <- 0
+        lI <- 0
+        lD <- 0
+        lF <- 0
+      }
+      else {
+        lI <- calcul.vecteur.polaire.I(as.numeric(lX), as.numeric(lY), as.numeric(lZ))
+        lD <- calcul.vecteur.polaire.D(as.numeric(lX), as.numeric(lY), as.numeric(lZ))
+        lF <- calcul.vecteur.polaire.F(as.numeric(lX), as.numeric(lY), as.numeric(lZ))
+      }
+
+      tEtap <- c(tEtap, lEtap)
+      tEtap.val <- c(tEtap.val, lEtap.val)
+      tX <- c(tX, lX)
+      tY <- c(tY, lY)
+      tZ <- c(tZ, lZ)
+      tI <- c(tI, lI)
+      tD <- c(tD, lD)
+      tF <- c(tF, lF)
+      tQual <- c(tQual, lQual)
+      tApp <- c(tApp, lApp)
+      tSuscep <- c(tSuscep, lSuscep)
+      lmes <- data.frame(number = i, name = lname[i], step = tEtap, step.value = as.numeric(tEtap.val),
+                         X = as.numeric(tX), Y = as.numeric(tY), Z = as.numeric(tZ),
+                         I = as.numeric(tI), D = as.numeric(tD), F = as.numeric(tF),
+                         Quality = as.numeric(tQual), App = tApp, Suscep = as.numeric(tSuscep), stringsAsFactors = FALSE)
+    }
+    list.mesure <- rbind(list.mesure, lmes)
+
+  }
+
+  return(list.mesure)
+}
+
+#' Lecture des infos sur mesures d'un fichier AM
+#' @return une data.frame avec les infos sur les spécimens
+#' @export
+read.Pal.info <- function (file.Pal, encoding="macroman")
+{
+
+  # Lecture et Copy du fichier
+  lin<- NULL
+  fil <- file(file.Pal, "r", encoding=encoding)
+  lin <- readLines(fil)
+  close(fil)
+  # Recherche position-ligne des noms
+  g <- NULL
+  for (i in 1:length(lin))
+    if (grepl("Id:", lin[i])==TRUE)
+      g<-c(g,i )
+
+  # Lecture mesure par nom
+  lname <- trimws(substr(lin[g], 4, 15))
+  linc <- trimws(substr(lin[g], 20, 24))
+  laz <- trimws(substr(lin[g], 29, 33))
+  ldip <- trimws(substr(lin[g], 39, 43))
+  lstr <- trimws(substr(lin[g], 49, 53))
+  lv <- trimws(substr(lin[g], 57, 61))
+  lcom <- trimws(substr(lin[g], 69, 100))
+
+  lL <- trimws(substr(lin[g+1], 3, 13))
+  lG <- trimws(substr(lin[g+1], 16, 26))
+  lH <- trimws(substr(lin[g+1], 33, 35))
+  lT <- trimws(substr(lin[g+1], 38, 56))
+
+  lazm <- trimws(substr(lin[g+1], 61, 66))
+  lazs <- trimws(substr(lin[g+1], 71, 77))
+  lOr <- trimws(substr(lin[g+1], 81, 92))
+  lFm <- trimws(substr(lin[g+1], 96, 106))
+  lLoc <- trimws(substr(lin[g+1], 110, 120))
+
+  list.mesure <- NULL
+  list.mesure <- data.frame(number = c(1: length(g)), name = lname, inc = as.numeric(linc), az = as.numeric(laz), dip = as.numeric(ldip), str = as.numeric(lstr),  v = as.numeric(lv), com =as.character(lcom),
+                            L = as.numeric(lL), G = as.numeric(lG), H = as.numeric(lH), T = as.character(lT),
+                            azm = as.numeric(lazm), azs = as.numeric(lazs), Or = as.character(lOr), Fm = as.character(lFm), Loc = as.character(lLoc),
+                            stringsAsFactors = FALSE)
+
+
+  return(list.mesure)
+}
+
+
 #' Extraction des mesures correspondant à un nom
 #' @export
 extract.mesures.specimen.name <- function( specimen.name, list.mesure)
@@ -2875,6 +3012,7 @@ composante.partielle.T1T2 <- function(Data, T1 = NULL, T2 = NULL, corr.ani = FAL
 #' @param show.step booléen permettant l'affichage des étapes
 #' @param withAni permet de voir les étapes d'anisotropie
 #' @param ani.step.value correspond à l'step.value ou la température de la détermination de l'anisotropie
+#' @param main titre de la figure
 #' @param step.code chaîne de caractère représentant les étapes de l'anisotropie "Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB". Cette ordre est obligatoire
 #' @seealso \code{\link{composante.partielle.T1T2, zijderveld2.T1T2}}
 #' @export
