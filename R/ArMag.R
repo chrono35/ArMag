@@ -1905,7 +1905,6 @@ genere.AMD <- function(file.AMD = "fichier.AMD", list.ech, shape = "Cyl" , encod
   close(filCon)
 }
 
-#' read.AM.mesures
 #' Lecture des mesures d'un fichier Pal (*.txt)
 #' @param encoding  Pour les fichiers du magnétomètre, il faut "macroman" -> difficle à connaitre, peut être "latin1" ou "utf8".
 #' @return une data.frame
