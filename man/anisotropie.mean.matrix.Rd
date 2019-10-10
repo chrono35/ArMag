@@ -21,5 +21,5 @@ une matrice carrée 3 x3
 Calcul de la matrice moyenne symétrisée d'anisotropie moyen
 }
 \seealso{
-anisotropie.mean.eigen.tensor
+\code{\link{anisotropie.mean.eigen.tensor}}
 }

@@ -18,5 +18,5 @@ Calcul le vecteur de la composante partielle
 et retourne aussi le MAD
 }
 \seealso{
-composante.partielle.T1T2
+\code{\link{composante.partielle.T1T2}}
 }

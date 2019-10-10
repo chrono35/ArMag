@@ -15,5 +15,5 @@ cartesien(inc, dec, aim = 1)
 Valeur de X, Y et Z pour I et D
 }
 \seealso{
-calcul.vecteur.cartesien , polaire
+\code{\link{calcul.vecteur.cartesien}} , \code{\link{polaire}}
 }

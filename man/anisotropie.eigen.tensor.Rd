@@ -21,5 +21,5 @@ un data.frame avec les colonnes "L1", "L1.Inc", "L1.Dec", "L2", "L2.Inc", "L2.De
 Calcul des directions et valeurs des vecteurs propres d'anisotropie partielle pour un spécimen à une certaine température
 }
 \seealso{
-anisotropie.eigen.matrix
+\code{\link{anisotropie.eigen.matrix}}
 }

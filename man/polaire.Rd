@@ -13,5 +13,5 @@ degrés
 Coordonnées polaires pour X, Y et Z
 }
 \seealso{
-calcul.vecteur.polaire , cartesien
+\code{\link{calcul.vecteur.polaire}} , \code{\link{cartesien}}
 }

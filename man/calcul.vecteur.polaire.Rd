@@ -13,5 +13,5 @@ angle en degré
 Coordonnées polaires pour X, Y et Z
 }
 \seealso{
-polaire
+\code{\link{polaire}}
 }

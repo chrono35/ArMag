@@ -6,9 +6,9 @@
 par défaut la fonction n'affiche pas les étapes d'anisotropie et ne corrige pas les directions de l'anisotropie}
 \usage{
 zijderveld1.T1T2(Data, T1 = NULL, T2 = NULL, show.step = FALSE,
-  ignore.ani = TRUE, ani.step.value = NULL, step.code = c("Z+", "Z-",
-  "X+", "X-", "Y+", "Y-", "ZB"), legend.pos = NULL,
-  legend.txt = c("(Y, X)", "(Y, Z)"), en0 = FALSE)
+  ignore.ani = TRUE, ani.step.value = NULL, main = "",
+  step.code = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"),
+  legend.pos = NULL, legend.txt = c("(Y, X)", "(Y, Z)"), en0 = FALSE)
 }
 \arguments{
 \item{T1}{correspond à step.value ou température la plus basse}
@@ -18,6 +18,8 @@ zijderveld1.T1T2(Data, T1 = NULL, T2 = NULL, show.step = FALSE,
 \item{show.step}{booléen permettant l'affichage des étapes}
 
 \item{ani.step.value}{correspond à l'step.value ou la température de la détermination de l'anisotropie}
+
+\item{main}{titre de la figure}
 
 \item{step.code}{chaîne de caractère représentant les étapes de l'anisotropie "Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB". Cette ordre est obligatoire}
 
@@ -30,5 +32,5 @@ Trace un diagramme de zijderveld1 en calculant la composante entre les étapes T
 par défaut la fonction n'affiche pas les étapes d'anisotropie et ne corrige pas les directions de l'anisotropie
 }
 \seealso{
-composante.partielle.T1T2, zijderveld2.T1T2
+\code{\link{composante.partielle.T1T2, zijderveld2.T1T2}}
 }

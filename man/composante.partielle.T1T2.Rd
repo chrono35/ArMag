@@ -3,7 +3,7 @@
 \name{composante.partielle.T1T2}
 \alias{composante.partielle.T1T2}
 \title{Calcul le vecteur de la composante partielle en calculant la composante entre les étapes T1 et T2
-par défaut la fonction n'affiche pas les étapes d'anisotropie}
+la fonction ne tient pas compte des étapes d'anisotropie, si step.code est bien rensiegné}
 \usage{
 composante.partielle.T1T2(Data, T1 = NULL, T2 = NULL,
   corr.ani = FALSE, ani.step.value = NULL, step.code = c("Z+", "Z-",
@@ -19,8 +19,8 @@ une data.frame "X", "Y", "Z", "I", "D", "F", "Sl", "MAD", "DANG"
 }
 \description{
 Calcul le vecteur de la composante partielle en calculant la composante entre les étapes T1 et T2
-par défaut la fonction n'affiche pas les étapes d'anisotropie
+la fonction ne tient pas compte des étapes d'anisotropie, si step.code est bien rensiegné
 }
 \seealso{
-composante.partielle, zijderveld1.T1T2
+\code{\link{composante.partielle, zijderveld1.T1T2}}
 }

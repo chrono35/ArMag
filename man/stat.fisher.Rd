@@ -26,6 +26,6 @@ Statistique de Fisher
 modifié, pas de pondération calcul de A95 Vrai sans simplification tel que fisher 1953
 }
 \seealso{
-stat.mcFadden
+\code{\link{stat.mcFadden}}
 }
 \keyword{fisher}

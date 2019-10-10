@@ -25,5 +25,5 @@ un data.frame avec les colonnes "L1", "L1.Inc", "L1.Dec", "L2", "L2.Inc", "L2.De
 Calcul les coordonnées des tenseurs propres matrice d'anisotropie
 }
 \seealso{
-anisotropie.eigen.tensor
+\code{\link{anisotropie.eigen.tensor}}
 }

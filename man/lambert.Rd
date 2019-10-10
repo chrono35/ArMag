@@ -16,25 +16,25 @@ lambert(data, pt.names = NULL, labels = NA, label.pos = NULL,
   new = TRUE, pch = 21, ...)
 }
 \arguments{
-\item{pt.names}{: Correspond à la liste des noms des points. Laissée vide n'affiche rien. Si on met pt.names = "", cela affiche les noms}
+\item{data}{data.frame avec les variables $I d'inclinaison et $D de déclinaison}
 
-\item{label.pos}{: Séquence de valeur à afficher en I et D, voir fonction lambert.ID.grid}
+\item{pt.names}{Correspond à la liste des noms des points. Laissée vide n'affiche rien. Si on met pt.names = "", cela affiche les noms}
 
-\item{show.grid}{:  permet d'afficher une grille en toile d'araigné sur le fond. Mettre à FALSE, si on superpose des diagrammes}
+\item{label.pos}{Séquence de valeur à afficher en I et D, voir fonction lambert.ID.grid}
 
-\item{show.grid.labels}{= 10 : permet de changer échelle des graduations}
+\item{show.grid}{permet d'afficher une grille en toile d'araigné sur le fond. Mettre à FALSE, si on superpose des diagrammes}
 
-\item{point.symbols}{: défini la forme de points, correspond exactement au pch de la fonction points()}
+\item{show.grid.labels}{permet de changer échelle des graduations}
 
-\item{inc.lim}{: permet de restraire l'affichage sur une étendue d'inclinaison. Ex: inc.lim = c(45, 90). Laissée à NULL, le diagramme s'addapte aux données}
+\item{point.symbols}{défini la forme de points, correspond exactement au pch de la fonction points()}
 
-\item{dec.min}{= -90, dec.max = 180 : permet de restraire l'étendue en déclianison}
+\item{inc.lim}{permet de restreindre l'affichage sur une étendue d'inclinaison. Ex: inc.lim = c(45, 90). Laissée à NULL, le diagramme s'addapte aux données}
 
-\item{new}{: permet d'initialiser la sortie graphique. Mettre à FALSE, si on superpose des diagrammes.}
+\item{dec.max}{permet de restreindre l'étendue en déclinaison}
+
+\item{new}{permet d'initialiser la sortie graphique. Mettre à FALSE, si on superpose des diagrammes.}
 
 \item{pch}{: permet de changer la forme du symbole}
-
-\item{inclinaisons, }{declinaisons : les listes des données d'inclinaison et de déclinaison}
 }
 \description{
 Place des points I et D dans un repère Lambert avec un data.frame

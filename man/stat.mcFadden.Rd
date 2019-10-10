@@ -23,5 +23,5 @@ Statistique de mcFadden sur l'inclinaison seul à partir des coordonées I et D
 https://doi.org/10.1111/j.1365-246X.1990.tb05683.x
 }
 \seealso{
-stat.mcFadden.XYZ, stat.fisher
+\code{\link{stat.mcFadden.XYZ}}, \code{\link{stat.fisher}}
 }

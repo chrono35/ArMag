@@ -21,5 +21,5 @@ un data.frame avec les colonnes "L1", "L2", "L3", "L1.Inc", "L1.Dec", "L2.Inc", 
 Calcul de la direction et des valeurs du vecteur propre d'anisotropie moyen
 }
 \seealso{
-anisotropie.eigen.matrix, anisotropie.mean.matrix
+\code{\link{anisotropie.eigen.matrix}}, \code{\link{anisotropie.mean.matrix}}
 }

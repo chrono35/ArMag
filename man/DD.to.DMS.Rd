@@ -13,5 +13,5 @@ DD.to.DMS(degre)
 Conversion de Degré Décimal en Degres minute second
 }
 \seealso{
-DMS.to.DD
+\code{\link{DMS.to.DD}}
 }

@@ -10,5 +10,5 @@ stat.mcFadden.XYZ(TabX, TabY, TabZ)
 Statistique de mcFadden sur l'inclinaison seul à partir des coordonées XYZ
 }
 \seealso{
-stat.mcFadden, stat.fisher
+\code{\link{stat.mcFadden}}, \code{\link{stat.fisher}}
 }
