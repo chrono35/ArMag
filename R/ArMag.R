@@ -603,7 +603,7 @@ calcul.vecteur.polaire.F = function(X, Y, Z)
 #' @param  label.pos séquence de valeur à afficher en I et D, attention format particulier !!
 
 #' # Pour choisir les graduations
-#' label.pos = NULL
+#' @example label.pos = NULL
 #' label.pos$I = seq(0, 90, by=20)
 #' label.pos$D = seq(0, 90, by=10)
 #' et pour paleomag : lab.pos$D = c(seq(270, 350, by=10), seq(0, 90, by=10))
@@ -760,7 +760,7 @@ lambert.ID.grid <- function (main = "", xlab = "", ylab = "", labels = NA, label
 #' @param pt.names  Correspond à la liste des noms des points. Laissée vide n'affiche rien. Si on met pt.names = "", cela affiche les noms
 #' @param label.pos  Séquence de valeur à afficher en I et D, voir fonction lambert.ID.grid
 #' @param point.symbols défini la forme de points, correspond exactement au pch de la fonction points()
-#' @param pch : permet de changer la forme du symbole
+#' @param pch permet de changer la forme du symbole
 #' @param show.grid permet d'afficher une grille en toile d'araigné sur le fond. Mettre à FALSE, si on superpose des diagrammes
 #' @param show.grid.labels permet de changer échelle des graduations
 #' @param inc.lim permet de restreindre l'affichage sur une étendue d'inclinaison. Ex: inc.lim = c(45, 90). Laissée à NULL, le diagramme s'addapte aux données
@@ -3212,3 +3212,81 @@ remove.step <- function(Data, ani.step.value= NULL, step.code = c("Z+", "Z-", "X
   return(res.list)
 }
 
+# Calcul astronomique ----
+
+#' Le nombre de jour julien pour les calculs astronomiques
+#' Le jour julien 0 commence le 24 novembre -4713 (4712 BC) à 12h
+#' @seealso \code{\link{https://codes-sources.commentcamarche.net/source/31774-calcul-de-la-position-du-soleil-declinaison-angle-horaire-altitude-et-azimut-altaz-solaire}}
+#' @export
+julian.day <- function( jour,   mois,   annee,   heure,   minute,   seconde)
+{
+  day <- jour + heure/24.0 + minute/1440.0 + seconde/86400.0
+  year <- annee
+  month <- mois
+
+  if (month == 1 || month == 2)
+  {
+    year <- year-1.0
+    month <- month+12.0
+  }
+
+  a <- trunc(year/100.0)
+  b <- 2 - a + trunc(a/4.0)
+
+  jour_julien <- trunc(365.25*(year+4716.0)) + trunc(30.6001*(month+1.0)) + day + b - 1524.5
+
+  return (as.numeric(jour_julien))
+}
+
+#' Calcul l'azimuth du soleil en un lieu à une date donnée à une heure "UTC"
+#' @seealso \code{\link{https://codes-sources.commentcamarche.net/source/31774-calcul-de-la-position-du-soleil-declinaison-angle-horaire-altitude-et-azimut-altaz-solaire}}
+#' @seealso \code{\link{https://fr.planetcalc.com/320/}}
+#' @export
+sun.azimuth <- function(Day, Month, Year, Hour, Minute, Seconde=0, longdeg, longmin=0, longsec=0, latdeg, latmin=0, latsec=0) {
+  # -----------------------------heure d'hiver ou d'été---------------------------
+  correction_heure <- 0
+
+  jj <- julian.day(jour2, mois2, annee2, heure2, minute2, seconde2) - correction_heure/24.0 - 2451545.0
+
+
+  #-------------calculs ascension droite et délinaison-------------
+  g <- 357.529 + 0.98560028*jj
+  q <- 280.459 + 0.98564736*jj
+  l <- q + 1.915 * sin(g*pi/180.0) + 0.020*sin(2*g*pi/180.0) # Ellipticité
+  e <- 23.439 - 0.00000036*jj
+
+  ascension_droite <- atan(cos(e*pi/180.0)*sin(l*pi/180.0)/cos(l*pi/180.0))*(180.0/pi)/15.0
+  if (cos(l*pi/180.0) < 0)
+  {
+    ascension_droite <- 12.0 + ascension_droite
+  }
+  if (cos(l*pi/180.0)>0 && sin(l*pi/180.0) < 0)
+  {
+    ascension_droite <- ascension_droite + 24.0
+  }
+  declinaison <- asin(sin(e*pi/180.0)*sin(l*pi/180.0))*180.0/pi
+
+
+  nb_siecle <- jj/36525.0
+  heure_siderale1 <- (24110.54841+(8640184.812866*nb_siecle)+(0.093104*(nb_siecle*nb_siecle))-(0.0000062*(nb_siecle*nb_siecle*nb_siecle)))/3600.0
+  heure_siderale2 <- ((heure_siderale1/24.0) - trunc(heure_siderale1/24.0)) * 24.0
+
+  angleH <- 360.0*heure_siderale2/23.9344
+  angleT <- (heure2-correction_heure-12.0+minute2/60.0+seconde2/3600.0)*360.0/23.9344 # jour sidéraux = 23h56min 4,0989s -> 23,93447h -> 0,9972696 jour solaire
+  angle <- angleT + angleH
+
+  angle_horaire <- angle - ascension_droite*15.0 + longitude
+
+  #-------------calculs altitude et azimut-------------------------
+
+  altitude <- asin( sin(declinaison*pi/180.0)*sin(latitude*pi/180.0) - cos(declinaison*pi/180.0)*cos(latitude*pi/180.0)*cos(angle_horaire*pi/180.0) )*180.0/pi
+
+  azimut <- acos( (sin(declinaison*pi/180.0)-sin(latitude*pi/180.0)*sin(altitude*pi/180.0)) / (cos(latitude*pi/180.0)*cos(altitude*pi/180.0)) )*180.0/pi
+  sinazimut <- (cos(declinaison*pi/180.0)*sin(angle_horaire*pi/180.0)) / cos(altitude*pi/180.0)
+  if (sinazimut<0)
+  {
+    azimut <-360-azimut;
+  }
+
+  return(as.numeric(azimut))
+}

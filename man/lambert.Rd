@@ -34,7 +34,7 @@ lambert(data, pt.names = NULL, labels = NA, label.pos = NULL,
 
 \item{new}{permet d'initialiser la sortie graphique. Mettre à FALSE, si on superpose des diagrammes.}
 
-\item{pch}{: permet de changer la forme du symbole}
+\item{pch}{permet de changer la forme du symbole}
 }
 \description{
 Place des points I et D dans un repère Lambert avec un data.frame

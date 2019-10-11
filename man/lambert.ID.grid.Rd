@@ -13,12 +13,7 @@ lambert.ID.grid(main = "", xlab = "", ylab = "", labels = NA,
 }
 \arguments{
 \item{label.pos}{séquence de valeur à afficher en I et D, attention format particulier !!
-# Pour choisir les graduations
-label.pos = NULL
-label.pos$I = seq(0, 90, by=20)
-label.pos$D = seq(0, 90, by=10)
-et pour paleomag : lab.pos$D = c(seq(270, 350, by=10), seq(0, 90, by=10))
-Label.pos : doit être dans l'étendu des dex.min, dec.max, inc.min, inc.max}
+# Pour choisir les graduations}
 
 \item{radlab}{écrit les labels sous forme d'étoile}
 }
