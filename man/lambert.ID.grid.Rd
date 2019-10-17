@@ -12,12 +12,17 @@ lambert.ID.grid(main = "", xlab = "", ylab = "", labels = NA,
   dec.max = 270, inc.min = 0, inc.max = 90, new = TRUE, ...)
 }
 \arguments{
-\item{label.pos}{séquence de valeur à afficher en I et D, attention format particulier !!
-# Pour choisir les graduations}
+\item{label.pos}{séquence de valeur à afficher en I et D, attention format particulier !!}
 
 \item{radlab}{écrit les labels sous forme d'étoile}
 }
 \description{
-lambert.ID.grid
-Trace une grille dans le repère Lambert, fonctionne avec la fonction lambert()
+# Pour choisir les graduations
+et pour paleomag : lab.pos$D = c(seq(270, 350, by=10), seq(0, 90, by=10))
+Label.pos : doit être dans l'étendu des dex.min, dec.max, inc.min, inc.max
+}
+\examples{
+label.pos = NULL
+label.pos$I = seq(0, 90, by=20)
+label.pos$D = seq(0, 90, by=10)
 }

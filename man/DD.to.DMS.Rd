@@ -2,7 +2,7 @@
 % Please edit documentation in R/ArMag.R
 \name{DD.to.DMS}
 \alias{DD.to.DMS}
-\title{Conversion de Degré Décimal en Degres minute second}
+\title{Conversion de Degré Décimal en Degrés Minute Second}
 \usage{
 DD.to.DMS(degre)
 }
@@ -10,7 +10,7 @@ DD.to.DMS(degre)
 \item{degre}{degrés décimal}
 }
 \description{
-Conversion de Degré Décimal en Degres minute second
+Conversion de Degré Décimal en Degrés Minute Second
 }
 \seealso{
 \code{\link{DMS.to.DD}}

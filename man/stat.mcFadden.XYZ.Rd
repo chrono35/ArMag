@@ -2,12 +2,12 @@
 % Please edit documentation in R/ArMag.R
 \name{stat.mcFadden.XYZ}
 \alias{stat.mcFadden.XYZ}
-\title{Statistique de mcFadden sur l'inclinaison seul à partir des coordonées XYZ}
+\title{Statistique de mcFadden sur l'inclinaison seule à partir des coordonées XYZ}
 \usage{
 stat.mcFadden.XYZ(TabX, TabY, TabZ)
 }
 \description{
-Statistique de mcFadden sur l'inclinaison seul à partir des coordonées XYZ
+Statistique de mcFadden sur l'inclinaison seule à partir des coordonées XYZ
 }
 \seealso{
 \code{\link{stat.mcFadden}}, \code{\link{stat.fisher}}

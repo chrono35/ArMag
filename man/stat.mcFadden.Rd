@@ -7,7 +7,7 @@
 stat.mcFadden(Data, dec = NULL, inc.absolue = TRUE)
 }
 \arguments{
-\item{Data}{liste des inclinaisons en degrésou une data.frame avec les variables $I et $D}
+\item{Data}{liste des inclinaisons en degré ou une data.frame avec les variables $I et $D}
 
 \item{inc.absolue}{calcul avec la valeur absolue des inclinaisons}
 

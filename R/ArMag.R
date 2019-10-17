@@ -162,7 +162,7 @@ angleD <- function(X, Y)
   return(res)
 }
 
-#' Statistique de mcFadden sur l'inclinaison seul à partir des coordonées XYZ
+#' Statistique de mcFadden sur l'inclinaison seule à partir des coordonées XYZ
 #' @seealso \code{\link{stat.mcFadden}}, \code{\link{stat.fisher}}
 #' @export
 stat.mcFadden.XYZ <- function(TabX, TabY, TabZ)
@@ -175,7 +175,7 @@ stat.mcFadden.XYZ <- function(TabX, TabY, TabZ)
 }
 
 #' Statistique de mcFadden sur l'inclinaison seul à partir des coordonées I et D
-#' @param Data liste des inclinaisons en degrésou une data.frame avec les variables $I et $D
+#' @param Data liste des inclinaisons en degré ou une data.frame avec les variables $I et $D
 #' @param des liste des déclinaisons en degrés
 #' @param inc.absolue calcul avec la valeur absolue des inclinaisons
 #' @return  en degrés, un data.frame "n", "imoy.McFadden", "imoy.McElhinny", "a95.mcFad", "a95.eqFish", "Kb", "Kssb", "imin", "imax", "dmin", "dmax"
@@ -198,18 +198,32 @@ stat.mcFadden <- function(Data, dec = NULL, inc.absolue = TRUE)
 
   # Calcul des sommes
   N <- length(inc)
-  if ((N<=2) || (N != length(dec)) ) return()
+  #if ((N<=2) || (N != length(dec)) ) return()
 
+  if (N<=2)
+  {
+      warning("length(inc) < 3")
+      return()
+  }
 
   Imin <- min(inc)
   Imax <- max(inc)
-  Dmin <- min(dec)
-  Dmax <- max(dec)
+  if (is.null(dec))
+  {
+    Dmin <- NA
+    Dmax <- NA
+  }
+  else
+  {
+    Dmin <- min(dec)
+    Dmax <- max(dec)
+  }
+
   Imoy <- 0
 
   # Passage en radian pour les calculs
   i.rad <- inc/180*pi
-  d.rad <- dec/180*pi
+  # d.rad <- dec/180*pi
 
   A <- sum(sin(i.rad))
   B <- sum(cos(i.rad))
@@ -260,15 +274,10 @@ stat.mcFadden <- function(Data, dec = NULL, inc.absolue = TRUE)
   Kssb <-  (N-1)/2/(N-CFad);
 
   # retour en degrés
-  Data <- c( n= N, imoy.McFadden = Imoy/pi*180, imoy.McElhinny = I.McElhinny/pi*180,
-            a95.mcFad = a95mcFadden/pi*180, a95.eqFish = 2.4477/sqrt(N*K)/pi*180,
-            Kb = K, Kssb = Kssb,
-            imin = Imin, imax = Imax, dmin = Dmin, dmax = Dmax
-           )
-
-  col.names <- c("n", "imoy.McFadden", "imoy.McElhinny", "a95.mcFad", "a95.eqFish", "Kb", "Kssb", "imin", "imax", "dmin", "dmax")
-  return(as.data.frame(t(Data), col.names = col.names, stringsAsFactors = FALSE))
-
+  return(data.frame( n= N, imoy.McFadden = Imoy/pi*180, imoy.McElhinny = I.McElhinny/pi*180,
+                         a95.mcFad = a95mcFadden/pi*180, a95.eqFish = 2.4477/sqrt(N*K)/pi*180,
+                         Kb = K, Kssb = Kssb,
+                         imin = Imin, imax = Imax, dmin = Dmin, dmax = Dmax))
 
   }
 
@@ -330,12 +339,8 @@ stat.fisher <- function (inc, dec, aim=NA, pfish = 0.95, inc.absolue = TRUE)
   return( )
 
   # retour en degrés
-  Data <- c(n = n, imoy =imoy/pi*180, dmoy = dmoy/pi*180, alpha=a95/pi*180, pfish = pfish, delta = delta/pi*180, KF = KF,
-            imin = imin, imax = imax, dmin = dmin, dmax = dmax)
-
-  col.names <- c("n", "imoy", "dmoy", "a95", "pFish", "Delta", "KF", "imin", "imax", "dmin", "dmax")
-  return(as.data.frame(t(Data), col.names = col.names, stringsAsFactors = FALSE))
-
+  return(data.frame(n = n, imoy =imoy/pi*180, dmoy = dmoy/pi*180, alpha=a95/pi*180, pfish = pfish, delta = delta/pi*180, KF = KF,
+                    imin = imin, imax = imax, dmin = dmin, dmax = dmax))
 }
 
 
@@ -363,8 +368,7 @@ find.extremum <- function(i.min = 0, i.max = 90, d.min = -90, d.max = 270)
 #' @param i inclinaison en degrés
 #' @param d déclinaison en degrés
 X <- function (i, d, ray=1, i.min = 0, box.range)
-{ # angle en degré
-
+{
   x <- sin(d*pi/180 ) * (1 - (abs(i)-i.min)/(90-i.min))  - (box.range[2] + box.range[1])/2
   c <- NA
   if ((box.range[2] - box.range[1]) > (box.range[4] - box.range[3]))
@@ -397,23 +401,23 @@ Y <- function(i, d, ray=1, i.min = 0, box.range)
 # Transformation de type de repère -----------------
 ## Conversion
 
-#' Conversion de Degres minute second en Degré Décimal
+#' Conversion de Degrés Minute Second en Degré Décimal
 #' @param degre degrés entier
 #' @param minute minute entière
 #' @param second seconde en décimal
 #' @seealso \code{\link{DD.to.DMS}}
 #' @export
-DMS.to.DD <- function(degre, minute, second)
+DMS.to.DD <- function(degre, minute, second = 0)
 {
   if (degre>0) {
-    return(degre + minute/60 + second/3600)
+    return(as.numeric(degre + minute/60 + second/3600) )
   } else {
-    return(degre - minute/60 - second/3600)
+    return(as.numeric(degre - minute/60 - second/3600) )
   }
 
 }
 
-#' Conversion de Degré Décimal en Degres minute second
+#' Conversion de Degré Décimal en Degrés Minute Second
 #' @param degre degrés décimal
 #' @seealso \code{\link{DMS.to.DD}}
 #' @export
@@ -584,7 +588,7 @@ calcul.vecteur.polaire.D <- function(X, Y, Z)
 
 #' champs pour X, Y et Z
 #' @export
-calcul.vecteur.polaire.F = function(X, Y, Z)
+calcul.vecteur.polaire.F <- function(X, Y, Z)
 { #en A/m
   res <- NULL
   for (i in 1:length(X)) {
@@ -599,15 +603,17 @@ calcul.vecteur.polaire.F = function(X, Y, Z)
 
 #' lambert.ID.grid
 #' Trace une grille dans le repère Lambert, fonctionne avec la fonction lambert()
-#' @param  radlab écrit les labels sous forme d'étoile
-#' @param  label.pos séquence de valeur à afficher en I et D, attention format particulier !!
-
+#'
 #' # Pour choisir les graduations
-#' @example label.pos = NULL
-#' label.pos$I = seq(0, 90, by=20)
-#' label.pos$D = seq(0, 90, by=10)
 #' et pour paleomag : lab.pos$D = c(seq(270, 350, by=10), seq(0, 90, by=10))
 #' Label.pos : doit être dans l'étendu des dex.min, dec.max, inc.min, inc.max
+#'
+#' @param  radlab écrit les labels sous forme d'étoile
+#' @param  label.pos séquence de valeur à afficher en I et D, attention format particulier !!
+#' @examples
+#' label.pos = NULL
+#' label.pos$I = seq(0, 90, by=20)
+#' label.pos$D = seq(0, 90, by=10)
 #' @export
 lambert.ID.grid <- function (main = "", xlab = "", ylab = "", labels = NA, label.pos = NULL, radlab = FALSE,
                         start = 0, clockwise = FALSE, label.prop = 1.1,
@@ -764,8 +770,8 @@ lambert.ID.grid <- function (main = "", xlab = "", ylab = "", labels = NA, label
 #' @param show.grid permet d'afficher une grille en toile d'araigné sur le fond. Mettre à FALSE, si on superpose des diagrammes
 #' @param show.grid.labels permet de changer échelle des graduations
 #' @param inc.lim permet de restreindre l'affichage sur une étendue d'inclinaison. Ex: inc.lim = c(45, 90). Laissée à NULL, le diagramme s'addapte aux données
-#' @param dec.min
-#' @param dec.max permet de restreindre l'étendue en déclinaison
+#' @param dec.min permet de restreindre l'étendue en déclinaison, borne minimale
+#' @param dec.max permet de restreindre l'étendue en déclinaison, borne maximale
 #' @param new permet d'initialiser la sortie graphique. Mettre à FALSE, si on superpose des diagrammes.
 #' @export
 lambert <- function (data , pt.names = NULL, labels = NA, label.pos = NULL,
@@ -3242,7 +3248,8 @@ julian.day <- function( jour,   mois,   annee,   heure,   minute,   seconde)
 #' @seealso \code{\link{https://codes-sources.commentcamarche.net/source/31774-calcul-de-la-position-du-soleil-declinaison-angle-horaire-altitude-et-azimut-altaz-solaire}}
 #' @seealso \code{\link{https://fr.planetcalc.com/320/}}
 #' @export
-sun.azimuth <- function(Day, Month, Year, Hour, Minute, Seconde=0, longdeg, longmin=0, longsec=0, latdeg, latmin=0, latsec=0) {
+sun.azimuth <- function(Day, Month, Year, Hour, Minute, Seconde=0, longdeg, longmin=0, longsec=0, latdeg, latmin=0, latsec=0)
+{
   # -----------------------------heure d'hiver ou d'été---------------------------
   correction_heure <- 0
 
@@ -3290,3 +3297,166 @@ sun.azimuth <- function(Day, Month, Year, Hour, Minute, Seconde=0, longdeg, long
 
   return(as.numeric(azimut))
 }
+
+# Reduction ----
+
+#' Geocentric Axial Dipole
+#' Reduction suivant le Dipôle Axiale Centré
+#' @return I.reloc en degré
+#' @examples
+#' relocate.GAD(65, 47.12)
+#' @seealso \code{\link{relocate.VADM}}, \code{\link{relocate.VDM}}, \code{\link{relocate.VGP} }
+#' @export
+relocate.GAD <- function( I.site, lat.site,  lat.reloc = "Paris")
+{
+  if (lat.reloc == "Paris") {
+    lat.reloc <- 48.85
+  }
+  if (lat.reloc == "Madrid") {
+    lat.reloc <- 40.4
+  }
+  if (lat.reloc == "Meriden") {
+    lat.reloc <- 52.43
+  }
+  if (lat.reloc == "Athenes") {
+    lat.reloc <- 37.96
+  }
+
+  I.reloc <- I.site + 0.5 * (3 * cos(I.site * pi /180)^2 + 1) * (lat.reloc - lat.site)
+
+  return(data.frame(I.reloc = I.reloc) )
+}
+
+#' Virtual Axial Dipole Moment VADM
+#' @examples {
+#'  # reduction par defaut à Paris
+#'  relocate.VADM(55, 47.12)
+#'  relocate.VADM(55, 47.12, "Paris")
+#'  relocate.VADM(55, 47.12, lat.reloc = 48.85")
+#' }
+#' @seealso \code{\link{relocate.GAD}}, \code{\link{relocate.VDM}}, \code{\link{relocate.VGP} }
+#' @export
+relocate.VADM <- function( F.site,  lat.site,  lat.reloc = "Paris")
+{
+  if (lat.reloc == "Paris") {
+    lat.reloc <- 48.85
+  }
+  if (lat.reloc == "Madrid") {
+    lat.reloc <- 40.4
+  }
+  if (lat.reloc == "Meriden") {
+    lat.reloc <- 52.43
+  }
+  if (lat.reloc == "Athenes") {
+    lat.reloc <- 37.96
+  }
+  F.reloc <-  as.numeric(F.site * sqrt((3 * sin(lat.reloc * pi /180)^2 + 1) / (3 * sin(lat.site * pi /180)^2 + 1)) )
+  return(data.frame(F.reloc = F.reloc))
+}
+
+#' Virtual Dipôle Moment
+#' @examples
+#' relocate.VDM(55, 65,5, 47.12, 2.175,"Paris")
+#' @seealso \code{\link{relocate.GAD}}, \code{\link{relocate.VADM}}, \code{\link{relocate.VGP} }
+#' @export
+relocate.VDM <- function( F.site, I.site, D.site, lat.site, lon.site, lat.reloc = "Paris", lon.reloc = 0)
+{
+  if (lat.reloc == "Paris") {
+    lon.reloc <- 2.3
+    lat.reloc <- 48.85
+  }
+  if (lat.reloc == "Madrid") {
+    lon.reloc <- -3.68
+    lat.reloc <- 40.4
+  }
+  if (lat.reloc == "Meriden") {
+    lon.reloc <- -1.62
+    lat.reloc <- 52.43
+  }
+  if (lat.reloc == "Athenes") {
+    lon.reloc <- 23.72
+    lat.reloc <- 37.96
+  }
+
+  rad <- pi /180
+  LAR <- lat.reloc * rad
+  LGR <- lon.reloc * rad
+  LA <- lat.site * rad
+  LG <- lon.site * rad
+
+  # Calcul de la distance p du pôle
+  pol <- (pi / 2) - atan(tan(I.site * rad) / 2)
+  lap <- asin(sin(LA) * cos(pol) + cos(LA) * sin(pol) * cos(D.site * rad))
+  beta <- asin(sin(pol) * sin(D.site * rad) / cos(lap))
+  if (cos(pol) >= (sin(LA) * sin(lap)))
+  {
+    lgp <- LG + beta
+  }
+  else
+  {
+    lgp <- LG + pi - beta
+  }
+
+  # Calcul de Iij et Dij corrigés
+  pol <- acos(sin(LAR) * sin(lap) + cos(LAR) * cos(lap) * cos(lgp - LGR))
+  I.reloc <-  as.numeric(atan(2 * tan((pi / 2) - pol)) )
+  F.reloc <-  as.numeric( F.site * sqrt((3 * cos(I.site * rad)^2 + 1) / (3 *  cos(I.reloc)^2 + 1)) )
+
+  return(data.frame(I.reloc = I.reloc /rad , F.reloc = F.reloc, lat.pole = lap / rad , lon.pole = lgp / rad))
+}
+
+#' Correction Virtual Geomagnetic Pole
+#' Paris   lat:48.85 lon:2.3
+#' Madrid  lat:40.4 lon:-3.68
+#' Meriden lat:52.43 lon:-1.62
+#' Athenes lat:37.96 lon:23.72
+#' @examples
+#' relocate.VGP(65,5,DMS.to.DD(47,7,15),DMS.to.DD(2,10,12),"Paris")
+#' @seealso \code{\link{relocate.GAD, relocate.VADM, relocate.VDM }}
+#' @references Westphal, p.117 et Merill McElhinny, p.80
+#' @export
+relocate.VGP <- function(I.site, D.site, lat.site, lon.site,  lat.reloc = "Paris", lon.reloc = 0)
+{
+  rad <- as.numeric(pi /180)
+  degre <- as.numeric(180 /pi)
+
+  if (lat.reloc == "Paris") {
+    lon.reloc <- 2.3
+    lat.reloc <- 48.85
+  }
+  if (lat.reloc == "Madrid") {
+    lon.reloc <- -3.68
+    lat.reloc <- 40.4
+  }
+  if (lat.reloc == "Meriden") {
+    lon.reloc <- -1.62
+    lat.reloc <- 52.43
+  }
+  if (lat.reloc == "Athenes") {
+    lon.reloc <- 23.72
+    lat.reloc <- 37.96
+  }
+  LAR <- lat.reloc * rad
+  LGR <- lon.reloc * rad
+  LA <- lat.site * rad
+  LG <- lon.site * rad
+  # Calcul de la distance p du pôle
+  pol <- (pi / 2) - atan(tan(I.site * rad) / 2)
+  lap <- asin(sin(LA) * cos(pol) + cos(LA) * sin(pol) * cos(D.site * rad))
+  beta <- asin(sin(pol) * sin(D.site * rad) / cos(lap))
+  if (cos(pol) >= (sin(LA) * sin(lap)))
+  {
+    lgp <- LG + beta
+  }
+  else
+  {
+    lgp <- LG + pi - beta
+  }
+  # Calcul de Iij et Dij corrigés
+  pol <- acos(sin(LAR) * sin(lap) + cos(LAR) * cos(lap) * cos(lgp - LGR))
+  I.reloc <- atan(2 * tan((pi / 2) - pol)) * degre
+  D.reloc <- asin(sin(lgp - LGR) * cos(lap) / sin(pol)) * degre
+
+  return(data.frame(I.reloc = as.numeric(I.reloc),  D.reloc = as.numeric(D.reloc), lat.pole = as.numeric(lap*degre) , lon.pole = as.numeric(lgp*degre) ) )
+}
+

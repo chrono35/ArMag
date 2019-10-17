@@ -30,7 +30,9 @@ lambert(data, pt.names = NULL, labels = NA, label.pos = NULL,
 
 \item{inc.lim}{permet de restreindre l'affichage sur une étendue d'inclinaison. Ex: inc.lim = c(45, 90). Laissée à NULL, le diagramme s'addapte aux données}
 
-\item{dec.max}{permet de restreindre l'étendue en déclinaison}
+\item{dec.min}{permet de restreindre l'étendue en déclinaison, borne minimale}
+
+\item{dec.max}{permet de restreindre l'étendue en déclinaison, borne maximale}
 
 \item{new}{permet d'initialiser la sortie graphique. Mettre à FALSE, si on superpose des diagrammes.}
 
