@@ -9,9 +9,9 @@ stat.mcFadden(Data, dec = NULL, inc.absolue = TRUE)
 \arguments{
 \item{Data}{liste des inclinaisons en degré ou une data.frame avec les variables $I et $D}
 
-\item{inc.absolue}{calcul avec la valeur absolue des inclinaisons}
+\item{dec}{liste des déclinaisons en degrés}
 
-\item{des}{liste des déclinaisons en degrés}
+\item{inc.absolue}{calcul avec la valeur absolue des inclinaisons}
 }
 \value{
 en degrés, un data.frame "n", "imoy.McFadden", "imoy.McElhinny", "a95.mcFad", "a95.eqFish", "Kb", "Kssb", "imin", "imax", "dmin", "dmax"

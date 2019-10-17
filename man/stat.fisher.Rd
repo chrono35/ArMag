@@ -5,18 +5,19 @@
 \title{Statistique de Fisher
 modifié, pas de pondération calcul de A95 Vrai sans simplification tel que fisher 1953}
 \usage{
-stat.fisher(inc, dec, aim = NA, pfish = 0.95, inc.absolue = TRUE)
+stat.fisher(Data, dec = NULL, aim = NA, pfish = 0.95,
+  inc.absolue = TRUE)
 }
 \arguments{
-\item{inc}{liste des inclinaisons en degrés}
+\item{Data}{liste des inclinaisons en degré ou une data.frame avec les variables $I et $D}
+
+\item{dec}{liste des déclinaisons en degrés}
 
 \item{aim}{liste des aimantations, facultatif}
 
 \item{pfish}{pourcentage de confiance}
 
 \item{inc.absolue}{calcul avec la valeur absolue des inclinaisons}
-
-\item{des}{liste des déclinaisons en degrés}
 }
 \value{
 en degrés

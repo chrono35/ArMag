@@ -1,6 +1,6 @@
 #  Licence ------------------------------------------------------------------
 #
-#  Copyright or © or Copr. CNRS	2014 - 2018
+#  Copyright or © or Copr. CNRS	2019
 #
 #
 # This package is under
@@ -10,15 +10,15 @@
 #  http://www.r-project.org/Licenses/
 #  ------------------------------------------------------------------
 
-# Version 2019-10-08
+# Version 2019-10-17
 #
 
 #' @author "Philippe DUFRESNE"
 
 # Equation du 3 degrées
 # résolution du 3 eme degres pour calcul mcFadden importé de ARMAG
-#  modifier suivant livre photocopié
-#  Fonction interne
+# modifier suivant livre photocopié
+# Fonction interne
 EQUATION_DEGRE_3 <- function(A1, A2, A3)
 {
 
@@ -176,7 +176,7 @@ stat.mcFadden.XYZ <- function(TabX, TabY, TabZ)
 
 #' Statistique de mcFadden sur l'inclinaison seul à partir des coordonées I et D
 #' @param Data liste des inclinaisons en degré ou une data.frame avec les variables $I et $D
-#' @param des liste des déclinaisons en degrés
+#' @param dec liste des déclinaisons en degrés
 #' @param inc.absolue calcul avec la valeur absolue des inclinaisons
 #' @return  en degrés, un data.frame "n", "imoy.McFadden", "imoy.McElhinny", "a95.mcFad", "a95.eqFish", "Kb", "Kssb", "imin", "imax", "dmin", "dmax"
 #' @seealso \code{\link{stat.mcFadden.XYZ}}, \code{\link{stat.fisher}}
@@ -283,8 +283,8 @@ stat.mcFadden <- function(Data, dec = NULL, inc.absolue = TRUE)
 
 #' Statistique de Fisher
 #' modifié, pas de pondération calcul de A95 Vrai sans simplification tel que fisher 1953
-#' @param inc liste des inclinaisons en degrés
-#' @param des liste des déclinaisons en degrés
+#' @param Data liste des inclinaisons en degré ou une data.frame avec les variables $I et $D
+#' @param dec liste des déclinaisons en degrés
 #' @param aim liste des aimantations, facultatif
 #' @param pfish pourcentage de confiance
 #' @param inc.absolue calcul avec la valeur absolue des inclinaisons
@@ -292,8 +292,16 @@ stat.mcFadden <- function(Data, dec = NULL, inc.absolue = TRUE)
 #' @seealso \code{\link{stat.mcFadden}}
 #' @keywords fisher
 #' @export
-stat.fisher <- function (inc, dec, aim=NA, pfish = 0.95, inc.absolue = TRUE)
+stat.fisher <- function (Data, dec = NULL, aim = NA, pfish = 0.95, inc.absolue = TRUE)
 {
+  if (is.null(dec)) {
+    inc <- Data$I
+    dec <- Data$D
+  } else {
+    inc <- Data
+    dec <- dec
+  }
+
   n <- length(inc)
   if (length(dec) != n) {
     return("length (dec) diff length(inc)")
@@ -303,20 +311,21 @@ stat.fisher <- function (inc, dec, aim=NA, pfish = 0.95, inc.absolue = TRUE)
     aim <-  rep(1, n)
   }
 
+  if (inc.absolue == TRUE)
+    inc <- abs(inc)
+
   imin <- min(inc)
   imax <- max(inc)
   dmin <- min(dec)
   dmax <- max(dec)
 
-  if (inc.absolue == TRUE)
-    inc <- abs(inc)
 
   # Passage en radian pour les calculs
   i.rad <- inc/180*pi
   d.rad <- dec/180*pi
 
-  sx <- sum(aim*cos(i.rad)*sin(d.rad))
-  sy <- sum(aim*cos(i.rad)*cos(d.rad))
+  sx <- sum(aim*cos(i.rad)*cos(d.rad))
+  sy <- sum(aim*cos(i.rad)*sin(d.rad))
   sz <- sum(aim*sin(i.rad))
   sn <- sum(aim)
 
@@ -335,8 +344,6 @@ stat.fisher <- function (inc, dec, aim=NA, pfish = 0.95, inc.absolue = TRUE)
 
   delta <- log(1+(1-pfish) * (exp(2*KF)-1)) /KF
   delta <- acos(delta-1)
-
-  return( )
 
   # retour en degrés
   return(data.frame(n = n, imoy =imoy/pi*180, dmoy = dmoy/pi*180, alpha=a95/pi*180, pfish = pfish, delta = delta/pi*180, KF = KF,
@@ -1678,7 +1685,7 @@ repliement.auto <- function (data, dec = NULL, aim = 1, name = NULL, number = NU
 #' @param  dec en degrés
 #' @return I et D en degrés
 #' @export
-repliement.tranche <- function (data, dec, aim = 1,  name = NULL, number = NULL, inc.critique = 90)
+repliement.tranche <- function (data, dec = NULL, aim = 1,  name = NULL, number = NULL, inc.critique = 90)
 {
 
   if (is.null(dec) ) {
@@ -1732,21 +1739,18 @@ repliement.tranche <- function (data, dec, aim = 1,  name = NULL, number = NULL,
       res.tmp$Z <- res.D$Z[i]
      }
 
+    res$number <- c(res$number, num[i])
+    res$name <- c(res$name, nom[i])
     res$I <- c(res$I, res.tmp$I)
     res$D <- c(res$D, res.tmp$D)
     res$F <- c(res$F, res.tmp$F)
-    res$name <- c(res$name, nom[i])
-    res$number <- c(res$number, num[i])
-
     res$X <- c(res$X, res.tmp$X)
     res$Y <- c(res$Y, res.tmp$Y)
     res$Z <- c(res$Z, res.tmp$Z)
     res$position <- c(res$position, res.tmp$position)
   }
-  res <- data.frame(number = as.numeric(res$number), name = as.character(res$name), I = as.numeric(res$I), D = as.numeric(res$D), F = as.numeric(res$F),
-                    X = as.numeric(res$X), Y =as.numeric(res$Y), Z =as.numeric(res$Z), position = res$positon, stringsAsFactors = FALSE)
-
-  return(res)
+  res.Final <- data.frame( res , stringsAsFactors = FALSE)
+  return(res.Final)
 }
 
 # Fonction sur fichiers ----
@@ -1767,7 +1771,7 @@ read.AM.mesures <- function(file.AM, encoding = "macroman")
   g <- NULL
   for (i in 1:length(lin))
     if (grepl("Id:", lin[i])==TRUE)
-      g<-c(g,i )
+      g<-c(g, i)
 
   # Lecture mesure par nom
   lname <- trimws(substr(lin[g],4, 15))
