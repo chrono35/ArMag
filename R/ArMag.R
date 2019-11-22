@@ -1,4 +1,4 @@
-#  Licence ------------------------------------------------------------------
+#  Licence ----
 #
 #  Copyright or © or Copr. CNRS	2019
 #
@@ -8,9 +8,9 @@
 
 #  A copy of the License is available at
 #  http://www.r-project.org/Licenses/
-#  ------------------------------------------------------------------
+#  _________________________________________________________________________________
 
-# Version 2019-10-17
+# Version 2019-11-22
 #
 
 #' @author "Philippe DUFRESNE"
@@ -24,7 +24,7 @@ EQUATION_DEGRE_3 <- function(A1, A2, A3)
 
   Q <- (3*A2-A1*A1)/9
   R <- (9*A1*A2-27*A3-2*A1*A1*A1)/54
-  D <- Q*Q*Q+R*R;
+  D <- Q*Q*Q+R*R
 
  #  Discriminant équation du 3eme degre
   if (D>0) {
@@ -34,10 +34,10 @@ EQUATION_DEGRE_3 <- function(A1, A2, A3)
     else
       T1 <- -exp(log( -R + sqrt(D)  )/3)
 
-    PZ1 <- S+ T1 -(A1/3);
+    PZ1 <- S+ T1 -(A1/3)
      # Les deux autres solutions sont complexes
-    PZ2 <- 0;
-    PZ3 <- 0;
+    PZ2 <- 0
+    PZ3 <- 0
   }
   else if (D==0) {
     S <- exp( log(-Q/2)/3)
@@ -46,17 +46,17 @@ EQUATION_DEGRE_3 <- function(A1, A2, A3)
     PZ3 <- -S-(A1/3)
   }
   else if (D<0) {
-    TETA <- acos( R/sqrt(-Q*Q*Q) )/3;
-    U <- 2*sqrt(-Q);
+    TETA <- acos( R/sqrt(-Q*Q*Q) )/3
+    U <- 2*sqrt(-Q)
     PZ1 <- U*cos(TETA)-(A1/3);
-    PZ2 <- U*cos(TETA + 2/3*pi)-(A1/3);
-    PZ3 <- U*cos(TETA + 4/3*pi)-(A1/3);
+    PZ2 <- U*cos(TETA + 2/3*pi)-(A1/3)
+    PZ3 <- U*cos(TETA + 4/3*pi)-(A1/3)
   }
 
   rslt <- NULL
-  rslt$PZ1 <- PZ1
-  rslt$PZ2 <- PZ2
-  rslt$PZ3 <- PZ3
+  rslt$PZ1 <- as.numeric(PZ1)
+  rslt$PZ2 <- as.numeric(PZ2)
+  rslt$PZ3 <- as.numeric(PZ3)
 
   return(rslt)
 }
@@ -95,10 +95,10 @@ EQUATION_DEGRE_4 <- function(B1, B2, B3, B4)
     PX4 <- 0
   }
    rslt <- NULL
-   rslt$PX1 <- PX1
-   rslt$PX2 <- PX2
-   rslt$PX3 <- PX3
-   rslt$PX4 <- PX4
+   rslt$PX1 <- as.numeric(PX1)
+   rslt$PX2 <- as.numeric(PX2)
+   rslt$PX3 <- as.numeric(PX3)
+   rslt$PX4 <- as.numeric(PX4)
 
    return(rslt)
 
@@ -174,11 +174,11 @@ stat.mcFadden.XYZ <- function(TabX, TabY, TabZ)
 
 }
 
-#' Statistique de mcFadden sur l'inclinaison seul à partir des coordonées I et D
+#' Statistique de mcFadden sur l'inclinaison seule à partir des coordonées I et D
 #' @param Data liste des inclinaisons en degré ou une data.frame avec les variables $I et $D
-#' @param dec liste des déclinaisons en degrés
+#' @param dec liste des déclinaisons en degré
 #' @param inc.absolue calcul avec la valeur absolue des inclinaisons
-#' @return  en degrés, un data.frame "n", "imoy.McFadden", "imoy.McElhinny", "a95.mcFad", "a95.eqFish", "Kb", "Kssb", "imin", "imax", "dmin", "dmax"
+#' @return  en degré, un data.frame "n", "imoy.McFadden", "imoy.McElhinny", "a95.mcFad", "a95.eqFish", "Kb", "Kssb", "imin", "imax", "dmin", "dmax"
 #' @seealso \code{\link{stat.mcFadden.XYZ}}, \code{\link{stat.fisher}}
 #' @references https://doi.org/10.1111/j.1365-246X.1990.tb05683.x
 #' @export
@@ -188,9 +188,12 @@ stat.mcFadden <- function(Data, dec = NULL, inc.absolue = TRUE)
   if (is.null(dec)) {
     inc <- Data$I
     dec <- Data$D
+    Dmin <- min(dec)
+    Dmax <- max(dec)
   } else {
     inc <- Data
-    dec <- dec
+    Dmin <- min(dec)
+    Dmax <- max(dec)
   }
 
   if (inc.absolue)
@@ -198,7 +201,6 @@ stat.mcFadden <- function(Data, dec = NULL, inc.absolue = TRUE)
 
   # Calcul des sommes
   N <- length(inc)
-  #if ((N<=2) || (N != length(dec)) ) return()
 
   if (N<=2)
   {
@@ -208,22 +210,11 @@ stat.mcFadden <- function(Data, dec = NULL, inc.absolue = TRUE)
 
   Imin <- min(inc)
   Imax <- max(inc)
-  if (is.null(dec))
-  {
-    Dmin <- NA
-    Dmax <- NA
-  }
-  else
-  {
-    Dmin <- min(dec)
-    Dmax <- max(dec)
-  }
 
   Imoy <- 0
 
   # Passage en radian pour les calculs
-  i.rad <- inc/180*pi
-  # d.rad <- dec/180*pi
+  i.rad <- as.numeric(inc*pi/180)
 
   A <- sum(sin(i.rad))
   B <- sum(cos(i.rad))
@@ -236,29 +227,25 @@ stat.mcFadden <- function(Data, dec = NULL, inc.absolue = TRUE)
 
   E4 <- EQUATION_DEGRE_4(P, Q, R, S)
 
-  K <- 0
-  KJ <- N/(2*(N-A*sin(2*atan(E4$PX1))-B*cos(2*atan(E4$PX1))));
+  KJ <- N/(2*(N-A*sin(2*atan(E4$PX1))-B*cos(2*atan(E4$PX1))))
 
-  if (KJ>K) {
-    Imoy <- 2*atan(E4$PX1)
-    K <- KJ
-  }
+  Imoy <- 2*atan(E4$PX1)
+  K <- KJ
 
-  KJ <- N/(2*(N-A*sin(2*atan(E4$PX2))-B*cos(2*atan(E4$PX2))));
 
+  KJ <- N/(2*(N-A*sin(2*atan(E4$PX2))-B*cos(2*atan(E4$PX2))))
   if (KJ>K) {
     Imoy <- 2*atan(E4$PX2)
     K <- KJ
   }
 
   KJ <- N/(2*(N-A*sin(2*atan(E4$PX3))-B*cos(2*atan(E4$PX3))))
-
   if (KJ>K) {
     Imoy <- 2*atan(E4$PX3)
     K <- KJ
   }
-  KJ <- N/(2*(N-A*sin(2*atan(E4$PX4))-B*cos(2*atan(E4$PX4))))
 
+  KJ <- N/(2*(N-A*sin(2*atan(E4$PX4))-B*cos(2*atan(E4$PX4))))
   if (KJ>K) {
     Imoy <- 2*atan(E4$PX4)
     K <- KJ
@@ -267,17 +254,18 @@ stat.mcFadden <- function(Data, dec = NULL, inc.absolue = TRUE)
   CFad <- sum(cos(i.rad-Imoy))
   SFad <- sum(sin(i.rad-Imoy))
 
-  I.McElhinny <- Imoy      # modif effectuée le 2017/01/25
-  Imoy <- Imoy + (SFad/CFad)
+  I.McElhinny <- Imoy /pi*180     # modif effectuée le 2017/01/25
+  imoy.McFadden <- (Imoy + (SFad/CFad) ) /pi*180
 
-  a95mcFadden <- acos(1-(SFad/CFad/4)^2-(qf(.95, 1, N-1)*(N-CFad)/(CFad*(N-1))))
-  Kssb <-  (N-1)/2/(N-CFad);
+  a95mcFadden <- 1 - ((SFad/CFad)^2)/2 - (qf(.95, 1, N-1)*(N-CFad)/(CFad*(N-1)))
+  a95mcFadden <- acos(a95mcFadden) /pi*180
+  Kssb <-  (N-1)/2/(N-CFad)
 
-  # retour en degrés
-  return(data.frame( n= N, imoy.McFadden = Imoy/pi*180, imoy.McElhinny = I.McElhinny/pi*180,
-                         a95.mcFad = a95mcFadden/pi*180, a95.eqFish = 2.4477/sqrt(N*K)/pi*180,
+  # retour en degré #
+  return(data.frame( n= N, imoy.McFadden = imoy.McFadden, imoy.McElhinny = I.McElhinny,
+                     a95.mcFad = a95mcFadden, a95.eqFish = 2.4477/sqrt(N*K)/pi*180,
                          Kb = K, Kssb = Kssb,
-                         imin = Imin, imax = Imax, dmin = Dmin, dmax = Dmax))
+                         imin = Imin, imax = Imax, Dmin = Dmin, Dmax = Dmax))
 
   }
 
@@ -2050,6 +2038,176 @@ read.Pal.info <- function (file.Pal, encoding="macroman")
   return(list.mesure)
 }
 
+#' Lecture des mesures d'un fichier AM de l'ancien format
+#' La valeur de la température d'anisotropie n'était pas informée, il est donc possible de le renseigner avec ani.step.value
+#' @param ani.step.value valeur de la température des manips d'anisotropie
+#' @return une data.frame avec les infos sur les spécimens
+#' @export
+read.AM.oldType.mesures <- function(file.AM, encoding = "macroman", ani.step.value = 700)
+{
+  # Lecture et Copy du fichier
+  lin<- NULL
+  fil <- file(file.AM, "r", encoding = encoding)
+  lin <- readLines(fil)
+  close(fil)
+  # Recherche position-ligne des noms
+  g <- NULL
+
+  # comptage et séparation des données, premier échantillon à ligne 12
+  current.name <- "" #trimws(substr(lin[12], 1, 8))
+  list.name <- NULL
+  for (i in 11:length(lin)) {
+    if ( trimws(substr(lin[i], 1, 8)) != current.name & trimws(substr(lin[i], 1, 8)) != "") {
+      current.name <- trimws(substr(lin[i], 1, 8))
+      list.name <- c(list.name, current.name)
+      g <- c(g, i)
+    }
+  }
+
+
+  # Lecture mesure par nom
+  lname <- trimws(substr(lin[g],1, 8))
+  list.mesure <- NULL
+  lmes <- NULL
+
+  first.mesure <- NULL
+  last.mesure <- NULL
+  for (i in 1:length(g)) {
+    first.mesure <- g[i]+1
+    if (i<length(g))
+      last.mesure <- g[i+1]-2
+    else
+      last.mesure<- length(lin)
+
+    tEtap <- NULL
+    tEtap.val <- NULL
+    tX <- NULL
+    tY <- NULL
+    tZ <- NULL
+    tI <- NULL
+    tD <- NULL
+    tF <- NULL
+
+    for (j in first.mesure:last.mesure) {
+      lMesure <- trimws(substr(lin[j], 12, 14) ) # correspond au champ Mesure
+      lEtap <- trimws(substr(lin[j], 19, 24) ) # correspond au champ Etape
+      lEtap.val <- trimws(substr(lin[j], 19, 21) )
+      lEtap.code <- trimws(substr(lin[j], 20, 23) )
+      ordre <- trimws(substr(lin[j], 26, 30) ) # correspond au champ Ordre
+      ordre.sens <- substr(ordre, 2, 2 )
+      # Interpretation des codes
+      if (lMesure == "ANI")
+      {
+        if (ordre.sens == "T")
+        {
+          lEtap.val <- ani.step.value
+          code <- substr(lEtap.code, nchar(lEtap.code)-1, nchar(lEtap.code))
+          lEtap.code <- code
+        }
+        else if (ordre.sens == "D" | ordre.sens == "I")
+        {
+          lEtap.val <- ani.step.value
+          code <- substr(lEtap.code, nchar(lEtap.code), nchar(lEtap.code))
+          if ( ordre.sens == "D") {
+            lEtap.code <- paste(code, "+", sep = "")
+          }
+          else {
+            lEtap.code <- paste(code, "-", sep = "")
+          }
+
+        }
+        lEtap <- paste(lEtap.val, lEtap.code, sep = "")
+
+      }
+
+      # lecture des mesures
+      lI <- trimws(substr(lin[j], 33, 43) )
+      lD <- trimws(substr(lin[j], 47, 57) )
+      lF <- trimws(substr(lin[j], 61, 71) )
+      if ( is.na(as.numeric(lI)) || is.na(as.numeric(lD)) || is.na(as.numeric(lF)) ) {
+        lX <- 0
+        lY <- 0
+        lZ <- 0
+        lI <- 0
+        lD <- 0
+        lF <- 0
+      }
+      else {
+        lX <- calcul.vecteur.cartesien.X(as.numeric(lI), as.numeric(lD), as.numeric(lF))
+        lY <- calcul.vecteur.cartesien.Y(as.numeric(lI), as.numeric(lD), as.numeric(lF))
+        lZ <- calcul.vecteur.cartesien.Z(as.numeric(lI), as.numeric(lD), as.numeric(lF))
+      }
+
+      tEtap <- c(tEtap, lEtap)
+      tEtap.val <- c(tEtap.val, lEtap.val)
+      tX <- c(tX, lX)
+      tY <- c(tY, lY)
+      tZ <- c(tZ, lZ)
+      tI <- c(tI, lI)
+      tD <- c(tD, lD)
+      tF <- c(tF, lF)
+
+      lmes <- data.frame(number = i, name = lname[i], step = tEtap, step.value = as.numeric(tEtap.val),
+                         X = as.numeric(tX), Y = as.numeric(tY), Z = as.numeric(tZ),
+                         I = as.numeric(tI), D = as.numeric(tD), F = as.numeric(tF), stringsAsFactors = FALSE)
+    }
+    list.mesure <- rbind(list.mesure, lmes)
+
+  }
+
+  return(list.mesure)
+}
+
+#' Lecture des mesures d'un fichier AM de l'ancien format
+#' @return une data.frame avec les infos sur les spécimens
+#' @export
+read.AM.oldType.info <- function (file.AM, encoding = "macroman")
+{
+  # Lecture et Copy du fichier
+  lin<- NULL
+  fil <- file(file.AM, "r", encoding=encoding)
+  lin <- readLines(fil)
+  close(fil)
+
+  # Recherche position-ligne des noms
+  g <- NULL
+
+  # comptage et séparation des données, premier échantillon à ligne 12
+  current.name <- "" #trimws(substr(lin[12], 1, 8))
+  list.name <- NULL
+  for (i in 11:length(lin)) {
+    if ( trimws(substr(lin[i], 1, 8)) != current.name & trimws(substr(lin[i], 1, 8)) != "") {
+      current.name <- trimws(substr(lin[i], 1, 8))
+      list.name <- c(list.name, current.name)
+      g <- c(g, i)
+    }
+  }
+
+
+  # Lecture mesure par nom
+  lname <- trimws(substr(lin[g], 1, 8))
+  lop <- trimws(substr(lin[g], 10, 11))
+  lLongueur <- trimws(substr(lin[g], 12, 17))
+  lOrientation <- trimws(substr(lin[g], 22, 40))
+  lH <- trimws(substr(lin[g], 45, 48))
+
+  lT1 <- trimws(substr(lin[g], 53, 57))
+  lT2 <- trimws(substr(lin[g], 61, 65))
+  lT3 <- trimws(substr(lin[g], 69, 73))
+  lT4 <- trimws(substr(lin[g], 77, 81))
+  lPhi <- trimws(substr(lin[g], 86, 91))
+  lTet <- trimws(substr(lin[g], 95, 100))
+
+  list.mesure <- NULL
+  list.mesure <- data.frame( number = c(1: length(g)), name = lname, Opt = lop, Long = as.numeric(lLongueur), Orient = lOrientation ,TH =as.numeric(lH),
+                             T1 = as.numeric(lT1), T2 = as.numeric(lT2), T3 = as.numeric(lT3), T4 = as.numeric(lT4),
+                             Phi = as.numeric(lPhi), Tet = as.numeric(lTet),stringsAsFactors = FALSE)
+
+
+
+  return(list.mesure)
+}
+
 
 #' Extraction des mesures correspondant à un nom
 #' @export
@@ -2758,8 +2916,6 @@ correction.carottage.tranche <- function(mesures.brutes)
   return(mesures.convent)
 }
 
-# Composante partielle ----
-
 #' Correction de carottage en bout
 #' Tourne les mesures de manière à retrouver le résultat suivant la convention de carottage à plat
 #' @export
@@ -2776,6 +2932,10 @@ correction.carottage.enbout <- function(mesures.brutes)
   }
   return(mesures.convent)
 }
+
+
+# Composante partielle ----
+
 
 #' Calcul les directions du vecteur partiel pour une série d'étape
 #' @return une data.frame "X", "Y", "Z", "I", "D", "F", "Sl", "MAD"
@@ -3332,12 +3492,11 @@ relocate.GAD <- function( I.site, lat.site,  lat.reloc = "Paris")
 }
 
 #' Virtual Axial Dipole Moment VADM
-#' @examples {
-#'  # reduction par defaut à Paris
+#' @examples
+#' reduction par defaut à Paris
 #'  relocate.VADM(55, 47.12)
 #'  relocate.VADM(55, 47.12, "Paris")
-#'  relocate.VADM(55, 47.12, lat.reloc = 48.85")
-#' }
+#'  relocate.VADM(55, 47.12, lat.reloc = "48.85")
 #' @seealso \code{\link{relocate.GAD}}, \code{\link{relocate.VDM}}, \code{\link{relocate.VGP} }
 #' @export
 relocate.VADM <- function( F.site,  lat.site,  lat.reloc = "Paris")

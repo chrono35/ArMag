@@ -2,22 +2,22 @@
 % Please edit documentation in R/ArMag.R
 \name{stat.mcFadden}
 \alias{stat.mcFadden}
-\title{Statistique de mcFadden sur l'inclinaison seul à partir des coordonées I et D}
+\title{Statistique de mcFadden sur l'inclinaison seule à partir des coordonées I et D}
 \usage{
 stat.mcFadden(Data, dec = NULL, inc.absolue = TRUE)
 }
 \arguments{
 \item{Data}{liste des inclinaisons en degré ou une data.frame avec les variables $I et $D}
 
-\item{dec}{liste des déclinaisons en degrés}
+\item{dec}{liste des déclinaisons en degré}
 
 \item{inc.absolue}{calcul avec la valeur absolue des inclinaisons}
 }
 \value{
-en degrés, un data.frame "n", "imoy.McFadden", "imoy.McElhinny", "a95.mcFad", "a95.eqFish", "Kb", "Kssb", "imin", "imax", "dmin", "dmax"
+en degré, un data.frame "n", "imoy.McFadden", "imoy.McElhinny", "a95.mcFad", "a95.eqFish", "Kb", "Kssb", "imin", "imax", "dmin", "dmax"
 }
 \description{
-Statistique de mcFadden sur l'inclinaison seul à partir des coordonées I et D
+Statistique de mcFadden sur l'inclinaison seule à partir des coordonées I et D
 }
 \references{
 https://doi.org/10.1111/j.1365-246X.1990.tb05683.x

@@ -9,6 +9,12 @@ relocate.VADM(F.site, lat.site, lat.reloc = "Paris")
 \description{
 Virtual Axial Dipole Moment VADM
 }
+\examples{
+reduction par defaut à Paris
+ relocate.VADM(55, 47.12)
+ relocate.VADM(55, 47.12, "Paris")
+ relocate.VADM(55, 47.12, lat.reloc = "48.85")
+}
 \seealso{
 \code{\link{relocate.GAD}}, \code{\link{relocate.VDM}}, \code{\link{relocate.VGP} }
 }
