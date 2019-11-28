@@ -429,7 +429,7 @@ DD.to.DMS <- function(degre)
 }
 
 #' Convertie la déclinaison dans la convention AM
-#' @param d déclinaison en degrés
+#' @param d déclinaison en degré
 #' @return angle en degré en -90° et 270°
 #' @export
 D.AM <- function(d)
@@ -445,7 +445,7 @@ D.AM <- function(d)
 }
 
 #' Convertie la déclinaison dans la convention paleomag
-#' @param d déclinaison en degrés
+#' @param d déclinaison en degré
 #' @return déclinaison entre 0 et 360°
 #' @export
 D.pal <- function(d)
@@ -458,28 +458,31 @@ D.pal <- function(d)
 #' Valeur de Y pour I et D
 #' @param inc liste des inclinaisons en degré
 #' @param des liste des déclinaisons en degré
+#' @seealso \code{\link{cartesien}} , \code{\link{polaire}}
 #' @export
 calcul.vecteur.cartesien.Y <- function(inc, dec, aim =1)
 {
-  aim*cos(inc/180*pi)*sin(dec/180*pi)
+  as.numeric(aim*cos(inc/180*pi)*sin(dec/180*pi) )
 }
 
 #' Valeur de X pour I et D
 #' @param inc liste des inclinaisons en degré
 #' @param des liste des déclinaisons en degré
+#' @seealso \code{\link{cartesien}} , \code{\link{polaire}}
 #' @export
 calcul.vecteur.cartesien.X <- function(inc, dec, aim=1)
 {
-  aim*cos(inc/180*pi)*cos(dec/180*pi)
+  as.numeric(aim*cos(inc/180*pi)*cos(dec/180*pi) )
 }
 
 #' Valeur de Z pour I et D
 #' @param inc liste des inclinaisons en degré
 #' @param des liste des déclinaisons en degré
+#' @seealso \code{\link{cartesien}} , \code{\link{polaire}}
 #' @export
 calcul.vecteur.cartesien.Z <- function(inc, dec, aim=1)
 {
-  aim*sin(inc/180*pi)
+  as.numeric(aim*sin(inc/180*pi))
 }
 
 #' Valeur de X, Y et Z pour I et D
@@ -492,9 +495,9 @@ calcul.vecteur.cartesien <- function(inc, dec, aim=1)
   res <- NULL
   resT <- NULL
   for (i in 1:length(inc)) {
-    res$X <- aim*cos(inc[i]/180*pi)*cos(dec[i]/180*pi)
-    res$Y <- aim*cos(inc[i]/180*pi)*sin(dec[i]/180*pi)
-    res$Z <- aim*sin(inc[i]/180*pi)
+    res$X <- as.numeric( aim*cos(inc[i]/180*pi)*cos(dec[i]/180*pi) )
+    res$Y <- as.numeric( aim*cos(inc[i]/180*pi)*sin(dec[i]/180*pi) )
+    res$Z <- as.numeric( aim*sin(inc[i]/180*pi) )
     resT <- c(resT, res)
   }
   return( resT )
@@ -510,9 +513,9 @@ cartesien <- function(inc, dec, aim=1)
   res <- NULL
   resT <- NULL
   for (i in 1:length(inc)) {
-    res$X <- aim*cos(inc[i]/180*pi)*cos(dec[i]/180*pi)
-    res$Y <- aim*cos(inc[i]/180*pi)*sin(dec[i]/180*pi)
-    res$Z <- aim*sin(inc[i]/180*pi)
+    res$X <- as.numeric( aim*cos(inc[i]/180*pi)*cos(dec[i]/180*pi) )
+    res$Y <- as.numeric( aim*cos(inc[i]/180*pi)*sin(dec[i]/180*pi) )
+    res$Z <- as.numeric( aim*sin(inc[i]/180*pi) )
     resT <- c(resT, res)
   }
   return( resT )
@@ -529,9 +532,9 @@ calcul.vecteur.polaire <- function(X, Y, Z)
   res <- NULL
   resT <- NULL
   for (i in 1:length(X)) {
-    res$F <- sqrt(X[i]*X[i]+Y[i]*Y[i]+Z[i]*Z[i])
-    res$I <- n_arcsin(Z[i]/res$F)/pi*180
-    res$D <- angleD(X[i],Y[i])/pi*180
+    res$F <- as.numeric( sqrt(X[i]*X[i]+Y[i]*Y[i]+Z[i]*Z[i]) )
+    res$I <- as.numeric( n_arcsin(Z[i]/res$F)/pi*180 )
+    res$D <- as.numeric( angleD(X[i],Y[i])/pi*180 )
     resT <- c(resT, res)
   }
   return( resT )
@@ -539,7 +542,7 @@ calcul.vecteur.polaire <- function(X, Y, Z)
 
 # Transformation de type de coordonnée ----
 #' Coordonnées polaires pour X, Y et Z
-#' @return degrés
+#' @return I, D, F en degré
 #' @seealso \code{\link{calcul.vecteur.polaire}} , \code{\link{cartesien}}
 #' @export
 polaire <- function(X, Y, Z)
@@ -547,9 +550,9 @@ polaire <- function(X, Y, Z)
   res <- NULL
   resT <- NULL
   for (i in 1:length(X)) {
-    res$F <- sqrt(X[i]*X[i] + Y[i]*Y[i] + Z[i]*Z[i])
-    res$I <- n_arcsin(Z[i]/res$F) /pi*180
-    res$D <- angleD(X[i],Y[i]) /pi*180
+    res$F <- as.numeric( sqrt(X[i]*X[i] + Y[i]*Y[i] + Z[i]*Z[i]) )
+    res$I <- as.numeric( n_arcsin(Z[i]/res$F) /pi*180 )
+    res$D <- as.numeric( angleD(X[i],Y[i]) /pi*180 )
     resT <- c(resT, res)
   }
   return( resT )
@@ -563,7 +566,7 @@ calcul.vecteur.polaire.I <- function(X, Y, Z)
 { #en A/m
   res <- NULL
   for (i in 1:length(X)) {
-    A <- sqrt(X[i]*X[i]+Y[i]*Y[i]+Z[i]*Z[i])
+    A <- as.numeric( sqrt(X[i]*X[i]+Y[i]*Y[i]+Z[i]*Z[i]) )
     res <- c(res, n_arcsin(Z[i]/A)/pi*180)
   }
   return(res)
@@ -775,7 +778,7 @@ lambert <- function (data , pt.names = NULL, labels = NA, label.pos = NULL,
                              lty = par("lty"), lwd = par("lwd"), mar = c(2, 2, 3, 2),
                              show.grid = TRUE, show.grid.labels = 10, show.radial.grid = TRUE,
                              grid.col = "gray", grid.bg = "transparent",
-                             grid.left = FALSE, grid.unit = NULL, point.symbols = 1, point.col = par("fg"), bg = point.col,
+                             grid.left = FALSE, grid.unit = NULL, point.symbols = 1, pt.col = par("fg"), bg = pt.col,
                              inc.lim = NULL, radial.labels = NULL,
                              boxed.radial = TRUE, poly.col = NA,
                              dec.min = -90, dec.max = 270, new = TRUE, pch = 21, ...)
@@ -791,7 +794,7 @@ lambert <- function (data , pt.names = NULL, labels = NA, label.pos = NULL,
                                lty = lty, lwd = lwd, mar = mar,
                                show.grid = show.grid, show.grid.labels = show.grid.labels, show.radial.grid = show.radial.grid,
                                grid.col = grid.col, grid.bg = grid.bg,
-                               grid.left = grid.left, grid.unit = grid.unit, point.symbols = point.symbols, point.col = point.col, bg = point.col,
+                               grid.left = grid.left, grid.unit = grid.unit, point.symbols = point.symbols, pt.col = pt.col, bg = pt.col,
                                inc.lim = inc.lim, radial.labels = radial.labels,
                                boxed.radial = boxed.radial, poly.col = poly.col,
                                dec.min = dec.min, dec.max = dec.max, new = new, pch = pch, ...)
@@ -805,7 +808,7 @@ lambert.ID <- function (inc, dec , pt.names = NA, labels = NA, label.pos = NULL,
                                  lty = par("lty"), lwd = par("lwd"), mar = c(2, 2, 3, 2),
                                  show.grid = TRUE, show.grid.labels = 10, show.radial.grid = TRUE,
                                  grid.col = "gray", grid.bg = "transparent",
-                                 grid.left = FALSE, grid.unit = NULL, point.symbols = 1, point.col = par("fg"), bg = point.col,
+                                 grid.left = FALSE, grid.unit = NULL, point.symbols = 1, pt.col = par("fg"), bg = pt.col,
                                  inc.lim = NULL, radial.labels = NULL,
                                  boxed.radial = TRUE, poly.col = NA,
                                  dec.min = -90, dec.max = 270, new = TRUE, pch = 21, ...)
@@ -817,7 +820,7 @@ lambert.ID <- function (inc, dec , pt.names = NA, labels = NA, label.pos = NULL,
 
 
   #lambert.ID(inclinaisons = inclinaisons, declinaisons = declinaisons, pt.names = pt.names, inc.lim = inc.lim,
-  #           dec.min = dmin, dec.max = dmax, main = main, label.pos = label.pos, point.col = point.col, bg = bg, show.grid = show.grid, new = new)
+  #           dec.min = dmin, dec.max = dmax, main = main, label.pos = label.pos, pt.col = pt.col, bg = bg, show.grid = show.grid, new = new)
   if (show.grid == TRUE) {
 
     if (is.null(label.pos)) {
@@ -833,7 +836,7 @@ lambert.ID <- function (inc, dec , pt.names = NA, labels = NA, label.pos = NULL,
       new <- FALSE
   }
   lambert.ID.point(inc, dec, dec.min = dec.min, dec.max = dec.max, inc.lim = inc.lim,
-                        pt.names = pt.names, point.col = point.col, bg = bg, pch = pch, new = new)
+                        pt.names = pt.names, pt.col = pt.col, bg = bg, pch = pch, new = new)
 
 
 }
@@ -846,7 +849,7 @@ lambert.ID.position <- function (data, declinaisons = NULL, position = "P",  pt.
                         lty = par("lty"), lwd = par("lwd"), mar = c(2, 2, 3, 2),
                         show.grid = TRUE, show.grid.labels = 10, show.radial.grid = TRUE,
                         grid.col = "gray", grid.bg = "transparent",
-                        grid.left = FALSE, grid.unit = NULL, point.symbols = 1, point.col = par("fg"), bg = point.col,
+                        grid.left = FALSE, grid.unit = NULL, point.symbols = 1, pt.col = par("fg"), bg = pt.col,
                         inc.lim = c(0, 90), radial.labels = NULL,
                         boxed.radial = TRUE, poly.col = NA, add = FALSE,
                         dec.min = -90, dec.max = 90, new = TRUE, ...)
@@ -881,7 +884,7 @@ lambert.ID.position <- function (data, declinaisons = NULL, position = "P",  pt.
   if (length(which(position=="P")) > 0) {
     lambert.ID(inclinaisons[which(position=="P")], declinaisons[which(position=="P")],
              pt.names = pt.names[which(position=="P")], label.pos = lab.pos, main = main, show.grid = show.grid,
-             inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, point.col = point.col,  pch = 23, new = ne)
+             inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, pt.col = pt.col,  pch = 23, new = ne)
     ne <- FALSE
     show.grid <- FALSE
     main <- ""
@@ -890,7 +893,7 @@ lambert.ID.position <- function (data, declinaisons = NULL, position = "P",  pt.
   if (length(which(position=="C")) > 0) {
     lambert.ID(inclinaisons[which(position=="C")], declinaisons[which(position=="C")],
              pt.names = pt.names[which(position=="C")], label.pos = lab.pos, main = main, show.grid = show.grid,
-             inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, point.col = point.col,  pch = 22, new = ne)
+             inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, pt.col = pt.col,  pch = 22, new = ne)
     ne <- FALSE
     show.grid <- FALSE
     main <- ""
@@ -900,7 +903,7 @@ lambert.ID.position <- function (data, declinaisons = NULL, position = "P",  pt.
   if (length(which(position=="D")) > 0) {
     lambert.ID(inclinaisons[which(position=="D")], declinaisons[which(position=="D")],
              pt.names = pt.names[which(position=="D")], label.pos = lab.pos, main = main, show.grid = show.grid,
-             inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, point.col = point.col, pch = 24, new = ne)
+             inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, pt.col = pt.col, pch = 24, new = ne)
   }
 }
 
@@ -909,7 +912,7 @@ lambert.ID.position <- function (data, declinaisons = NULL, position = "P",  pt.
 lambert.ID.point <- function (inc, dec , pt.names = NA, labels = NA, label.pos = NULL,
                              start = 0, clockwise = TRUE,
                              lty = par("lty"),  mar = c(2, 2, 3, 2),
-                             point.col = par("fg"), bg = point.col,
+                             pt.col = par("fg"), bg = pt.col,
                              inc.lim = NULL,
                              dec.min = -90, dec.max = 270, new = TRUE, pch = 21, ...)
 {
@@ -959,8 +962,8 @@ lambert.ID.point <- function (inc, dec , pt.names = NA, labels = NA, label.pos =
   if (length(pch) < nbpoints)
     pch <- rep(pch, length.out = nbpoints)
 
-  if (length(point.col) < nbpoints)
-    point.col <- rep(point.col, length.out = nbpoints)
+  if (length(pt.col) < nbpoints)
+    pt.col <- rep(pt.col, length.out = nbpoints)
 
 
   xpos <- X(inc, dec, ray = maxlength, i.min = inc.min, box.range)
@@ -999,15 +1002,15 @@ lambert.ID.point <- function (inc, dec , pt.names = NA, labels = NA, label.pos =
   # pch = 24, triangle plein, pointe vers le haut bleu
   # pch = 25, triangle plein, pointe vers la bas bleu
 
-  if (!is.null(point.col))
+  if (!is.null(pt.col))
     for (i in 1: nbpoints ) {
-      if(point.col[i] != "transparent") {
+      if(pt.col[i] != "transparent") {
         if (inc[i]<0) {
           bg.col <- gray(0.95)
-          points(xpos[i], ypos[i], pch = pch[i],  col = point.col[i], bg = bg.col,...)
+          points(xpos[i], ypos[i], pch = pch[i],  col = pt.col[i], bg = bg.col,...)
         }
         else
-          points(xpos[i], ypos[i], pch = pch[i],  col = point.col[i], bg = point.col[i],  ...)
+          points(xpos[i], ypos[i], pch = pch[i],  col = pt.col[i], bg = pt.col[i],  ...)
       }
     }
 
@@ -1123,7 +1126,7 @@ lambert.ID.circle <- function (i.mean, d.mean, delta, inc.lim = NULL, dec.min = 
 #' @param  field définit la zone possible du champ
 #' @export
 lambert.ID.field <- function (data, dec = NULL , pt.names = NA, field = c(50, 75), inc.lim = c(0, 90), dec.min = -90, dec.max = 270, col = par("fg"),
-                              main = "", point.col = par("fg"), bg = point.col, label.pos= NULL, show.grid = TRUE, new = TRUE)
+                              main = "", pt.col = par("fg"), bg = pt.col, label.pos= NULL, show.grid = TRUE, new = TRUE)
 {
   #old.par <- par(no.readonly = TRUE) # all par settings which
 
@@ -1160,7 +1163,7 @@ lambert.ID.field <- function (data, dec = NULL , pt.names = NA, field = c(50, 75
     lambert.ID.grid(main = main, label.pos = label.pos,
                         start = 0, dec.min = dec.min, dec.max = dec.max, inc.min = inc.lim[1], inc.max = inc.lim[2], new = new )
 
-  lambert.ID.point(inc, dec, inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, pt.names = pt.names, point.col = point.col, bg = bg, new = FALSE)
+  lambert.ID.point(inc, dec, inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, pt.names = pt.names, pt.col = pt.col, bg = bg, new = FALSE)
 
 
 
@@ -1191,7 +1194,7 @@ lambert.XYZ <- function( X, Y , Z, pt.names = NA, labels = NA, label.pos = NULL,
                                    lty = par("lty"), lwd = par("lwd"), mar = c(2, 2, 3, 2),
                                    show.grid = TRUE, show.grid.labels = 10, show.radial.grid = TRUE,
                                    grid.col = "gray", grid.bg = "transparent",
-                                   grid.left = FALSE, grid.unit = NULL, point.symbols = 1, point.col = "blue3", bg = point.col,
+                                   grid.left = FALSE, grid.unit = NULL, point.symbols = 1, pt.col = "blue3", bg = pt.col,
                                    inc.lim = NULL, radial.labels = NULL,
                                    boxed.radial = TRUE, poly.col = NA, add = FALSE,
                                    dec.min = -90, dec.max = 270, new = TRUE, pch = 21, ...)
@@ -1199,7 +1202,7 @@ lambert.XYZ <- function( X, Y , Z, pt.names = NA, labels = NA, label.pos = NULL,
   I <- calcul.vecteur.polaire.I(X, Y, Z)
   D <- calcul.vecteur.polaire.D(X, Y, Z)
   lambert.ID(I, D, pt.names = pt.names, label.pos = label.pos, main = main, show.grid = show.grid,
-             inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, point.col = point.col,  pch = 23, new = new)
+             inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, pt.col = pt.col,  pch = 23, new = new)
 
 }
 
@@ -1211,7 +1214,7 @@ lambert.XYZ.specimen <- function( Data, Y , Z, pt.names = "", labels = NA, label
                          lty = par("lty"), lwd = par("lwd"), mar = c(2, 2, 3, 2),
                          show.grid = TRUE, show.grid.labels = 10, show.radial.grid = TRUE,
                          grid.col = "lightgray", grid.bg = "transparent",
-                         grid.left = FALSE, grid.unit = NULL, point.symbols = 1, point.col = "blue", bg = point.col,
+                         grid.left = FALSE, grid.unit = NULL, point.symbols = 1, pt.col = "blue", bg = pt.col,
                          inc.lim = c(0, 90), radial.labels = NULL,
                          boxed.radial = TRUE, poly.col = NA, add = FALSE,
                          dec.min = -90, dec.max = 270, new = TRUE, pch = 21, ...)
@@ -1239,9 +1242,9 @@ lambert.XYZ.specimen <- function( Data, Y , Z, pt.names = "", labels = NA, label
   }
   lambert.ID(I, D, pt.names = pt.names, label.pos = label.pos, main = main, show.grid = show.grid, type = "l",
                   grid.col = grid.col,
-             inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, line.col = line.col, point.col = point.col, bg= par("fg"), new = new)
+             inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, line.col = line.col, pt.col = pt.col, bg= par("fg"), new = new)
   lambert.ID(I, D, pt.names = "", label.pos = label.pos, main = "", show.grid = FALSE,
-                  inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, line.col = line.col, point.col = point.col,  pch = 21, new = FALSE)
+                  inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, line.col = line.col, pt.col = pt.col,  pch = 21, new = FALSE)
 }
 
 #' Place des points I et D dans un repère Lambert avec un data.frame
@@ -1252,7 +1255,7 @@ lambert.ID.specimen <- function( Data, D , pt.names = "", labels = NA, label.pos
                                        lty = par("lty"), lwd = par("lwd"), mar = c(2, 2, 3, 2),
                                        show.grid = TRUE, show.grid.labels = 10, show.radial.grid = TRUE,
                                        grid.col = "lightgray", grid.bg = "transparent",
-                                       grid.left = FALSE, grid.unit = NULL, point.symbols = 1, point.col = "blue3", bg = point.col,
+                                       grid.left = FALSE, grid.unit = NULL, point.symbols = 1, pt.col = "blue3", bg = pt.col,
                                        inc.lim = c(0, 90), radial.labels = NULL,
                                        boxed.radial = TRUE, poly.col = NA, add = FALSE,
                                        dec.min = -90, dec.max = 270, new = TRUE, pch = 21, ...)
@@ -1277,9 +1280,9 @@ lambert.ID.specimen <- function( Data, D , pt.names = "", labels = NA, label.pos
   }
   lambert.ID(I, D, pt.names = pt.names, label.pos = label.pos, main = main, show.grid = show.grid, type = "l",
                   grid.col = grid.col,
-                  inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, line.col = line.col, point.col = point.col, bg= par("fg"), new = new)
+                  inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, line.col = line.col, pt.col = pt.col, bg= par("fg"), new = new)
   lambert.ID(I, D, pt.names = "", label.pos = label.pos, main = "", show.grid = FALSE,
-                  inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, line.col = line.col, point.col = point.col,  pch = 21, new = FALSE)
+                  inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, line.col = line.col, pt.col = pt.col,  pch = 21, new = FALSE)
 }
 
 #' Trace un diagramme de Zijderveld type 1
@@ -1341,8 +1344,8 @@ zijderveld1<- function(Data, Y = NULL, Z = NULL, pt.names = "", main = NULL, pan
       legend(legend.pos, legend.txt, pch = c(19, 21), col = pt.col, bg = c(par("bg"), adjustcolor( pt.col[1], alpha.f = 0.8), adjustcolor( pt.col, alpha.f = 0.05)),
              box.col = par("bg"), title = "")
 
-    ax1 <- axis(1, pos = 0, cex.axis = 0.8, col = "darkgray")
-    ax2 <- axis(2, pos = 0, cex.axis = 0.8, col = "darkgray") # Ordonnées
+    ax1 <- axis(1, pos = 0,  col = "darkgray")
+    ax2 <- axis(2, pos = 0,  col = "darkgray") # Ordonnées
 
     text(0, ax2[length(ax2)], "+X", col = "gray5", adj = c(-.5, 1), cex = par("cex.lab"))
     text(0, ax2[1], "+Z", col = "gray5", adj = c(-.5, 0), cex = par("cex.lab"))
@@ -1354,7 +1357,7 @@ zijderveld1<- function(Data, Y = NULL, Z = NULL, pt.names = "", main = NULL, pan
 
   lines(Y, -Z, type = "o", pch = 21, col = pt.col[2], bg = adjustcolor( pt.col[2], alpha.f = 0.05), ...)
 
-  text(jitter(Y, 5, amount = 0), jitter(X, 5, amount = 0), eta)
+  text(jitter(Y, 5, amount = 0), jitter(X, 5, amount = 0), eta, cex = par("cex.lab"))
 
 }
 
@@ -1400,14 +1403,14 @@ zijderveld2<- function(Data, Y = NULL, Z = NULL, pt.names = "", main = NULL, pan
     plot(-X, Y, main = main, type = "o", pch = 21, col = pt.col[1], bg = adjustcolor( pt.col[1], alpha.f = 0.8), axes = FALSE,
          panel.first = panel.first, xlab = "", ylab = "", ylim = ylim, asp = asp, new = new)
 
-    text(jitter(-X, 5, amount = 0), jitter(Y, 5, amount = 0), eta)
+    text(jitter(-X, 5, amount = 0), jitter(Y, 5, amount = 0), eta, cex = par("cex.lab"))
 
     if (!is.null(legend.pos))
       legend(legend.pos, c("(-X, Y)", "(-X, Z)"), pch = c(19, 21), col = pt.col, bg = c(par("bg"), adjustcolor( pt.col[1], alpha.f = 0.8), adjustcolor( pt.col, alpha.f = 0.05)),
              box.col = par("bg"), title = "")
 
-    ax1 <- axis(1, pos = 0,  col = "darkgray") # cex.axis = 0.8,
-    ax2 <- axis(2, pos = 0,  col = "darkgray") # Ordonnées
+    ax1 <- axis(1, pos = 0, col = "darkgray")
+    ax2 <- axis(2, pos = 0, col = "darkgray") # Ordonnées
 
     text(0, ax2[length(ax2)], "+Y", col = "gray5", adj = c(-.5, 1), cex = par("cex.lab"))
     text(0, ax2[1], "+Z", col = "gray5", adj = c(-.5, 0), cex = par("cex.lab"))
@@ -1420,7 +1423,7 @@ zijderveld2<- function(Data, Y = NULL, Z = NULL, pt.names = "", main = NULL, pan
 
   lines(-X, -Z, type = "o", pch = 21, col = pt.col[2], bg = adjustcolor( pt.col[2], alpha.f = 0.05))
 
-  text(jitter(-X, 5, amount = 0), jitter(Y, 5, amount = 0), eta)
+  text(jitter(-X, 5, amount = 0), jitter(Y, 5, amount = 0), eta, cex = par("cex.lab"))
 
 }
 
@@ -1871,7 +1874,41 @@ read.AM.info <- function (file.AM, encoding="macroman")
 
   return(list.mesure)
 }
+#' Lecture des infos d'orientation sur mesures d'un fichier AM
+#' @return une data.frame avec les infos sur les spécimens
+#' @export
+read.AM.orient <- function (file.AM, encoding="macroman")
+{
 
+  # Lecture et Copy du fichier
+  lin<- NULL
+  fil <- file(file.AM, "r", encoding=encoding)
+  lin <- readLines(fil)
+  close(fil)
+  # Recherche position-ligne des noms
+  g <- NULL
+  for (i in 1:length(lin))
+    if (grepl("Id:", lin[i])==TRUE)
+      g<-c(g,i+1 )
+
+  # Lecture mesure par nom
+  lname <-  lname <- trimws(substr(lin[g-1], 4, 15))
+  lorient <- trimws(substr(lin[g], 8, 10))
+  lj <- trimws(substr(lin[g], 14, 16))
+  lm <- trimws(substr(lin[g], 20, 22))
+  la <- trimws(substr(lin[g], 26, 30))
+  lh <- trimws(substr(lin[g], 34, 37))
+  lmin <- trimws(substr(lin[g], 41, 43))
+  lsec <- trimws(substr(lin[g], 47, 49))
+  lSM <- trimws(substr(lin[g], 54, 59))
+
+  list.mesure <- NULL
+  list.mesure <- data.frame(number = c(1: length(g)), name = lname, orient = as.character(lorient), jour = as.numeric(lj), mois = as.numeric(lm), annee = as.numeric(la), h = as.numeric(lh), min =as.numeric(lmin),
+                            sec = as.numeric(lsec), SM =as.numeric(lSM), stringsAsFactors = FALSE)
+
+
+  return(list.mesure)
+}
 #' Fonction de création de fichier pour les magnétomètres ----
 #' @param encoding mettre "macroman" pour les mesures au molspin
 #' @export
@@ -2039,7 +2076,7 @@ read.Pal.info <- function (file.Pal, encoding="macroman")
 }
 
 #' Lecture des mesures d'un fichier AM de l'ancien format
-#' La valeur de la température d'anisotropie n'était pas informée, il est donc possible de le renseigner avec ani.step.value
+#' La valeur de la température d'anisotropie n'était pas informée, il est donc possible de le renseigner avec step.value
 #' @param ani.step.value valeur de la température des manips d'anisotropie
 #' @return une data.frame avec les infos sur les spécimens
 #' @export
@@ -2201,7 +2238,7 @@ read.AM.oldType.info <- function (file.AM, encoding = "macroman")
   list.mesure <- NULL
   list.mesure <- data.frame( number = c(1: length(g)), name = lname, Opt = lop, Long = as.numeric(lLongueur), Orient = lOrientation ,TH =as.numeric(lH),
                              T1 = as.numeric(lT1), T2 = as.numeric(lT2), T3 = as.numeric(lT3), T4 = as.numeric(lT4),
-                             Phi = as.numeric(lPhi), Tet = as.numeric(lTet),stringsAsFactors = FALSE)
+                             Phi = as.numeric(lPhi), Tet = as.numeric(lTet), stringsAsFactors = FALSE)
 
 
 
@@ -2553,16 +2590,16 @@ anisotropie.eigen.tensors.numbers <- function(numbers, Data.mesures, step.value,
 }
 
 #' Calcul des tenseurs d'anisotropie pour une liste de nom de spécimen
-#' @param names liste de noms de spécimen
+#' @param names liste de noms de spécimens
 #' @param Data.mesures data.frame contenant les mesures
-#' @return un data.frame avec les colonnes "L1", "L2", "L3", "L1.Inc", "L1.Dec", "L2.Inc", "L2.Dec", "L3.Inc", "L3.Dec", "F13", "F12", "F23"
+#' @return un data.frame avec les variables "L1", "L2", "L3", "L1.Inc", "L1.Dec", "L2.Inc", "L2.Dec", "L3.Inc", "L3.Dec", "F13", "F12", "F23"
 #' @export
 anisotropie.eigen.tensors.names <- function(names, Data.mesures, step.value, step.code = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"))
 {
 
   Data <- NULL
   for (i in 1:length(names) ) {
-    mesures <-  extract.mesures.specimen.names(names[i], Data.mesures)
+    mesures <-  extract.mesures.specimen.name(names[i], Data.mesures)
     ani <- anisotropie.eigen.tensor(mesures, step.value = step.value, step.code = step.code)
     Data <- rbind(Data, ani)
   }
@@ -2715,10 +2752,9 @@ correction.anisotropie <- function(mesures.frame, ani.matrix)
 #' Tracer dans le diagramme Lambert/ Stéréo d'un tenseur
 #' @param Data un data.frame avec les variables "L1.Inc", "L1.Dec", "L2.Inc", "L2.Dec", "L3.Inc", "L3.Dec"
 #' @export
-lambert.ID.tensors <- function(Data, point.col = "blue3", new = TRUE, ...)
+lambert.ID.tensors <- function(Data, pt.col = "blue3", new = TRUE, ...)
 {
-
-  # restructuration des données
+  # Restructuration des données
   L1.Inc <- as.numeric(Data$L1.Inc)
   L2.Inc <- as.numeric(Data$L2.Inc)
   L3.Inc <- as.numeric(Data$L3.Inc)
@@ -2730,28 +2766,27 @@ lambert.ID.tensors <- function(Data, point.col = "blue3", new = TRUE, ...)
   if (length(L1.Inc) == 0)
     return(print("no DATA"))
 
-  if (length(point.col) < length(L1.Inc))
-    point.col <- rep(point.col, length.out = length(L1.Inc))
+  if (length(pt.col) < length(L1.Inc))
+    pt.col <- rep(pt.col, length.out = length(L1.Inc))
 
   for (i in 1:length(L1.Inc) ) {
     Da.I <- c(L1.Inc[i], L2.Inc[i], L3.Inc[i])
     Da.D <- c(L1.Dec[i], L2.Dec[i], L3.Dec[i])
     lambert.ID(Da.I, Da.D,
-                    inc.lim = c(0, 90), pch = c(22, 24, 21), point.col = point.col[i], new = new  )
+                    inc.lim = c(0, 90), pch = c(22, 24, 21), pt.col = pt.col[i], new = new  )
     new <- FALSE
   }
 }
 
 #' Tracer d'un diagramme de Flin
 #' diagramme des paramètres d'anisotropie F12 en fonction de F23
-#' @param Data soit correspond à un data.frame avec les variables $F23 et $F12, soit seulement des valeurs de F23 dans ce cas renseignez Data.F12
+#' @param Data soit correspond à un data.frame avec les variables $F23 et $F12, soit seulement des valeurs de F23 dans ce cas, renseignez Data.F12
 #' @param Data.F12 des valeurs pour F12
 #' @param absolue prend la valeur absolue des données
 #' @export
-flin <- function( Data, Data.F12=NULL, pt.names= NULL, point.col = "blue3", pch = 21, type= "p",
+flin <- function( Data, Data.F12 = NULL, pt.names = NULL, pt.col = "blue3", pch = 21, type = "p",
                        xlab = "F23", ylab = "F12", main = "Flin diagram", absolue = TRUE, new = TRUE)
 {
-
    par(pty="s")
 
   if(is.data.frame(Data)) {
@@ -2773,19 +2808,30 @@ flin <- function( Data, Data.F12=NULL, pt.names= NULL, point.col = "blue3", pch 
     }
 
   }
+  X.lim <- range(X)
+  if (X.lim[1]>0)
+    X.lim[1] <- 0
+
+  Y.lim <- range(Y)
+  if (Y.lim[1]>0)
+    Y.lim[1] <- 0
+
+  XY.max <- max(X.lim[2], Y.lim[2])
+  X.lim[2] <- XY.max
+  Y.lim[2] <- XY.max
 
   if (new == TRUE) {
-    plot(x = X, y = Y, xlab = xlab, ylab = ylab, type = type, col = "gray50", bg = point.col, pch = pch,
+    plot(x = X, y = Y, xlab = xlab, ylab = ylab, xlim = X.lim, ylim = Y.lim, type = type, col = "gray50", bg = pt.col, pch = pch,
          xaxt = "n", yaxt = "n", asp = 1, bty ="n", main = main, new = TRUE)
-    ax1 <- axis(1, pos = 1, cex.axis = 0.8, col = "gray10")
-    ax2 <- axis(2, pos = 1, cex.axis = 0.8, col = "gray10") # Ordonnées
+    ax1 <- axis(1, pos = 0, col = "gray10")
+    ax2 <- axis(2, pos = 0, col = "gray10") # Ordonnées
     cc<-array(c(0,1), c(1,2))
 
     abline(  coef = cc, col = "gray90")
 
     main <- ""
   }  else {
-    points(x = X, y = Y, type = type, col = "gray50", bg = point.col, pch = pch,
+    points(x = X, y = Y, xlim = X.lim, ylim = Y.lim,  type = type, col = "gray50", bg = pt.col, pch = pch,
          xaxt = "n", yaxt = "n", asp = 1, bty ="n", new = FALSE)
   }
 
@@ -2796,7 +2842,7 @@ flin <- function( Data, Data.F12=NULL, pt.names= NULL, point.col = "blue3", pch 
 #' Tracer d'un diagramme de désaimantation
 #' @param normalize permet de comparer l'évolution de l'aimanation quelque soit l'amplitude en visualisant le résultat comme un pourcentage du maximum
 #' @export
-desaim <- function( Data, F = NULL,  point.col = "blue3", pch = 21, type = "b",
+desaim <- function( Data, F = NULL,  pt.col = "blue3", pch = 21, type = "b",
                              xlab = "°C", ylab = "", main = NULL,
                              names = NA, normalize = TRUE, step.J0 = NULL, new = TRUE, ...)
 {
@@ -2822,8 +2868,8 @@ desaim <- function( Data, F = NULL,  point.col = "blue3", pch = 21, type = "b",
     tmp.frame$F <- F
   }
 
-  if (length(point.col) < length(tmp.frame$step.value) )
-    point.col <- rep(point.col, length(tmp.frame$step.value) )
+  if (length(pt.col) < length(tmp.frame$step.value) )
+    pt.col <- rep(pt.col, length(tmp.frame$step.value) )
 
   # comptage et séparation des données
   current <- tmp.frame$name[1]
@@ -2881,10 +2927,10 @@ desaim <- function( Data, F = NULL,  point.col = "blue3", pch = 21, type = "b",
 
     if (i == 1)
       plot(x = Xi, y = Yi, xlab = xlab, ylab = ylab, ylim = ylim, xlim = xlim, type = type,
-           col = adjustcolor( point.col[i], alpha.f = 0.7), bg = point.col[i], pch = pch,
+           col = adjustcolor( pt.col[i], alpha.f = 0.7), bg = pt.col[i], pch = pch,
            yaxt = "n", bty = "n", main = main, new = new)
     else
-      lines(x = Xi, y = Yi, type = type, col = adjustcolor( point.col[i], alpha.f = 0.7), bg = point.col[i], pch = pch, yaxt = "n", bty ="n")
+      lines(x = Xi, y = Yi, type = type, col = adjustcolor( pt.col[i], alpha.f = 0.7), bg = pt.col[i], pch = pch, yaxt = "n", bty ="n")
 
   }
 
@@ -3102,8 +3148,8 @@ composante.partielle.T1T2 <- function(Data, T1 = NULL, T2 = NULL, corr.ani = FAL
     }
     ani <- anisotropie.matrix.symetric(Data, step.value = ani.step.value, step.code = step.code)
   }
-
-  Data <- remove.step(Data, ani.step.value = ani.step.value, step.code = step.code)
+  if (!is.null(ani.step.value))
+    Data <- remove.step(Data, step.value = ani.step.value, step.code = step.code)
 
   # recherche étape en dessous de T1
 
@@ -3199,7 +3245,7 @@ zijderveld1.T1T2 <- function(Data, T1 = NULL, T2 = NULL, show.step = FALSE, igno
   res.list <- Data
 
   if (ignore.ani == TRUE) { # suppression des étape d anisotropie
-    Data <- remove.step(Data, ani.step.value = ani.step.value, step.code = step.code)
+    Data <- remove.step(Data, step.value = ani.step.value, step.code = step.code)
   }
   # recherche étape en dessous de T1
   iT1 <- 1
@@ -3293,7 +3339,7 @@ zijderveld2.T1T2 <- function(Data, T1 = NULL, T2 = NULL, show.step = FALSE, igno
   res.list <- Data
 
   if (ignore.ani == TRUE) { # suppression des étape d anisotropie
-    Data <- remove.step(Data, ani.step.value = ani.step.value, step.code = step.code)
+    Data <- remove.step(Data, step.value = ani.step.value, step.code = step.code)
   }
   # recherche étape en dessous de T1
   iT1 <- 1
@@ -3352,27 +3398,37 @@ zijderveld2.T1T2 <- function(Data, T1 = NULL, T2 = NULL, show.step = FALSE, igno
   abline(ai, bi)
 }
 
-#' Supprime les étapes à la valeur ani.step.value et avec les codes step.code
+#' Supprime les étapes à la valeur step.value et avec les codes step.code
 #' Utiliser par défaut pour remover les étapes d'anisotropie
 #' @param Data un data.frame possédant la variable $step de type chr
-#' @param ani.step.value valeur de la température d'anisotropie. Par defaut NUll, alors la tempértature est retrouvée automatiquement avec les step.code définis
-#' @param step.code chaîne de caractère représentant les étapes de l'anisotropie "Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"
+#' @param step.value valeur de la température . Par defaut NUll, alors la tempértature est retrouvée automatiquement avec les step.code définis. Si step.value = '', alors suppression de toutes les étapes avec le step.code
+#' @param step.code chaîne de caractère représentant par exemple les étapes de l'anisotropie "Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB", ou des erreurs "??"
 #' @export
-remove.step <- function(Data, ani.step.value= NULL, step.code = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB") )
+remove.step <- function(Data, step.value = NULL, step.code = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB") )
 {
-  if (is.null(ani.step.value)) {
-    for (i in 1:length(Data$step)) {
-      if (substring(Data$step[i], 4) == step.code[3])
-        ani.step.value <- Data$step.value[i]
+  selec <- NULL
+  if (step.value == "") {
+    for (i in 1:length(mes$step))
+    {
+      for (j in 1: length(step.code)) {
+        selec <- c( selec, which(substring(Data$step, 4) == step.code[j]) )
+      }
     }
   }
-  ani.step <- trimws(paste(ani.step.value, step.code, sep = ""))
+  else {
+    if (is.null(step.value)) {
+      for (i in 1:length(Data$step)) {
+        if (substring(Data$step[i], 4) == step.code[3])
+          step.value <- Data$step.value[i]
+      }
+    }
+    ani.step <- trimws(paste(step.value, step.code, sep = ""))
 
-
-  selec <- NULL
-  for (i in 1:length(ani.step)) {
-    selec <- c( selec, which(trimws(Data$step) == trimws(ani.step[i])) )
+    for (i in 1:length(ani.step)) {
+      selec <- c( selec, which(trimws(Data$step) == trimws(ani.step[i])) )
+    }
   }
+
 
   if (length(selec) > 0)
     res.list <- Data[-selec,]
@@ -3380,6 +3436,26 @@ remove.step <- function(Data, ani.step.value= NULL, step.code = c("Z+", "Z-", "X
     res.list <- Data
 
   return(res.list)
+}
+
+# Calcul rotation ----
+
+#' Fait tourner les mesures selon deviation
+#' @param Data un data.frame possédant la variable $step de type chr
+#' @param deviation valeur de l'angle de rotation (en degrés).
+#' @export
+rotation.mesure <- function(Data, deviation)
+{
+  res <- Data
+
+  for (i in 1 : length(res$D)) {
+    res$D[i] <- as.numeric(res$D[i] + deviation)
+    res$X[i] <- as.numeric(calcul.vecteur.cartesien.X(res$I[i], res$D[i], res$F[i]) )
+    res$Y[i] <- as.numeric(calcul.vecteur.cartesien.Y(res$I[i], res$D[i], res$F[i]) )
+    res$Z[i] <- as.numeric(calcul.vecteur.cartesien.Z(res$I[i], res$D[i], res$F[i]) )
+  }
+
+  return(res)
 }
 
 # Calcul astronomique ----
@@ -3414,13 +3490,15 @@ julian.day <- function( jour,   mois,   annee,   heure,   minute,   seconde)
 #' @export
 sun.azimuth <- function(Day, Month, Year, Hour, Minute, Seconde=0, longdeg, longmin=0, longsec=0, latdeg, latmin=0, latsec=0)
 {
-  # -----------------------------heure d'hiver ou d'été---------------------------
+  longitude <- DMS.to.DD(longdeg, longmin, longsec)
+  latitude <- DMS.to.DD(latdeg, latmin, latsec)
+  #     Heure d'hiver ou d'été
   correction_heure <- 0
 
-  jj <- julian.day(jour2, mois2, annee2, heure2, minute2, seconde2) - correction_heure/24.0 - 2451545.0
+  jj <- julian.day(Day, Month, Year, Hour, Minute, Seconde) - correction_heure/24.0 - 2451545.0
 
 
-  #-------------calculs ascension droite et délinaison-------------
+  #     Calculs ascension droite et délinaison
   g <- 357.529 + 0.98560028*jj
   q <- 280.459 + 0.98564736*jj
   l <- q + 1.915 * sin(g*pi/180.0) + 0.020*sin(2*g*pi/180.0) # Ellipticité
@@ -3439,24 +3517,24 @@ sun.azimuth <- function(Day, Month, Year, Hour, Minute, Seconde=0, longdeg, long
 
 
   nb_siecle <- jj/36525.0
-  heure_siderale1 <- (24110.54841+(8640184.812866*nb_siecle)+(0.093104*(nb_siecle*nb_siecle))-(0.0000062*(nb_siecle*nb_siecle*nb_siecle)))/3600.0
+  heure_siderale1 <- (24110.54841 + (8640184.812866*nb_siecle) + (0.093104*(nb_siecle*nb_siecle)) - (0.0000062*(nb_siecle*nb_siecle*nb_siecle)))/3600.0
   heure_siderale2 <- ((heure_siderale1/24.0) - trunc(heure_siderale1/24.0)) * 24.0
 
   angleH <- 360.0*heure_siderale2/23.9344
-  angleT <- (heure2-correction_heure-12.0+minute2/60.0+seconde2/3600.0)*360.0/23.9344 # jour sidéraux = 23h56min 4,0989s -> 23,93447h -> 0,9972696 jour solaire
+  angleT <- (Hour - correction_heure - 12.0 + Minute/60.0 + Seconde/3600.0)*360.0/23.9344 # jour sidéraux = 23h56min 4,0989s -> 23,93447h -> 0,9972696 jour solaire
   angle <- angleT + angleH
 
   angle_horaire <- angle - ascension_droite*15.0 + longitude
 
-  #-------------calculs altitude et azimut-------------------------
+  #       calculs altitude et azimut
 
   altitude <- asin( sin(declinaison*pi/180.0)*sin(latitude*pi/180.0) - cos(declinaison*pi/180.0)*cos(latitude*pi/180.0)*cos(angle_horaire*pi/180.0) )*180.0/pi
 
-  azimut <- acos( (sin(declinaison*pi/180.0)-sin(latitude*pi/180.0)*sin(altitude*pi/180.0)) / (cos(latitude*pi/180.0)*cos(altitude*pi/180.0)) )*180.0/pi
+  azimut <- acos( (sin(declinaison*pi/180.0) - sin(latitude*pi/180.0)*sin(altitude*pi/180.0)) / (cos(latitude*pi/180.0)*cos(altitude*pi/180.0)) )*180.0/pi
   sinazimut <- (cos(declinaison*pi/180.0)*sin(angle_horaire*pi/180.0)) / cos(altitude*pi/180.0)
-  if (sinazimut<0)
+  if (sinazimut < 0)
   {
-    azimut <-360-azimut;
+    azimut <- 360 - azimut;
   }
 
   return(as.numeric(azimut))
