@@ -7,7 +7,7 @@
 D.pal(d)
 }
 \arguments{
-\item{d}{déclinaison en degrés}
+\item{d}{déclinaison en degré}
 }
 \value{
 déclinaison entre 0 et 360°

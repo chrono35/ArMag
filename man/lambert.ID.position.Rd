@@ -12,7 +12,7 @@ lambert.ID.position(data, declinaisons = NULL, position = "P",
   mar = c(2, 2, 3, 2), show.grid = TRUE, show.grid.labels = 10,
   show.radial.grid = TRUE, grid.col = "gray",
   grid.bg = "transparent", grid.left = FALSE, grid.unit = NULL,
-  point.symbols = 1, point.col = par("fg"), bg = point.col,
+  point.symbols = 1, pt.col = par("fg"), bg = pt.col,
   inc.lim = c(0, 90), radial.labels = NULL, boxed.radial = TRUE,
   poly.col = NA, add = FALSE, dec.min = -90, dec.max = 90,
   new = TRUE, ...)

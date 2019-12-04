@@ -3,7 +3,7 @@
 \name{read.AM.oldType.mesures}
 \alias{read.AM.oldType.mesures}
 \title{Lecture des mesures d'un fichier AM de l'ancien format
-La valeur de la température d'anisotropie n'était pas informée, il est donc possible de le renseigner avec ani.step.value}
+La valeur de la température d'anisotropie n'était pas informée, il est donc possible de le renseigner avec step.value}
 \usage{
 read.AM.oldType.mesures(file.AM, encoding = "macroman",
   ani.step.value = 700)
@@ -16,5 +16,5 @@ une data.frame avec les infos sur les spécimens
 }
 \description{
 Lecture des mesures d'un fichier AM de l'ancien format
-La valeur de la température d'anisotropie n'était pas informée, il est donc possible de le renseigner avec ani.step.value
+La valeur de la température d'anisotropie n'était pas informée, il est donc possible de le renseigner avec step.value
 }

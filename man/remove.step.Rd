@@ -2,20 +2,20 @@
 % Please edit documentation in R/ArMag.R
 \name{remove.step}
 \alias{remove.step}
-\title{Supprime les étapes à la valeur ani.step.value et avec les codes step.code
+\title{Supprime les étapes à la valeur step.value et avec les codes step.code
 Utiliser par défaut pour remover les étapes d'anisotropie}
 \usage{
-remove.step(Data, ani.step.value = NULL, step.code = c("Z+", "Z-",
-  "X+", "X-", "Y+", "Y-", "ZB"))
+remove.step(Data, step.value = NULL, step.code = c("Z+", "Z-", "X+",
+  "X-", "Y+", "Y-", "ZB"))
 }
 \arguments{
 \item{Data}{un data.frame possédant la variable $step de type chr}
 
-\item{ani.step.value}{valeur de la température d'anisotropie. Par defaut NUll, alors la tempértature est retrouvée automatiquement avec les step.code définis}
+\item{step.value}{valeur de la température . Par defaut NUll, alors la tempértature est retrouvée automatiquement avec les step.code définis. Si step.value = '', alors suppression de toutes les étapes avec le step.code}
 
-\item{step.code}{chaîne de caractère représentant les étapes de l'anisotropie "Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"}
+\item{step.code}{chaîne de caractère représentant par exemple les étapes de l'anisotropie "Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB", ou des erreurs "??"}
 }
 \description{
-Supprime les étapes à la valeur ani.step.value et avec les codes step.code
+Supprime les étapes à la valeur step.value et avec les codes step.code
 Utiliser par défaut pour remover les étapes d'anisotropie
 }

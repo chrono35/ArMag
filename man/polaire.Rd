@@ -7,7 +7,7 @@
 polaire(X, Y, Z)
 }
 \value{
-degrés
+I, D, F en degré
 }
 \description{
 Coordonnées polaires pour X, Y et Z

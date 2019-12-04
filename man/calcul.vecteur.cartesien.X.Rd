@@ -14,3 +14,6 @@ calcul.vecteur.cartesien.X(inc, dec, aim = 1)
 \description{
 Valeur de X pour I et D
 }
+\seealso{
+\code{\link{cartesien}} , \code{\link{polaire}}
+}

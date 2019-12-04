@@ -6,7 +6,7 @@
 \usage{
 lambert.ID.point(inc, dec, pt.names = NA, labels = NA,
   label.pos = NULL, start = 0, clockwise = TRUE, lty = par("lty"),
-  mar = c(2, 2, 3, 2), point.col = par("fg"), bg = point.col,
+  mar = c(2, 2, 3, 2), pt.col = par("fg"), bg = pt.col,
   inc.lim = NULL, dec.min = -90, dec.max = 270, new = TRUE,
   pch = 21, ...)
 }

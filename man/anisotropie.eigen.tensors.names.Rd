@@ -8,12 +8,12 @@ anisotropie.eigen.tensors.names(names, Data.mesures, step.value,
   step.code = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"))
 }
 \arguments{
-\item{names}{liste de noms de spécimen}
+\item{names}{liste de noms de spécimens}
 
 \item{Data.mesures}{data.frame contenant les mesures}
 }
 \value{
-un data.frame avec les colonnes "L1", "L2", "L3", "L1.Inc", "L1.Dec", "L2.Inc", "L2.Dec", "L3.Inc", "L3.Dec", "F13", "F12", "F23"
+un data.frame avec les variables "L1", "L2", "L3", "L1.Inc", "L1.Dec", "L2.Inc", "L2.Dec", "L3.Inc", "L3.Dec", "F13", "F12", "F23"
 }
 \description{
 Calcul des tenseurs d'anisotropie pour une liste de nom de spécimen

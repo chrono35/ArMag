@@ -5,12 +5,12 @@
 \title{Tracer d'un diagramme de Flin
 diagramme des paramètres d'anisotropie F12 en fonction de F23}
 \usage{
-flin(Data, Data.F12 = NULL, pt.names = NULL, point.col = "blue3",
+flin(Data, Data.F12 = NULL, pt.names = NULL, pt.col = "blue3",
   pch = 21, type = "p", xlab = "F23", ylab = "F12",
   main = "Flin diagram", absolue = TRUE, new = TRUE)
 }
 \arguments{
-\item{Data}{soit correspond à un data.frame avec les variables $F23 et $F12, soit seulement des valeurs de F23 dans ce cas renseignez Data.F12}
+\item{Data}{soit correspond à un data.frame avec les variables $F23 et $F12, soit seulement des valeurs de F23 dans ce cas, renseignez Data.F12}
 
 \item{Data.F12}{des valeurs pour F12}
 

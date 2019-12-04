@@ -7,7 +7,7 @@
 D.AM(d)
 }
 \arguments{
-\item{d}{déclinaison en degrés}
+\item{d}{déclinaison en degré}
 }
 \value{
 angle en degré en -90° et 270°

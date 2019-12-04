@@ -4,7 +4,7 @@
 \alias{desaim}
 \title{Tracer d'un diagramme de désaimantation}
 \usage{
-desaim(Data, F = NULL, point.col = "blue3", pch = 21, type = "b",
+desaim(Data, F = NULL, pt.col = "blue3", pch = 21, type = "b",
   xlab = "°C", ylab = "", main = NULL, names = NA,
   normalize = TRUE, step.J0 = NULL, new = TRUE, ...)
 }

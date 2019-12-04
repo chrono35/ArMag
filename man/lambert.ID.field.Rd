@@ -6,8 +6,8 @@
 \usage{
 lambert.ID.field(data, dec = NULL, pt.names = NA, field = c(50, 75),
   inc.lim = c(0, 90), dec.min = -90, dec.max = 270,
-  col = par("fg"), main = "", point.col = par("fg"),
-  bg = point.col, label.pos = NULL, show.grid = TRUE, new = TRUE)
+  col = par("fg"), main = "", pt.col = par("fg"), bg = pt.col,
+  label.pos = NULL, show.grid = TRUE, new = TRUE)
 }
 \arguments{
 \item{field}{définit la zone possible du champ}
