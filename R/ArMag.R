@@ -330,8 +330,14 @@ stat.fisher <- function (Data, dec = NULL, aim = NA, pfish = 0.95, inc.absolue =
   # correction du biais
   KF <- ((n-1)/n) * KF
 
-  delta <- log(1+(1-pfish) * (exp(2*KF)-1)) /KF
-  delta <- acos(delta-1)
+  if (KF<10) {
+    delta <- log(1+ (1-pfish) * (exp(2*KF) -1) ) /KF
+    delta <- acos(delta-1)
+  } else {
+    delta <- log(1-pfish)/KF
+    delta <- acos(1 + delta)
+  }
+
 
   # retour en degrés
   return(data.frame(n = n, imoy =imoy/pi*180, dmoy = dmoy/pi*180, alpha=a95/pi*180, pfish = pfish, delta = delta/pi*180, KF = KF,

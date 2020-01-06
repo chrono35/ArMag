@@ -10,8 +10,8 @@ lambert.XYZ(X, Y, Z, pt.names = NA, labels = NA, label.pos = NULL,
   lty = par("lty"), lwd = par("lwd"), mar = c(2, 2, 3, 2),
   show.grid = TRUE, show.grid.labels = 10, show.radial.grid = TRUE,
   grid.col = "gray", grid.bg = "transparent", grid.left = FALSE,
-  grid.unit = NULL, point.symbols = 1, point.col = "blue3",
-  bg = point.col, inc.lim = NULL, radial.labels = NULL,
+  grid.unit = NULL, point.symbols = 1, pt.col = "blue3",
+  bg = pt.col, inc.lim = NULL, radial.labels = NULL,
   boxed.radial = TRUE, poly.col = NA, add = FALSE, dec.min = -90,
   dec.max = 270, new = TRUE, pch = 21, ...)
 }
