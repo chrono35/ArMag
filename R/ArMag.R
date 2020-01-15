@@ -2793,7 +2793,7 @@ lambert.ID.tensors <- function(Data, pt.col = "blue3", new = TRUE, ...)
 flinn <- function( Data, Data.F12 = NULL, pt.names = NULL, pt.col = "blue3", pch = 21, type = "p",
                        xlab = "F23", ylab = "F12", main = "Flinn diagram", absolue = TRUE, new = TRUE)
 {
-   par(pty="s")
+   par(pty="s", "xaxp")
 
   if(is.data.frame(Data)) {
     if (absolue == TRUE) {
@@ -2822,15 +2822,15 @@ flinn <- function( Data, Data.F12 = NULL, pt.names = NULL, pt.col = "blue3", pch
   if (Y.lim[1]>1)
     Y.lim[1] <- 1
 
-  XY.max <- max(X.lim[2], Y.lim[2])
+  XY.max <- max(X.lim[2], Y.lim[2]) * 1.05
   X.lim[2] <- XY.max
   Y.lim[2] <- XY.max
 
   if (new == TRUE) {
     plot(x = X, y = Y, xlab = xlab, ylab = ylab, xlim = X.lim, ylim = Y.lim, type = type, col = "gray50", bg = pt.col, pch = pch,
-         xaxt = "n", yaxt = "n", asp = 1, bty ="n", main = main, new = TRUE)
-    ax1 <- axis(1, pos = 0, col = "gray10")
-    ax2 <- axis(2, pos = 0, col = "gray10") # Ordonnées
+         xaxt = "n", yaxt = "n", asp = 1, bty ="n", main = main, new = TRUE )
+    ax1 <- axis(1, pos = X.lim[1], col = "gray10")
+    ax2 <- axis(2, pos = Y.lim[1], col = "gray10") # Ordonnées
     cc<-array(c(0,1), c(1,2))
 
     abline(  coef = cc, col = "gray90")
