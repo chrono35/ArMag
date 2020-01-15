@@ -5,9 +5,15 @@
 \title{Calcul le vecteur de la composante partielle en calculant la composante entre les étapes T1 et T2
 la fonction ne tient pas compte des étapes d'anisotropie, si step.code est bien rensiegné}
 \usage{
-composante.partielle.T1T2(Data, T1 = NULL, T2 = NULL,
-  corr.ani = FALSE, ani.step.value = NULL, step.code = c("Z+", "Z-",
-  "X+", "X-", "Y+", "Y-", "ZB"), en0 = FALSE)
+composante.partielle.T1T2(
+  Data,
+  T1 = NULL,
+  T2 = NULL,
+  corr.ani = FALSE,
+  ani.step.value = NULL,
+  step.code = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"),
+  en0 = FALSE
+)
 }
 \arguments{
 \item{corr.ani}{corrige de l'anisotropie}

@@ -4,10 +4,22 @@
 \alias{lambert.ID.field}
 \title{Trace un cercle avec les champs de l'inclinaison possible}
 \usage{
-lambert.ID.field(data, dec = NULL, pt.names = NA, field = c(50, 75),
-  inc.lim = c(0, 90), dec.min = -90, dec.max = 270,
-  col = par("fg"), main = "", pt.col = par("fg"), bg = pt.col,
-  label.pos = NULL, show.grid = TRUE, new = TRUE)
+lambert.ID.field(
+  data,
+  dec = NULL,
+  pt.names = NA,
+  field = c(50, 75),
+  inc.lim = c(0, 90),
+  dec.min = -90,
+  dec.max = 270,
+  col = par("fg"),
+  main = "",
+  pt.col = par("fg"),
+  bg = pt.col,
+  label.pos = NULL,
+  show.grid = TRUE,
+  new = TRUE
+)
 }
 \arguments{
 \item{field}{définit la zone possible du champ}

@@ -4,8 +4,11 @@
 \alias{anisotropie.eigen.tensor}
 \title{Calcul des directions et valeurs des vecteurs propres d'anisotropie partielle pour un spécimen à une certaine température}
 \usage{
-anisotropie.eigen.tensor(mesures, step.value, step.code = c("Z+", "Z-",
-  "X+", "X-", "Y+", "Y-", "ZB"))
+anisotropie.eigen.tensor(
+  mesures,
+  step.value,
+  step.code = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB")
+)
 }
 \arguments{
 \item{mesures}{data.frame contenant les mesures}

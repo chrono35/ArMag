@@ -5,10 +5,19 @@
 \title{Trace un diagramme de zijderveld1 en calculant la composante entre les étapes T1 et T2
 par défaut la fonction n'affiche pas les étapes d'anisotropie et ne corrige pas les directions de l'anisotropie}
 \usage{
-zijderveld1.T1T2(Data, T1 = NULL, T2 = NULL, show.step = FALSE,
-  ignore.ani = TRUE, ani.step.value = NULL, main = "",
+zijderveld1.T1T2(
+  Data,
+  T1 = NULL,
+  T2 = NULL,
+  show.step = FALSE,
+  ignore.ani = TRUE,
+  ani.step.value = NULL,
+  main = "",
   step.code = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"),
-  legend.pos = NULL, legend.txt = c("(Y, X)", "(Y, Z)"), en0 = FALSE)
+  legend.pos = NULL,
+  legend.txt = c("(Y, X)", "(Y, Z)"),
+  en0 = FALSE
+)
 }
 \arguments{
 \item{T1}{correspond à step.value ou température la plus basse}

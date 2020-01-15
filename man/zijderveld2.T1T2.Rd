@@ -4,10 +4,19 @@
 \alias{zijderveld2.T1T2}
 \title{trace un diagramme de zijderveld en calculant la composante entre les étapes T1 et T2}
 \usage{
-zijderveld2.T1T2(Data, T1 = NULL, T2 = NULL, show.step = FALSE,
-  ignore.ani = TRUE, ani.step.value = NULL, main = "",
+zijderveld2.T1T2(
+  Data,
+  T1 = NULL,
+  T2 = NULL,
+  show.step = FALSE,
+  ignore.ani = TRUE,
+  ani.step.value = NULL,
+  main = "",
   step.code = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"),
-  legend.pos = NULL, legend.txt = c("(Y, X)", "(Y, Z)"), en0 = FALSE)
+  legend.pos = NULL,
+  legend.txt = c("(Y, X)", "(Y, Z)"),
+  en0 = FALSE
+)
 }
 \arguments{
 \item{T1}{correspond à step.value ou température la plus basse}

@@ -5,8 +5,7 @@
 \title{Lecture des mesures d'un fichier AM de l'ancien format
 La valeur de la température d'anisotropie n'était pas informée, il est donc possible de le renseigner avec step.value}
 \usage{
-read.AM.oldType.mesures(file.AM, encoding = "macroman",
-  ani.step.value = 700)
+read.AM.oldType.mesures(file.AM, encoding = "macroman", ani.step.value = 700)
 }
 \arguments{
 \item{ani.step.value}{valeur de la température des manips d'anisotropie}

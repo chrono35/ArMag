@@ -4,8 +4,12 @@
 \alias{genere.AMD}
 \title{Fonction de création de fichier pour les magnétomètres ----}
 \usage{
-genere.AMD(file.AMD = "fichier.AMD", list.ech, shape = "Cyl",
-  encoding = "macroman")
+genere.AMD(
+  file.AMD = "fichier.AMD",
+  list.ech,
+  shape = "Cyl",
+  encoding = "macroman"
+)
 }
 \arguments{
 \item{encoding}{mettre "macroman" pour les mesures au molspin}

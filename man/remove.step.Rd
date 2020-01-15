@@ -5,8 +5,11 @@
 \title{Supprime les étapes à la valeur step.value et avec les codes step.code
 Utiliser par défaut pour remover les étapes d'anisotropie}
 \usage{
-remove.step(Data, step.value = NULL, step.code = c("Z+", "Z-", "X+",
-  "X-", "Y+", "Y-", "ZB"))
+remove.step(
+  Data,
+  step.value = NULL,
+  step.code = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB")
+)
 }
 \arguments{
 \item{Data}{un data.frame possédant la variable $step de type chr}

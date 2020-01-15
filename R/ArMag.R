@@ -10,7 +10,7 @@
 #  http://www.r-project.org/Licenses/
 #  _________________________________________________________________________________
 
-# Version 2019-11-22
+# Version 2020-01-15
 #
 
 #' @author "Philippe DUFRESNE"

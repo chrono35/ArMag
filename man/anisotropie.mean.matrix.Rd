@@ -4,8 +4,12 @@
 \alias{anisotropie.mean.matrix}
 \title{Calcul de la matrice moyenne symétrisée d'anisotropie moyen}
 \usage{
-anisotropie.mean.matrix(Data.mesures, Data.number, step.value,
-  step.code = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"))
+anisotropie.mean.matrix(
+  Data.mesures,
+  Data.number,
+  step.value,
+  step.code = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB")
+)
 }
 \arguments{
 \item{Data.mesures}{data.frame contenant les mesures}

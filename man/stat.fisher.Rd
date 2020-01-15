@@ -5,8 +5,7 @@
 \title{Statistique de Fisher
 modifié, pas de pondération calcul de A95 Vrai sans simplification tel que fisher 1953}
 \usage{
-stat.fisher(Data, dec = NULL, aim = NA, pfish = 0.95,
-  inc.absolue = TRUE)
+stat.fisher(Data, dec = NULL, aim = NA, pfish = 0.95, inc.absolue = TRUE)
 }
 \arguments{
 \item{Data}{liste des inclinaisons en degré ou une data.frame avec les variables $I et $D}

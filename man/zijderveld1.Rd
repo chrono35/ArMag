@@ -4,10 +4,21 @@
 \alias{zijderveld1}
 \title{Trace un diagramme de Zijderveld type 1}
 \usage{
-zijderveld1(Data, Y = NULL, Z = NULL, pt.names = "", main = NULL,
-  panel.first = NULL, pt.col = c("forestgreen", "blue3"),
-  isometric = TRUE, ylim = NULL, legend.pos = NULL,
-  legend.txt = c("(Y, X)", "(Y, Z)"), new = TRUE, ...)
+zijderveld1(
+  Data,
+  Y = NULL,
+  Z = NULL,
+  pt.names = "",
+  main = NULL,
+  panel.first = NULL,
+  pt.col = c("forestgreen", "blue3"),
+  isometric = TRUE,
+  ylim = NULL,
+  legend.pos = NULL,
+  legend.txt = c("(Y, X)", "(Y, Z)"),
+  new = TRUE,
+  ...
+)
 }
 \arguments{
 \item{Data}{soit une data.frame avec les mesures X, Y et Z, soit que les valeurs de X}

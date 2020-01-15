@@ -4,10 +4,20 @@
 \alias{zijderveld2}
 \title{Trace un diagramme de Zijderveld type 2}
 \usage{
-zijderveld2(Data, Y = NULL, Z = NULL, pt.names = "", main = NULL,
-  panel.first = NULL, pt.col = c("forestgreen", "blue3"),
-  isometric = TRUE, ylim = NULL, legend.pos = NULL, new = TRUE,
-  ...)
+zijderveld2(
+  Data,
+  Y = NULL,
+  Z = NULL,
+  pt.names = "",
+  main = NULL,
+  panel.first = NULL,
+  pt.col = c("forestgreen", "blue3"),
+  isometric = TRUE,
+  ylim = NULL,
+  legend.pos = NULL,
+  new = TRUE,
+  ...
+)
 }
 \description{
 Trace un diagramme de Zijderveld type 2

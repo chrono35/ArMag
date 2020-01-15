@@ -4,8 +4,15 @@
 \alias{relocate.VDM}
 \title{Virtual Dipôle Moment}
 \usage{
-relocate.VDM(F.site, I.site, D.site, lat.site, lon.site,
-  lat.reloc = "Paris", lon.reloc = 0)
+relocate.VDM(
+  F.site,
+  I.site,
+  D.site,
+  lat.site,
+  lon.site,
+  lat.reloc = "Paris",
+  lon.reloc = 0
+)
 }
 \description{
 Virtual Dipôle Moment

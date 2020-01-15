@@ -4,8 +4,14 @@
 \alias{anisotropie.eigen}
 \title{Calcul du vecteur propre et de la matrice d'anisotropie pour un spécimen}
 \usage{
-anisotropie.eigen(mesures, step.value, step.code = c("Z+", "Z-", "X+",
-  "X-", "Y+", "Y-", "ZB"), volume = 1, TH = 1, ...)
+anisotropie.eigen(
+  mesures,
+  step.value,
+  step.code = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"),
+  volume = 1,
+  TH = 1,
+  ...
+)
 }
 \arguments{
 \item{mesures}{data.frame contenant les mesures}

@@ -4,9 +4,21 @@
 \alias{desaim}
 \title{Tracer d'un diagramme de désaimantation}
 \usage{
-desaim(Data, F = NULL, pt.col = "blue3", pch = 21, type = "b",
-  xlab = "°C", ylab = "", main = NULL, names = NA,
-  normalize = TRUE, step.J0 = NULL, new = TRUE, ...)
+desaim(
+  Data,
+  F = NULL,
+  pt.col = "blue3",
+  pch = 21,
+  type = "b",
+  xlab = "°C",
+  ylab = "",
+  main = NULL,
+  names = NA,
+  normalize = TRUE,
+  step.J0 = NULL,
+  new = TRUE,
+  ...
+)
 }
 \arguments{
 \item{normalize}{permet de comparer l'évolution de l'aimanation quelque soit l'amplitude en visualisant le résultat comme un pourcentage du maximum}

@@ -8,8 +8,14 @@ Madrid  lat:40.4 lon:-3.68
 Meriden lat:52.43 lon:-1.62
 Athenes lat:37.96 lon:23.72}
 \usage{
-relocate.VGP(I.site, D.site, lat.site, lon.site, lat.reloc = "Paris",
-  lon.reloc = 0)
+relocate.VGP(
+  I.site,
+  D.site,
+  lat.site,
+  lon.site,
+  lat.reloc = "Paris",
+  lon.reloc = 0
+)
 }
 \description{
 Correction Virtual Geomagnetic Pole

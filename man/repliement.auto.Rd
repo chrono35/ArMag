@@ -6,8 +6,14 @@
 Recherche la position qui permet d'avoir une position suivant les trois positions possible
 donnant l'inclinaison la plus proche de la valeur inc.critique (en degrés)}
 \usage{
-repliement.auto(data, dec = NULL, aim = 1, name = NULL,
-  number = NULL, inc.critique = 90)
+repliement.auto(
+  data,
+  dec = NULL,
+  aim = 1,
+  name = NULL,
+  number = NULL,
+  inc.critique = 90
+)
 }
 \arguments{
 \item{data}{valeur de l'inclinaison, ou une data.frame en degrés}

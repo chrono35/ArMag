@@ -5,8 +5,12 @@
 \title{Calcul la matrice d'anisotropie symetrisée et normalisé pour un spécimen
 qui sert à la correction}
 \usage{
-anisotropie.matrix.symetric(mesures, step.value, step.code = c("Z+",
-  "Z-", "X+", "X-", "Y+", "Y-", "ZB"), ...)
+anisotropie.matrix.symetric(
+  mesures,
+  step.value,
+  step.code = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"),
+  ...
+)
 }
 \arguments{
 \item{mesures}{data.frame contenant les mesures}

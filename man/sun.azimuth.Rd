@@ -4,8 +4,20 @@
 \alias{sun.azimuth}
 \title{Calcul l'azimuth du soleil en un lieu à une date donnée à une heure "UTC"}
 \usage{
-sun.azimuth(Day, Month, Year, Hour, Minute, Seconde = 0, longdeg,
-  longmin = 0, longsec = 0, latdeg, latmin = 0, latsec = 0)
+sun.azimuth(
+  Day,
+  Month,
+  Year,
+  Hour,
+  Minute,
+  Seconde = 0,
+  longdeg,
+  longmin = 0,
+  longsec = 0,
+  latdeg,
+  latmin = 0,
+  latsec = 0
+)
 }
 \description{
 Calcul l'azimuth du soleil en un lieu à une date donnée à une heure "UTC"

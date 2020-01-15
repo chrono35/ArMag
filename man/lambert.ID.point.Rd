@@ -4,11 +4,25 @@
 \alias{lambert.ID.point}
 \title{Place des points I et D dans un repère Lambert}
 \usage{
-lambert.ID.point(inc, dec, pt.names = NA, labels = NA,
-  label.pos = NULL, start = 0, clockwise = TRUE, lty = par("lty"),
-  mar = c(2, 2, 3, 2), pt.col = par("fg"), bg = pt.col,
-  inc.lim = NULL, dec.min = -90, dec.max = 270, new = TRUE,
-  pch = 21, ...)
+lambert.ID.point(
+  inc,
+  dec,
+  pt.names = NA,
+  labels = NA,
+  label.pos = NULL,
+  start = 0,
+  clockwise = TRUE,
+  lty = par("lty"),
+  mar = c(2, 2, 3, 2),
+  pt.col = par("fg"),
+  bg = pt.col,
+  inc.lim = NULL,
+  dec.min = -90,
+  dec.max = 270,
+  new = TRUE,
+  pch = 21,
+  ...
+)
 }
 \description{
 Place des points I et D dans un repère Lambert

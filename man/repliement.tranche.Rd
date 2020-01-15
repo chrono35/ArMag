@@ -6,8 +6,14 @@
 Recherche la position qui permet d'avoir une position suivant la position debout ou dechant
 donnant l'inclinaison la plus proche de la valeur inc.critique (en degrés)}
 \usage{
-repliement.tranche(data, dec = NULL, aim = 1, name = NULL,
-  number = NULL, inc.critique = 90)
+repliement.tranche(
+  data,
+  dec = NULL,
+  aim = 1,
+  name = NULL,
+  number = NULL,
+  inc.critique = 90
+)
 }
 \arguments{
 \item{data}{valeur de l'inclinaison, ou une data.frame en degrés}

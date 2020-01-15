@@ -5,11 +5,27 @@
 \title{lambert.ID.grid
 Trace une grille dans le repère Lambert, fonctionne avec la fonction lambert()}
 \usage{
-lambert.ID.grid(main = "", xlab = "", ylab = "", labels = NA,
-  label.pos = NULL, radlab = FALSE, start = 0, clockwise = FALSE,
-  label.prop = 1.1, grid.col = "gray", grid.bg = "transparent",
-  show.radial.grid = TRUE, labels.precision = 0, dec.min = -90,
-  dec.max = 270, inc.min = 0, inc.max = 90, new = TRUE, ...)
+lambert.ID.grid(
+  main = "",
+  xlab = "",
+  ylab = "",
+  labels = NA,
+  label.pos = NULL,
+  radlab = FALSE,
+  start = 0,
+  clockwise = FALSE,
+  label.prop = 1.1,
+  grid.col = "gray",
+  grid.bg = "transparent",
+  show.radial.grid = TRUE,
+  labels.precision = 0,
+  dec.min = -90,
+  dec.max = 270,
+  inc.min = 0,
+  inc.max = 90,
+  new = TRUE,
+  ...
+)
 }
 \arguments{
 \item{label.pos}{séquence de valeur à afficher en I et D, attention format particulier !!}

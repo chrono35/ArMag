@@ -4,8 +4,14 @@
 \alias{anisotropie.eigen.matrix}
 \title{Calcul les coordonnées des tenseurs propres matrice d'anisotropie}
 \usage{
-anisotropie.eigen.matrix(mesures, step.value, step.code = c("Z+", "Z-",
-  "X+", "X-", "Y+", "Y-", "ZB"), volume = 1, TH = 1, ...)
+anisotropie.eigen.matrix(
+  mesures,
+  step.value,
+  step.code = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"),
+  volume = 1,
+  TH = 1,
+  ...
+)
 }
 \arguments{
 \item{mesures}{data.frame contenant les mesures}

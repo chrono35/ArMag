@@ -4,9 +4,18 @@
 \alias{lambert.ID.circle}
 \title{Trace un cercle sur le diagramme lambert}
 \usage{
-lambert.ID.circle(i.mean, d.mean, delta, inc.lim = NULL, dec.min = -90,
-  dec.max = 270, col = par("fg"), clockwise = TRUE, absolue = TRUE,
-  ...)
+lambert.ID.circle(
+  i.mean,
+  d.mean,
+  delta,
+  inc.lim = NULL,
+  dec.min = -90,
+  dec.max = 270,
+  col = par("fg"),
+  clockwise = TRUE,
+  absolue = TRUE,
+  ...
+)
 }
 \arguments{
 \item{col}{définie la couleur de la ligne}

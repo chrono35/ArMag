@@ -4,8 +4,12 @@
 \alias{anisotropie.mean.eigen.tensor}
 \title{Calcul de la direction et des valeurs du vecteur propre d'anisotropie moyen}
 \usage{
-anisotropie.mean.eigen.tensor(Data.mesures, Data.number, step.value,
-  step.code = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"))
+anisotropie.mean.eigen.tensor(
+  Data.mesures,
+  Data.number,
+  step.value,
+  step.code = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB")
+)
 }
 \arguments{
 \item{Data.mesures}{data.frame contenant les mesures}
