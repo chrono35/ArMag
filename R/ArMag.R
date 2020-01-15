@@ -2784,14 +2784,14 @@ lambert.ID.tensors <- function(Data, pt.col = "blue3", new = TRUE, ...)
   }
 }
 
-#' Tracer d'un diagramme de Flin
+#' Tracer d'un diagramme de Flinn
 #' diagramme des paramètres d'anisotropie F12 en fonction de F23
 #' @param Data soit correspond à un data.frame avec les variables $F23 et $F12, soit seulement des valeurs de F23 dans ce cas, renseignez Data.F12
 #' @param Data.F12 des valeurs pour F12
 #' @param absolue prend la valeur absolue des données
 #' @export
-flin <- function( Data, Data.F12 = NULL, pt.names = NULL, pt.col = "blue3", pch = 21, type = "p",
-                       xlab = "F23", ylab = "F12", main = "Flin diagram", absolue = TRUE, new = TRUE)
+flinn <- function( Data, Data.F12 = NULL, pt.names = NULL, pt.col = "blue3", pch = 21, type = "p",
+                       xlab = "F23", ylab = "F12", main = "Flinn diagram", absolue = TRUE, new = TRUE)
 {
    par(pty="s")
 
@@ -2815,12 +2815,12 @@ flin <- function( Data, Data.F12 = NULL, pt.names = NULL, pt.col = "blue3", pch 
 
   }
   X.lim <- range(X)
-  if (X.lim[1]>0)
-    X.lim[1] <- 0
+  if (X.lim[1]>1)
+    X.lim[1] <- 1
 
   Y.lim <- range(Y)
-  if (Y.lim[1]>0)
-    Y.lim[1] <- 0
+  if (Y.lim[1]>1)
+    Y.lim[1] <- 1
 
   XY.max <- max(X.lim[2], Y.lim[2])
   X.lim[2] <- XY.max
