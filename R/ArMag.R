@@ -2990,6 +2990,7 @@ correction.carottage.enbout <- function(mesures.brutes)
 
 
 #' Calcul les directions du vecteur partiel pour une série d'étape
+#' @param en0 permet de calculer la composante qui passe par l'origine (0, 0)
 #' @return une data.frame "X", "Y", "Z", "I", "D", "F", "Sl", "MAD"
 #' @export
 vecteur.partiel <- function(TabX, TabY, TabZ, en0 = TRUE)
@@ -3229,7 +3230,7 @@ composante.partielle.T1T2 <- function(Data, T1 = NULL, T2 = NULL, corr.ani = FAL
 #' par défaut la fonction n'affiche pas les étapes d'anisotropie et ne corrige pas les directions de l'anisotropie
 #' @param T1 correspond à step.value ou température la plus basse
 #' @param T2 correspond à step.value ou température la plus haute
-#' @param en0 booléen permettant de forcer la composante partielle de passer par l'origine
+#' @param en0 booléen permettant de forcer la composante partielle à passer par l'origine
 #' @param show.step booléen permettant l'affichage des étapes
 #' @param withAni permet de voir les étapes d'anisotropie
 #' @param ani.step.value correspond à l'step.value ou la température de la détermination de l'anisotropie
@@ -3405,7 +3406,7 @@ zijderveld2.T1T2 <- function(Data, T1 = NULL, T2 = NULL, show.step = FALSE, igno
 }
 
 #' Supprime les étapes à la valeur step.value et avec les codes step.code
-#' Utiliser par défaut pour remover les étapes d'anisotropie
+#' Utiliser par défaut pour enlever les étapes d'anisotropie
 #' @param Data un data.frame possédant la variable $step de type chr
 #' @param step.value valeur de la température . Par defaut NUll, alors la tempértature est retrouvée automatiquement avec les step.code définis. Si step.value = '', alors suppression de toutes les étapes avec le step.code
 #' @param step.code chaîne de caractère représentant par exemple les étapes de l'anisotropie "Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB", ou des erreurs "??"
@@ -3577,7 +3578,7 @@ relocate.GAD <- function( I.site, lat.site,  lat.reloc = "Paris")
 
 #' Virtual Axial Dipole Moment VADM
 #' @examples
-#' reduction par defaut à Paris
+#' Reduction par defaut à Paris
 #'  relocate.VADM(55, 47.12)
 #'  relocate.VADM(55, 47.12, "Paris")
 #'  relocate.VADM(55, 47.12, lat.reloc = "48.85")

@@ -32,7 +32,7 @@ zijderveld1.T1T2(
 
 \item{step.code}{chaîne de caractère représentant les étapes de l'anisotropie "Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB". Cette ordre est obligatoire}
 
-\item{en0}{booléen permettant de forcer la composante partielle de passer par l'origine}
+\item{en0}{booléen permettant de forcer la composante partielle à passer par l'origine}
 
 \item{withAni}{permet de voir les étapes d'anisotropie}
 }

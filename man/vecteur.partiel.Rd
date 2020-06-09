@@ -6,6 +6,9 @@
 \usage{
 vecteur.partiel(TabX, TabY, TabZ, en0 = TRUE)
 }
+\arguments{
+\item{en0}{permet de calculer la composante qui passe par l'origine (0, 0)}
+}
 \value{
 une data.frame "X", "Y", "Z", "I", "D", "F", "Sl", "MAD"
 }

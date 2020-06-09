@@ -3,7 +3,7 @@
 \name{remove.step}
 \alias{remove.step}
 \title{Supprime les étapes à la valeur step.value et avec les codes step.code
-Utiliser par défaut pour remover les étapes d'anisotropie}
+Utiliser par défaut pour enlever les étapes d'anisotropie}
 \usage{
 remove.step(
   Data,
@@ -20,5 +20,5 @@ remove.step(
 }
 \description{
 Supprime les étapes à la valeur step.value et avec les codes step.code
-Utiliser par défaut pour remover les étapes d'anisotropie
+Utiliser par défaut pour enlever les étapes d'anisotropie
 }
