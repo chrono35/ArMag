@@ -168,7 +168,7 @@ angleD <- function(X, Y)
 stat.mcFadden.XYZ <- function(TabX, TabY, TabZ)
 {
   N <- length(TabX)
-  VP <- Calcul_Vecteur_Polaire(TabX, TabY, TabZ)
+  VP <- to.polar(TabX, TabY, TabZ)
 
   stat.mcFadden(inc, dec)
 
@@ -2506,9 +2506,9 @@ anisotropy.eigen.tensor <- function (mesures, step.value, step.code = c("Z+", "Z
   v <- eigen(mat.sym.norm, symmetric = TRUE)
 
   # calcul des angles I,D des vecteurs propres}
-  v1 <- polaire(v$vectors[1, 1], v$vectors[2, 1], v$vectors[3 ,1])
-  v2 <- polaire(v$vectors[1, 2], v$vectors[2, 2], v$vectors[3 ,2])
-  v3 <- polaire(v$vectors[1, 3], v$vectors[2, 3], v$vectors[3 ,3])
+  v1 <- to.polar(v$vectors[1, 1], v$vectors[2, 1], v$vectors[3 ,1])
+  v2 <- to.polar(v$vectors[1, 2], v$vectors[2, 2], v$vectors[3 ,2])
+  v3 <- to.polar(v$vectors[1, 3], v$vectors[2, 3], v$vectors[3 ,3])
 
 
   if (v3$I<0) {
@@ -2655,9 +2655,9 @@ anisotropy.mean.eigen.tensor <- function(Data.mesures, Data.number, step.value, 
   v <- eigen(mat.sym, symmetric = TRUE)
 
   # calcul des angles I,D des vecteurs propres}
-  v1 <- polaire(v$vectors[1, 1], v$vectors[2, 1], v$vectors[3 ,1])
-  v2 <- polaire(v$vectors[1, 2], v$vectors[2, 2], v$vectors[3 ,2])
-  v3 <- polaire(v$vectors[1, 3], v$vectors[2, 3], v$vectors[3 ,3])
+  v1 <- to.polar(v$vectors[1, 1], v$vectors[2, 1], v$vectors[3 ,1])
+  v2 <- to.polar(v$vectors[1, 2], v$vectors[2, 2], v$vectors[3 ,2])
+  v3 <- to.polar(v$vectors[1, 3], v$vectors[2, 3], v$vectors[3 ,3])
 
   if (v3$I<0) {
     v3$I <- -v3$I
@@ -2709,7 +2709,7 @@ correction.anisotropy <- function(mesures.frame, ani.matrix)
     re.cal$X <- re.cal.ani[1]
     re.cal$Y <- re.cal.ani[2]
     re.cal$Z <- re.cal.ani[3]
-    re.cal.ID <- polaire(re.cal$X, re.cal$Y, re.cal$Z)
+    re.cal.ID <- to.polar(re.cal$X, re.cal$Y, re.cal$Z)
     re.cal$I <- re.cal.ID$I
     re.cal$D <- re.cal.ID$D
     re.cal$F <- re.cal.ID$F
@@ -2977,7 +2977,7 @@ partial.vector <- function(TabX, TabY, TabZ, en0 = TRUE)
 
   if ( ntab == 1) {
     message("Only mesure, to calculate the partial vector")
-    vp1 <- polaire(TabX[1], TabY[1], TabZ[1])
+    vp1 <- to.polar(TabX[1], TabY[1], TabZ[1])
     Data <- c( X = TabX[1], Y = TabY[1], Z = TabZ[1],
                I = vp1$I, D = vp1$D, F = vp1$F,
                Sl = 1, MAD = 0 )
@@ -3052,7 +3052,7 @@ partial.vector <- function(TabX, TabY, TabZ, en0 = TRUE)
 
   # vecteurs et valeurs propres pour MAD
   v.cp <- eigen(mat.sym.norm, symmetric = TRUE)
-  v3 <- polaire(v.cp$vectors[1, 3],  v.cp$vectors[2, 3],  v.cp$vectors[3 ,3])
+  v3 <- to.polar(v.cp$vectors[1, 3],  v.cp$vectors[2, 3],  v.cp$vectors[3 ,3])
 
   vcorrect<- NULL
   vcorrect$I <- sign(TabZ[1] - TabZ[ntab]) * abs(v3$I)
