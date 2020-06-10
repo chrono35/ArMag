@@ -3408,14 +3408,16 @@ remove.step <- function(Data, step.value = NULL, step.code = c("Z+", "Z-", "X+",
       warning("No step to remove")
       return(Data)
     } else {
-      print(paste(Data[selec]))
+      print(paste(Data[selec,]$step))
     }
   }
 
-  if (length(selec) > 0)
+  if (length(selec) > 0) {
     res.list <- Data[-selec,]
-  else
+  }
+  else {
     res.list <- Data
+  }
 
   return(res.list)
 }
