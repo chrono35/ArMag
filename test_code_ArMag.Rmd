@@ -947,6 +947,18 @@ relocate.VGP <- function(I.site, D.site, lat.site, lon.site,  lat.reloc = "Paris
 }
 ```
 
+# test igrf13syn
+```{r}
+isv <- 1
+date <- 2000
+itype <- 1
+alt <- 50
+colat <- 90 - 45
+elong <- 10
+
+igrf13syn(isv=isv, date=date, itype=itype , alt=alt, colat= colat, elong=elong)
+```
+
 # Vieux fichier
 
 

@@ -561,7 +561,7 @@ to.polar.D <- function(X, Y, Z)
 
 #' champs pour X, Y et Z
 #' @export
-to.vector.polar.F <- function(X, Y, Z)
+to.polar.F <- function(X, Y, Z)
 { #en A/m
   res <- NULL
   for (i in 1:length(X)) {
