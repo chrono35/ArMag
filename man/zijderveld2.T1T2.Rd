@@ -37,5 +37,5 @@ zijderveld2.T1T2(
 trace un diagramme de zijderveld en calculant la composante entre les étapes T1 et T2
 }
 \seealso{
-\code{\link{composante.partielle.T1T2, zijderveld2.T1T2}}
+\code{\link{partial.component.T1T2, zijderveld2.T1T2}}
 }

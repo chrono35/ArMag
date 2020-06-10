@@ -8,7 +8,8 @@ Utiliser par défaut pour enlever les étapes d'anisotropie}
 remove.step(
   Data,
   step.value = NULL,
-  step.code = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB")
+  step.code = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"),
+  verbose = TRUE
 )
 }
 \arguments{
@@ -17,6 +18,8 @@ remove.step(
 \item{step.value}{valeur de la température . Par defaut NUll, alors la tempértature est retrouvée automatiquement avec les step.code définis. Si step.value = '', alors suppression de toutes les étapes avec le step.code}
 
 \item{step.code}{chaîne de caractère représentant par exemple les étapes de l'anisotropie "Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB", ou des erreurs "??"}
+
+\item{verbose}{affiche des commentaires et avertissements}
 }
 \description{
 Supprime les étapes à la valeur step.value et avec les codes step.code

@@ -7,7 +7,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r pour crer un racourcie }
+```{r pour creer un racourcie }
 #shinyShortcut(shinyDirectory = "~/Documents/AM/R_Projects/ArMag/Visu_AM", OS = "unix",   gitIgnore = FALSE)
 ```
 
@@ -18,152 +18,97 @@ if (!require(devtools))
  {install.packages("devtools")}
 
 devtools::install_github("chrono35/ArMag", force = TRUE)
-library("ArMag", lib.loc="/Library/Frameworks/R.framework/Versions/3.5/Resources/library")
+library("ArMag") #, lib.loc="/Library/Frameworks/R.framework/Versions/3.5/Resources/library")
 ```
 
 # Chargement des fonctions d'ArMag via source
+Si besoin
 ```{r echo = TRUE}
- source('~/Documents/AM/R_Projects/ArMag/R/ArMag.R', echo=FALSE)
+# source('R/ArMag.R', echo=FALSE)
 
+```
+
+# Chargement fichier test avec fonction read.Pal
+
+
+
+
+## Lecture fichier pal
+```{r test read.Pal}
+#file.AM <- "~/Documents/AM/GDRE1_INT.AMD"
+# file.AM <- "/Volumes/Partage_Mesures_Archeomag/Mesures/22061_Glomel/22061A.AMD"
+# file.AM <- "~/Documents/AM/22061_Glomel/22061A.AMD"
+#file.AM <- "~/Documents/AM/53130_Laval/53130_Mesures/53130B1_2019.AMD"
+#file.Pal <- "~/Documents/AM/Agnes&Maria/Portugal.txt"
+file.Pal <- "examples/Portugal.txt"
+
+mes <- NULL
+mes <- read.Pal.mesures(file.Pal)
+mes.info <- read.Pal.info (file.Pal)
+
+desaim(mes)
+
+# export en csv
+#write.csv(mes, file = "~/Documents/AM/Agnes&Maria/Portugal.csv")
+```
+
+```{r}
+# calcul de l'anisotropie moyenne
+ani.moyen <- anisotropy.mean.eigen.tensor(mes, mes.info$number[1:20], step.value = 480, step.code = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"))
+
+# calcul et stockage des anisotropies individuelles
+ani.all.spe <- anisotropy.eigen.tensors.all(mes, mes.info$number[1:20], step.value = 480, step.code = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"))
+ani.all.spe.mane <- cbind(mes.info$name[1:20], ani.all.spe)
+```
+
+```{r affichage anisotropie moyenne}
+#png(paste(TeX.floder,"22061A_ANI.png", sep = "") , bg = "transparent", width = 1000) # Directement dans le dossier TeX
+#par(mfrow = c(1, 2)) # pour exportation
+
+par(mfrow = c(1, 2), cex.axis = 0.5)
+
+lambert.ID.tensors(ani.all.spe)
+lambert.ID.tensors(ani.moyen, pt.col = "red", new = FALSE)
+
+flinn(ani.all.spe)
+flinn(ani.moyen, pt.col = "red", new = FALSE)
+
+# dev.off() # fin sauvegarde-exportation
 ```
 
 # Chargement fichier test avec fonction read.AM
 
-
-
-
 ## Test execution
 ```{r test read.AM}
-#file.AM <- "~/Documents/AM/GDRE1_INT.AMD"
+# file.AM <- "~/Documents/AM/GDRE1_INT.AMD"
 # file.AM <- "/Volumes/Partage_Mesures_Archeomag/Mesures/22061_Glomel/22061A.AMD"
- file.AM <- "~/Documents/AM/22061_Glomel/22061A.AMD"
-#file.AM <- "~/Documents/AM/53130_Laval/53130_Mesures/53130B1_2019.AMD"
+# file.AM <- "~/Documents/AM/22061_Glomel/22061A.AMD"
+ file.AM <- "examples/14039C.AMP"
+# file.AM <- "~/Documents/AM/Aire/40001A.AMD"
+
 mes <- NULL
 mes <- read.AM.mesures(file.AM)
 mes.info <- read.AM.info (file.AM)
 ```
 
-```{r}
-Data <- mes
-main = NULL
 
-F = NULL;  point.col = c("blue3", "red"); pch = 21; type= "b";
-                             xlab = "°C"; ylab = ""; main = NULL;
-                             names = NA; normalize = TRUE; new = TRUE
+```{r test mcFadden}
 
- tmp.frame <- NULL
-  if (is.null(main))
-    main <- " F vs Etap.value"
+select <- NULL
+select$I <- mes$I[mes$step.value== 0]
+select$D <- mes$I[mes$step.value== 0]
 
-  if(is.data.frame(Data)) {
-    tmp.frame$name <- Data$name[!is.na(Data$Etap.value)]
-    tmp.frame$Etap.value <- Data$Etap.value[!is.na(Data$Etap.value)]
-    tmp.frame$F <- Data$F[!is.na(Data$Etap.value)]
+stat.mcFadden(select$I[1:8], select$D[1:8])
 
 
-  } else {
-    # Création du frame interne
-    if (is.na(names))
-      tmp.frame$name <- as.character(c(1: length(Data)))
-    else
-      tmp.frame$name <- names
-
-    tmp.frame$Etap.value <- Data
-    tmp.frame$F <- F
-  }
-
-  # comptage et séparation des données
-  current <- tmp.frame$name[1]
-  list.name <- current
-
-  for (i in 1: length(tmp.frame$name)) {
-    if ( tmp.frame$name[i] != current) {
-      current <- tmp.frame$name[i]
-      list.name<- c(list.name, current)
-    }
-  }
-
-  xlim <- range(tmp.frame$Etap.value)
-
-  YMax <-max(tmp.frame$F)
-
-   if (normalize) {
-    ylim <- c(0, 100)
-
-  } else {
-    ylim <- c(0, max(tmp.frame$F))
-  }
-
-  if (length(point.col) < length(tmp.frame$Etap.value) )
-      point.col <- rep(point.col, length(tmp.frame$Etap.value) )
-
-  for (i in 1 : length(list.name)) {
-   if (normalize == TRUE)
-      coefY <- 100 / max(tmp.frame$F[tmp.frame$name == list.name[i]])
-    else 
-      coefY <- 1
-    Xi <- tmp.frame$Etap.value[tmp.frame$name == list.name[i]]
-    Yi <- tmp.frame$F[tmp.frame$name == list.name[i]]  * coefY 
-
-    if (i == 1)
-      plot(x=Xi, y=Yi, xlab = xlab, ylab = ylab, ylim = ylim, xlim = xlim, type = type, col= adjustcolor( point.col[i], alpha.f = 0.7), bg = point.col[i], pch = pch,
-           yaxt="n", bty ="n", main = main, new = new)
-    else
-      lines(x=Xi, y=Yi, type = type, col=adjustcolor( point.col[i], alpha.f = 0.7), bg = point.col[i], pch = pch, yaxt="n", bty ="n")
-
-  }
-
-  axis(2, pos = 0, cex.axis = 0.8, col = "darkgray") # Ordonnées
-
-  mtext( format(YMax, digits = 3), side = 3, col = "gray5", adj = 0, cex.axis = 0.8)
-
-
+#lambert(mes, inc.lim = c(0,90))
 ```
 
-# codage symetrisation matrice
-```{r}
-anisotropie.matrix.symetric <- function(mesures, etape.value, etape.sigle = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"), volume = 1, TH = 1,...)
-{
-
-  ani.etape <- trimws(paste(as.character(etape.value), etape.sigle, sep = "") )
-
-  selec <- NULL
-  for (i in 1:length(ani.etape)) {
-    selec <- c( selec, which(trimws(mesures$Etap) == trimws(ani.etape[i])) )
-  }
-  res.list <- NULL
-  res.list <- mesures[selec,]
-  res.list <- res.list
-
-  mat.plus <- matrix( c( res.list$X[3], res.list$X[5], res.list$X[1],
-                         res.list$Y[3], res.list$Y[5], res.list$Y[1],
-                         res.list$Z[3], res.list$Z[5], res.list$Z[1]) , 3, 3)
 
 
-  mat.moins <- matrix( c( res.list$X[4], res.list$X[6], res.list$X[2],
-                          res.list$Y[4], res.list$Y[6], res.list$Y[2],
-                          res.list$Z[4], res.list$Z[6], res.list$Z[2]) , 3, 3)
-  mat.reel <- (mat.plus - mat.moins)/2 / (volume * 1E-6)# / coef.norm
 
-  # Symetrisation
-  coef.norm <- TH* 10/ (4*pi)
-  kxx <- mat.reel[1,1] / coef.norm
-  kyy <- mat.reel[2,2] / coef.norm
-  kzz <- mat.reel[3,3] / coef.norm
-  kxy <- (mat.reel[1,2] + mat.reel[2,1]) / 2 / coef.norm
-  kxz <- (mat.reel[1,3] + mat.reel[3,1]) / 2 / coef.norm
-  kyz <- (mat.reel[2,3] + mat.reel[3,2]) / 2 / coef.norm
+# Codage symetrisation matrice
 
-  # normalisation
-  suscept <- (kxx + kyy + kzz)/3
-  mat.sym.norm <- matrix( c( kxx / suscept, kxy / suscept, kxz / suscept,
-                             kxy / suscept, kyy / suscept, kyz / suscept,
-                             kxz / suscept, kyz / suscept, kzz / suscept) , 3, 3)
-
-  return(mat.sym.norm)
-
-}
-```
 
 
 # Codage correction anisotropie
@@ -171,190 +116,105 @@ anisotropie.matrix.symetric <- function(mesures, etape.value, etape.sigle = c("Z
 # calcul les nouveaux paramètres d'un echantillon avec un tenseur donnée
 #procedure Calcul_Aniso_Specimen(var R_Cal_echt:Res_Cal_xyz;Tens_ani:TENSEUR_ANISO );
 mes.sel <- NULL
-mes.sel1 <- extract.mesures.specimen.name("14D", mes)
+mes.sel1 <- extract.mesures.specimen.name("14P2", mes)
 
 volume <- mes.info$vol[which(mes.info$name == trimws(mes.sel1$name[1]))]
 TH <- mes.info$TH[which(mes.info$name == trimws(mes.sel1$name[1]))]
 mes.sel1$X <- mes.sel1$X/volume * 1E6
 mes.sel1$Y <- mes.sel1$Y/volume * 1E6
 mes.sel1$Z <- mes.sel1$Z/volume * 1E6
-ani1 <- anisotropie.matrix.symetric(mes.sel1, etape.value = 400, TH = TH, volume = volume )
+ani1 <- anisotropy.matrix.symetric(mes.sel1, step.value = 550, TH = TH, volume = volume )
 
-mes.sel2 <- extract.mesures.specimen.name("19D", mes)
+mes.sel2 <- extract.mesures.specimen.name("16P1", mes)
 volume <- mes.info$vol[which(mes.info$name == trimws(mes.sel2$name[1]))]
 TH <- mes.info$TH[which(mes.info$name == trimws(mes.sel2$name[1]))]
-ani2 <- anisotropie.matrix.symetric(mes.sel2, etape.value = 400, TH = TH, volume = volume )
+ani2 <- anisotropy.matrix.symetric(mes.sel2, step.value = 550, TH = TH, volume = volume )
 
-mes.sel3 <- extract.mesures.specimen.name("49D", mes)
+mes.sel3 <- extract.mesures.specimen.name("24P1", mes)
 volume <- mes.info$vol[which(mes.info$name == trimws(mes.sel3$name[1]))]
 TH <- mes.info$TH[which(mes.info$name == trimws(mes.sel3$name[1]))]
-ani3 <- anisotropie.matrix.symetric(mes.sel3, etape.value = 400, TH = TH, volume = volume )
+ani3 <- anisotropy.matrix.symetric(mes.sel3, step.value = 550, TH = TH, volume = volume )
 
 
-mes.sel4 <- extract.mesures.specimen.name("57D", mes)
+mes.sel4 <- extract.mesures.specimen.name("15P1", mes)
 volume <- mes.info$vol[which(mes.info$name == trimws(mes.sel4$name[1]))]
-TH <- mes.info$TH[which(mes.info$name == trimws(mes.sel3$name[1]))]
-ani4 <- anisotropie.matrix.symetric(mes.sel4, etape.value = 400, TH = TH, volume = volume )
+TH <- mes.info$TH[which(mes.info$name == trimws(mes.sel4$name[1]))]
+ani4 <- anisotropy.matrix.symetric(mes.sel4, step.value = 550, TH = TH, volume = volume )
 
 
-mes.sel.ARN <- mes.sel[mes.sel$Etap.value == 0,]
+mes.sel.ARN <- mes[mes$step.value == 0,]
 mes.sel.ARN$X <- mes.sel.ARN$X /volume * 1E6
 mes.sel.ARN$Y <- mes.sel.ARN$Y/volume * 1E6
 mes.sel.ARN$Z <- mes.sel.ARN$Z/volume * 1E6
 
-ani <- anisotropie.matrix.symetric(mes.sel, etape.value = 400, TH = TH, volume = volume )
-ani.tens <- anisotropie.tensor(mes.sel, etape.value = 400, TH = TH, volume = volume ) # eigen.tensor
+ani <- anisotropy.matrix.symetric(mes, step.value = 550)
+ani.tens <- anisotropy.eigen.tensor(mes, step.value = 550 ) # eigen.tensor
 
 # matrice moyenne
   ani.mean <- (ani2+ ani3 + ani4)/3
   eigen(ani.mean)
 ```
 
-```{r}
-correction.anisotropie <- function(mesures.frame, ani.matrix)
-{
 
-#mesures.frame <- mes.sel
-#ani.matrix <- ani
-  if (!is.data.frame(mesures.frame))
-    warning("mesures n'est pas une data.frame")
-  if (!is.matrix(ani.matrix))
-    warning("ani.matrix n'est pas une matrice")
-  
-  nbMesures <- length(mesures.frame[,1])
-  
-  # inversion de la matrice
-  ani.inv <- solve(ani.matrix)
-
-  r_cal_echt <- NULL
-  # Calcul pour une mesure
-  correct <- function(mesure, aniso.inv) {
-    # Calcul de la correction
-    re.cal.ani <- aniso.inv %*% c( mesure$X, mesure$Y, mesure$Z)
-    # recopie des variables
-    re.cal <- mesure
-    re.cal$X <- re.cal.ani[1]
-    re.cal$Y <- re.cal.ani[2]
-    re.cal$Z <- re.cal.ani[3]
-    re.cal.ID <- polaire(re.cal$X, re.cal$Y, re.cal$Z)
-    re.cal$I <- re.cal.ID$I
-    re.cal$D <- re.cal.ID$D
-    re.cal$F <- re.cal.ID$F
-    
-    return(re.cal)
-  }
-  
-  resT <- NULL
-  for (i in 1 : nbMesures)
-    resT <- rbind(resT, correct(mesures.frame[i,], ani.inv))
- 
-  return(resT)
-}  
-```
 
 # test correction.anisotropie
 ```{r}
 mes.sel <- NULL
-mes.sel <- extract.mesures.specimen.name("49D", mes)
+mes.sel <- extract.mesures.specimen.name("24P1", mes)
 volume <- mes.info$vol[which(mes.info$name == trimws(mes.sel$name[1]))]
 TH <- mes.info$TH[which(mes.info$name == trimws(mes.sel$name[1]))]
 
-mes.sel.ARN <- mes.sel[mes.sel$Etap.value == 0,]
+mes.sel.ARN <- mes.sel[mes.sel$step.value == 0,]
 mes.sel.ARN$X <- mes.sel.ARN$X /volume * 1E6
 mes.sel.ARN$Y <- mes.sel.ARN$Y /volume * 1E6
 mes.sel.ARN$Z <- mes.sel.ARN$Z /volume * 1E6
 
-ani <- anisotropie.matrix.symetric(mes.sel, etape.value = 400, TH = TH, volume = volume )
+ani <- anisotropy.matrix.symetric(mes.sel, step.value = 550, TH = TH, volume = volume )
 
 # normalisation des mesures en A/m
 mes.sel$X <- mes.sel$X /volume * 1E6
 mes.sel$Y <- mes.sel$Y /volume * 1E6
 mes.sel$Z <- mes.sel$Z /volume * 1E6
-correction.anisotropie(mes.sel, ani)
+correction.anisotropy(mes.sel, ani)
 ```
 
 
-```{r test extract.mesures.specimen.name}
-mes.sel <- NULL
-mes.sel <- extract.mesures.specimen.name("44188A_17B1", mes)
-```
+# Tracer
 
-
-# Tracer de cercle
-
-```{r Test read.AM.info }
-file.AM2 <- "~/Documents/AM/53130B1_2019.AMD"
-mes2 <- read.AM.mesures (file.AM2)
-mes2.info <- NULL
-mes2.info <- read.AM.info (file.AM2)
-```
 
 ```{r selection}
-mes.sel2 <- NULL
-mes.sel2 <- extract.mesures.specimen.name("19D", mes2)
+mes.ech <- NULL
+mes.ech <- extract.mesures.specimen.name("10P1", mes)
+  mes.ech <- remove.step(mes.ech, step.value = 550, step.code = c("??"))
+   mes.ech <- remove.step(mes.ech, step.value = 400, step.code = c("??"))
 #mes.sel2 <- extract.mesures.specimen.number(2, mes2)
 ```
-
+## Tracer de Zijderveld
 ```{r fonction plot.zjiderveld1}
 par(pty="s") # force une figure carré
-plot.zjiderveld1(mes.sel2$X, mes.sel2$Y, mes.sel2$Z, pt.name = mes.sel2$Etap)
-par(mfrow = c(1,2), pty="m") # séparation en 2 colonnes et rétablie une figure taille maximale
-plot.zjiderveld1(mes.sel2, legend.pos = "topright")
-plot.zjiderveld2(mes.sel2, pt.names = NULL)
+zijderveld1(mes.ech$X, mes.ech$Y, mes.ech$Z) #, pt.name = mes.ech$Etap)
+par(mfrow = c(1,2), pty="m", cex.lab = 0.5, cex.axis = 0.6) # séparation en 2 colonnes et rétablie une figure taille maximale
+# cex.axis défini la taille du texte des échelles
+# cex.lab défini la taille du texte des étapes 
+zijderveld1(mes.ech, legend.pos = "topright")
+zijderveld2(mes.ech, pt.names = NULL)
 ```
 
-
-
-
+Nous devons obtenir la même chose. Chacune des fonction utilisant des paramètres différents
 ```{r comparatif fonction plot}
-plot.lambert.XYZ.specimen(mes.sel2)
-plot.lambert.ID.specimen(mes.sel2)
+
+lambert.XYZ.specimen(mes.ech)
+lambert.ID.specimen(mes.ech)
 ```
 
-# calcul sur matrice
+# Calcul sur matrice
 
 ```{r test extract.aniso}
-volume <- mes2.info$vol[which(mes2.info$name == trimws(mes.sel2$name[1]))]
-TH <- mes2.info$TH[which(mes2.info$name == trimws(mes.sel2$name[1]))]
+volume <- mes.info$vol[which(mes.info$name == trimws(mes.sel$name[1]))]
+TH <- mes.info$TH[which(mes.info$name == trimws(mes.sel$name[1]))]
 
-ani <- anisotropie.matrix(mes.sel2, etape.value = 400, TH = TH, volume = volume )
+ani <- anisotropy.matrix.symetric(mes.sel, step.value = 550, TH = TH, volume = volume )
 ani
-```
-
-```{r code plot.ani}
-mes.sel1 <- extract.mesures.specimen.number(1, mes2)
-mes.sel2 <- extract.mesures.specimen.number(2, mes2)
-mes.sel3 <- extract.mesures.specimen.number(3, mes2)
-
-ani1 <- anisotropie.tensor(mes.sel1, etape.value = 400, TH = TH, volume = mes2.info$vol[which(mes2.info$name == trimws(mes.sel1$name[1]))] )
-ani2 <- anisotropie.tensor(mes.sel2, etape.value = 400, TH = TH, volume = mes2.info$vol[which(mes2.info$name == trimws(mes.sel2$name[1]))] )
-ani3 <- anisotropie.tensor(mes.sel3, etape.value = 400, TH = TH, volume = mes2.info$vol[which(mes2.info$name == trimws(mes.sel3$name[1]))] )
-
-#plot.ani(c(ani1, ani2, ani3))
-Data <- rbind(ani1, ani2, ani3)
-point.col <- "forestgreen"
-
- # restructuration des données
-  L1.Inc <- as.numeric(Data[,2])
-  L2.Inc <- as.numeric(Data[,5])
-  L3.Inc <- as.numeric(Data[,8])
-  
-  L1.Dec <- as.numeric(Data[,3])
-  L2.Dec <- as.numeric(Data[,6])
-  L3.Dec <- as.numeric(Data[,9])
-  
-  if (length(point.col) < length(L1.Inc))
-    point.col <- rep(point.col, length.out = length(L1.Inc))
-  new <- TRUE
-  for (i in 1:length(L1.Inc) ) {
-    Da.I <- c(L1.Inc[i], L2.Inc[i], L3.Inc[i])
-    Da.D <- c(L1.Dec[i], L2.Dec[i], L3.Dec[i])
-    plot.lambert.ID(Da.I,
-                    Da.D,
-                    inc.lim = c(0, 90), pch = c(22, 24, 21), point.col = point.col[i], new = new  )
-    new <- FALSE
-  }
-
 ```
 
 
@@ -363,34 +223,34 @@ point.col <- "forestgreen"
 TH <- 60
 mes.sel <- NULL
 #mes.sel2 <- extract.mesures.specimen.name("19D", mes2)
-mes.sel1 <- extract.mesures.specimen.number(1, mes2)
-mes.sel2 <- extract.mesures.specimen.number(2, mes2)
-mes.sel3 <- extract.mesures.specimen.number(3, mes2)
+mes.sel1 <- extract.mesures.specimen.number(1, mes)
+mes.sel2 <- extract.mesures.specimen.number(2, mes)
+mes.sel3 <- extract.mesures.specimen.number(3, mes)
 
-ani1 <- anisotropie.tensor(mes.sel1, etape.value = 400, TH = TH, volume = mes2.info$vol[which(mes2.info$name == trimws(mes.sel1$name[1]))] )
-ani2 <- anisotropie.tensor(mes.sel2, etape.value = 400, TH = TH, volume = mes2.info$vol[which(mes2.info$name == trimws(mes.sel2$name[1]))] )
-ani3 <- anisotropie.tensor(mes.sel3, etape.value = 400, TH = TH, volume = mes2.info$vol[which(mes2.info$name == trimws(mes.sel3$name[1]))] )
+ani1 <- anisotropy.eigen.tensor(mes.sel1, step.value = 550)
+ani2 <- anisotropy.eigen.tensor(mes.sel2, step.value = 550 )
+ani3 <- anisotropy.eigen.tensor(mes.sel3, step.value = 550 )
 
 Data <- rbind(ani1, ani2, ani3)
-plot.lambert.ID.tensors(Data, point.col = c("blue", "red", "green"))
+lambert.ID.tensors(Data, point.col = c("blue", "red", "green"))
 #
 
 numbers <- c(7)
-Data <- anisotropie.tensors.numbers(numbers, mes2, mes2.info, 400)
-plot.lambert.ID.tensors(Data, point.col = c("blue", "red", "green"))
+Data <- anisotropy.eigen.tensors.numbers(numbers, mes, mes.info, 400)
+lambert.ID.tensors(Data, point.col = c("blue", "red", "green"))
 
 
 numbers.selected <- NULL
-  for (i in 1: length(mes2$number) ) {
-    if ( length(which( numbers.selected == mes2$number[i] )) == 0 )
-      numbers.selected <- c(numbers.selected, mes2$number[i])
+  for (i in 1: length(mes$number) ) {
+    if ( length(which( numbers.selected == mes$number[i] )) == 0 )
+      numbers.selected <- c(numbers.selected, mes$number[i])
   }
 
 ```
 
 
 ```{r test plot.flin }
-plot.flin(Data)#, points.col = c("red", "blue"), pt.names = c("titi", "toto"))
+flinn(Data)#, points.col = c("red", "blue"), pt.names = c("titi", "toto"))
 
 ```
 
@@ -422,7 +282,7 @@ zijderveld1.T1T2(mes.sel2)
 zijderveld2.T1T2(mes.sel2)
 
 # suppression des étapes d'anisotropie
-mes.sel2 <- supprime.etape(mes.sel2) 
+mes.sel2 <- remove.step(mes.sel2) 
 lambert(mes.sel2, inc.lim = c(0, 90))
 desaim(mes.sel2, etap.J0 = NULL)
 ```
@@ -434,32 +294,7 @@ desaim(mes.sel2, etap.J0 = NULL)
 ```{r genere AMD}
 file.AM <- "~/Documents/AM/test.txt"
 list.ech <- c("1T",   "17T",  "35T",  "47T",  "50T",  "59T",  "83T",  "87T",  "89T",  "94T",  "100T", "102T", "103T" )
-shape <- "Cyl"
-entete <- NULL
-entete<- c( "Spinner_Molspin 2008" , 
-              "Commune : Laval",
-              "Site : St Pierre-le-Potier",
-              "Latitude  :   0°  0'  0\" ",
-              "Longitude :   0°  0'  0\" IGRF:+00.0",
-              "Prélèvements sur matériaux déplacés",
-              "Type de carottage : à plat",
-              "Date de création : 27/05/2019", "","")
 
-txt.mesures <- entete
-for (i in 1:length(list.ech)) {
-  txt.mesures <- c( txt.mesures,
-                    paste("Id:", format(list.ech[i], width = 13), "in:000.0 az:000.0 Tet:000.0 Psy:000.0 v:12.27 com:TH50.0µT ", shape, sep = ""),
-                    "Repère:",
-                    "CompDes:  T1:0000T+  T2:0000T+  T3:0000T-  T4:0000T-",
-                    "")
-}
-
-
-# Ecriture du fichier
-
-filCon <- file(file.AM, encoding="UTF8")
-   writeLines(txt.mesures, filCon) 
-close(filCon) 
 ```
 
 
@@ -473,26 +308,26 @@ T1 <- 200
 T2 <- 400
 
 withAni = FALSE
-etape.sigle <- c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB")
+step.code <- c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB")
 mes.sel2 <- extract.mesures.specimen.name("1T", mes)
-ani.etape.value <- NULL
+ani.step.value <- NULL
 
 
 res.list <- mes.sel2
 
 if (withAni == FALSE) { # suppression des étape d anisotropie
- if (is.null(ani.etape.value)) {
+ if (is.null(ani.step.value)) {
    for (i in 1:length(Data$Etap)) {
-     if (substring(Data$Etap[i], 4) == etape.sigle[3])
-       ani.etape.value <- Data$Etap.value[i]
+     if (substring(Data$Etap[i], 4) == step.code[3])
+       ani.step.value <- Data$Etap.value[i]
    }
  }
-  ani.etape <- trimws(paste(ani.etape.value, etape.sigle, sep = ""))
+  ani.step <- trimws(paste(ani.step.value, step.code, sep = ""))
 
  
  selec <- NULL
- for (i in 1:length(ani.etape)) {
-   selec <- c( selec, which(trimws(mes.sel2$Etap) == trimws(ani.etape[i])) )
+ for (i in 1:length(ani.step)) {
+   selec <- c( selec, which(trimws(mes.sel2$Etap) == trimws(ani.step[i])) )
  }
  
  if (length(selec) > 0)
@@ -562,111 +397,7 @@ vp <- composante.partiel(TabX, TabY, TabZ, en0 = en0)
 ```
 
 
-```{r code vecteur partiel}
-# debut code
-vecteur.partiel <- function(TabX, TabY, TabZ, en0 = TRUE) 
-{
-  col.names <- c("X", "Y", "Z", "I", "D", "F", "Sl", "MAD")
-  ntab <- length(TabX);
-  
-  if ( (ntab<1) || (ntab!=length(TabY)) || (ntab!=length(TabZ))) {
-      Data <- c( X = 0, Y = 0, Z = 0,
-           I = 0, D = 0, F = 0,
-            Sl = NA, MAD = NA )
-  
-        return(as.data.frame(t(Data), col.names = col.names))  #il faut au moins 2 étapes
-  }
-       
- # calcul du barycentre du nuage de points si 'en0' false
- somx <- 0; somy <- 0; somz <- 0
- 
- if (en0 == FALSE) {
-   somx <- sum(TabX)
-   somy <- sum(TabY)
-   somz <- sum(TabZ)
- } 
-    
-  xm <- somx/ ntab
-  ym <- somy/ ntab
-  zm <- somz/ ntab
 
-  Mom <-0; # variable pour Kirschink
-  # calcul du moment suivant kischvink
-  #  c.à.d. longueur du chemin total entre les points 
-  for ( j in 2 : ntab) {
-    Mom <- Mom + sqrt( (TabX[j]-TabX[j-1])^2
-                       + (TabY[j]-TabY[j-1])^2
-                       + (TabZ[j]-TabZ[j-1])^2 )
-  }
-
-  # Longueur du plus court chemin
-  Sl <- sqrt( (TabX[ntab]-TabX[1])^2
-             + (TabY[ntab]-TabY[1])^2
-             + (TabZ[ntab]-TabZ[1])^2);
-  # Rapport des distances
-  Sl <- Sl/Mom;
-
-  
- sxx <- sum((TabX-xm)^2); sxy <- sum((TabX-xm)*(TabY-ym)); sxz <- sum((TabX-xm)*(TabZ-zm))
-                          syy <- sum((TabY-ym)^2);         syz <- sum((TabY-ym)*(TabZ-zm))
-                                                           szz <- sum((TabZ-zm)^2);
- # Matrice d inertie des points x, y, z pour le calcul de la droite
-    Ixx = syy+szz;  Ixy = -sxy;     Ixz = -sxz;
-                    Iyy = sxx+szz;  Iyz = -syz;
-                                    Izz = sxx+syy;
-
-    
-  #  MAD
-
-  mat.sym.norm <- matrix( c( sxx, sxy, sxz,
-                             0,  syy, syz,
-                             0, 0, szz) , 3, 3)
-
-  # vecteurs et valeurs propres pour MAD
-  v.mad <- eigen(mat.sym.norm, symmetric = TRUE)
-    
-  
-  if (( v.mad$values[1] == 0) || ((v.mad$values[2] + v.mad$values[3])/ v.mad$values[1] < 0)) {
-    warning('MAD non calculable')
-    MAD <- NA
-  } else {
-    MAD <- atan(sqrt( ((v.mad$values[2] + v.mad$values[3])/ v.mad$values[1]) ));
-  } 
-
-  #   Calcul composante partielle
-  # Matrice d'inertie des points x,y,z
-
-  # La direction correspond au vecteur propre minimum
-  mat.sym.norm <- matrix( c( Ixx , Ixy , Ixz ,
-                             0,  Iyy , Iyz ,
-                             0, 0, Izz ) , 3, 3)
-  
-  # vecteurs et valeurs propres pour MAD
-  v.cp <- eigen(mat.sym.norm, symmetric = TRUE)
-  v3 <- polaire(v.cp$vectors[1, 3],  v.cp$vectors[2, 3],  v.cp$vectors[3 ,3])
-  
-  vcorrect<- NULL
-  vcorrect$I <- sign(TabZ[1] - TabZ[ntab]) * abs(v3$I)
-  vcorrect$D <- v3$D
-  
-  if (sign(vcorrect$I) !=  sign(v3$I)) {
-    vcorrect$D <- D.AM(v3$D +180)
-  }
- 
- 
- # mise en forme du résultat
-  MAD <- MAD * 180 /pi 
-  
- col.names <- c("X", "Y", "Z", "I", "D", "F", "Sl", "MAD")
- Data <- c( X = v.cp$vectors[1, 3], Y = v.cp$vectors[2, 3], Z = v.cp$vectors[3, 3],
-          I = vcorrect$I, D = vcorrect$D, F = v3$F,
-          Sl = Sl, MAD = MAD )
-
- #res <- as.data.frame(t(Data), col.names = col.names)
- return(as.data.frame(t(Data), col.names = col.names))
-}
-
-```
 
 ```{r composante de tout le site}
 sp.res <- NULL
@@ -675,8 +406,8 @@ for (sp in 1: length(mes.info$number)){
 
 
   # correction d'anisotropie
-  volume <- mes.info$vol[which(mes.info$name == trimws(mes.sp$name[1]))]
-  TH <- mes.info$TH[which(mes.info$name == trimws(mes.sp$name[1]))]
+  volume <- mes.info$vol[which(mes.info$name == trimws(sp.mes$name[1]))]
+  TH <- mes.info$TH[which(mes.info$name == trimws(sp.mes$name[1]))]
   
   # normalisation des mesures en A/m
   sp.mes$X <- sp.mes$X /volume * 1E6
@@ -684,17 +415,17 @@ for (sp in 1: length(mes.info$number)){
   sp.mes$Z <- sp.mes$Z /volume * 1E6
   
   # récupération de l'ARN
-  #sp.mes.ARN <- sp.mes[sp.mes$Etap.value == 0,]
+  #sp.mes.ARN <- sp.mes[sp.mes$step.value == 0,]
   
 
   # évaluation de l'anisotropie
-  sp.ani <- anisotropie.matrix.symetric(sp.mes, etape.value = 500, TH = TH, volume = volume )
+  sp.ani <- anisotropy.matrix.symetric(sp.mes, step.value = 550, TH = TH, volume = volume )
  
   # suppression des étapes d'anisotropie
-  sp.mes <- supprime.etape(sp.mes) 
+  sp.mes <- remove.step(sp.mes) #, step.value = "0", step.code = "N") 
     
   # correction de l'anisotropie  
-  sp.cor <- correction.anisotropie(sp.mes, sp.ani)
+  sp.cor <- correction.anisotropy(sp.mes, sp.ani)
   
   # determination de la composante
   sp.cp <- composante.partielle(sp.cor$X, sp.cor$Y, sp.cor$Z)
@@ -710,3 +441,520 @@ stat.mcFadden(sp.res$I, sp.res$D)
 
 lambert(sp.res, inc.lim = c(0,90))
 ```
+
+```{r}
+
+Data <- spe.83
+T1 = 100
+T2 = 350
+show.step = TRUE
+ withAni = FALSE; ani.step.value = NULL;
+                             step.code = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB");
+                             legend.pos = NULL; legend.txt = c("(Y, X)", "(Y, Z)");
+                             en0 = FALSE
+
+
+  if (is.null(T1))
+    T1 <- Data$step.value[1]
+  if (is.null(T2))
+    T2 <- Data$step.value[length(Data$step.value)]
+
+
+  res.list <- Data
+
+  if (withAni == FALSE) { # suppression des étape d anisotropie
+    Data <- remove.step(Data, ani.step.value = ani.step.value, step.code = step.code)
+  }
+  # recherche étape en dessous de T1
+  iT1 <- 1
+  while(Data$step.value[iT1] < T1) {
+    iT1 <- iT1 + 1
+  }
+
+  # recherche étape au dessus de T2
+  iT2 <- length(Data$step.value)
+  while(Data$step.value[iT2] > T2) {
+    iT2 <- iT2 -1
+  }
+
+  # Calcul de la composante partielle
+
+  TabX <- Data$X[iT1:iT2]
+  TabY <- Data$Y[iT1:iT2]
+  TabZ <- Data$Z[iT1:iT2]
+
+  vp <- composante.partielle(TabX, TabY, TabZ, en0 = en0)
+  ntab <- length(TabX)
+
+  somx <- 0; somy <- 0; somz <- 0
+
+  if (en0 == FALSE) {
+    somx <- sum(TabX)
+    somy <- sum(TabY)
+    somz <- sum(TabZ)
+  }
+
+  xm <- somx/ ntab
+  ym <- somy/ ntab
+  zm <- somz/ ntab
+
+  # a, b : Valeurs indiquant le point d’interception sur l’axe des y et la pente de la droite -> y = a + bx
+  # droite sur les déviations axe (Y, X)
+  bd <- vp$X/vp$Y
+  ad <- xm - bd*ym
+  # droite sur les inclinaisons axe (Y, Z), +Z est négatif
+  bi <- -vp$Z/vp$Y
+  ai <- -zm - bi*ym
+
+  Y.r <- range(Data$X)
+  Z.r <- range(Data$Z)
+  ylim <- c(min(Y.r[1], -Z.r[2]), max(Y.r[2], -Z.r[1]))
+
+  if (ylim[1]>0)
+    ylim[1]<-0
+
+  if (ylim[2]<0)
+    ylim[2]<-0
+
+  if (show.step == TRUE) {
+    pt.names <- Data$step
+  } else {
+     pt.names <- rep("", length(Data$X) )
+  }
+   
+
+  zijderveld1(Data$X[1:iT1], Data$Y[1:iT1], Data$Z[1:iT1],  ylim = ylim, pt.names = pt.names[1:iT1], legend.pos = legend.pos, legend.txt = legend.txt )
+  if (iT2 != length(Data$X))
+    zijderveld1(Data$X[iT2:length(Data$X)], Data$Y[iT2:length(Data$X)], Data$Z[iT2:length(Data$X)], pt.names = pt.names[iT2:length(Data$X)], new = FALSE)
+
+  zijderveld1(Data$X[iT1:iT2], Data$Y[iT1:iT2], Data$Z[iT1:iT2], pt.col = c("red", "red") , pt.names = pt.names[iT1:iT2], new = FALSE)
+
+  abline(ad, bd)
+  abline(ai, bi)
+
+  Data$step
+
+```
+
+# Calcul azimut du soleil
+```{r}
+JulianDay <- function(day, month, year, UT=12)
+  # valid from 1900/3/1 to 2100/2/28 # http://jgiesen.de/elevazmoon/basics/meeus.htm
+  # equivalent à la fonction dans R : julian(Sys.Date(), -2440588)
+  # ISOdate(year, month, day, hour = 12, min = 0, sec = 0, tz = "GMT")
+{
+  #  if (month<=2) {
+   #   month=month+12
+   #   year=year-1
+   #   }
+    #return ( trunc(365.25*year) + trunc(30.6001*(month+1)) - 15 + 1720996.5 + day + UT/24.0 )
+  return ( 367*year-7*trunc( (year+trunc((month+9)/12 ) )/4)+275*trunc(month/9)+day+1721014 ) # https://cral-perso.univ-lyon1.fr/labo/fc/cdroms/docu_astro/jour_julien/jour_julien.pdf
+} 
+```
+
+
+
+
+```{r}
+#sun.azimuth <- function(Day, Month, Year, Hour, Minute, Seconde=0, longdeg, longmin=0, longsec=0, latdeg, latmin=0, latsec=0, deviation = 0, tz = "UTC")
+#{
+#D:jour M:Month  Y:Year HH:Hour  NN:Minute KK:seconde
+  #  DD:=longdeg;  FF:=longmin;  SS:=longsec;  ZZ:=latdeg;  YY:=latmin;  XX:=latsec;
+#   les valeurs des degres minutes et secondes peuvent etre negatives dans la procedure}
+# Pour la France tz = "Europe/Paris", calcul alors automatiquement le décalage horaire
+  Day=13 ; Month=07; Year=1999; Hour=13; Minute=3; Seconde=0; 
+longdeg=-1; longmin=40; longsec=21; 
+latdeg=43; latmin=14; latsec=47; deviation = 0;
+tz = "UTC"
+  
+cmp <- function(expres ) {
+  if (expres == TRUE) {
+    return(-1)
+  } else {
+    return(0)
+  }
+}
+
+absTrunc <- function(x) {
+  return(as.numeric(trunc(x)))
+}
+
+RAD <- pi/180
+#LongNeg <- (longdeg<0)
+#LatNeg <- (latded<0)
+# modification des longitudes et latitudes 
+#if(longdeg<0) {
+#  longdeg =-abs(longdeg)
+#          longmin = -longmin
+##          longsec = -longsec
+#}
+    
+ # LON = longdeg +(longmin /60)+(longsec/3600)
+  LON <- DMS.to.DD(longdeg, longmin, longsec)
+
+#  if( latdeg<0) {
+#    latdeg=-Abs(latdeg)
+#       latmin=-latmin
+#       latsec=-latsec
+#  } 
+ # LAT = latdeg+ latmin/60+ latsec/3600;
+  LAT <- DMS.to.DD(latdeg, latmin, latsec)
+
+ # if ( (Month=1) | (Month=2)){
+#    Year = Year-1
+ #   Month = Month+12
+ # } 
+ # A = absTrunc(Year/100)
+ # B = 2 - A + absTrunc(A/4)
+ # J = absTrunc(365.25*Year) + absTrunc(30.6001*(Month+1)) + Day + 1720995 + B -0.5
+
+  H = Hour + Minute/60 +Seconde/3600
+ # J1 = J + H/24
+ 
+  #J <- trunc(365.25*Year) + trunc(30.6001*(Month+1)) - 15 + 1720996.5 + Day 
+  J1 <- calcul_jour_julien(Day, Month, Year, heure =  Hour, Minute, Seconde) 
+  
+ # J1 <- julian(as.Date(ISOdatetime(year = Year, month = Month, day = Day, hour = Hour, min = Minute, sec = Seconde, tz = tz)), -2440588)
+  
+  Ta = (J1-2.41502E+06)/36525
+  EX = 0.01675104-0.0000418*Ta
+  EP = 23.45229444-0.013012*Ta
+  L1 = 279.696678+36000.76892*Ta
+  L = (L1/360- abs(L1/360))*360
+  M1 = 358.4758445+35999.04975*Ta
+  MPrim = (M1/360- abs(M1/360))*360
+  MR = MPrim*RAD
+  VR = MR + 2*EX*sin(MR) + (5*EX*EX*sin(2*MR)/4) + (EX*EX*EX)*( (13*sin(3*MR)/12)- sin(MR)/4)
+  V = VR*180/pi
+  OM = 259.18-1934.14*Ta
+  L2 = L+V-MPrim - 0.00569- 0.00479*sin(OM*RAD)
+  K = cos(EP*RAD)*cos(L2*RAD)/cos(L2*RAD)
+  ALF = atan(K)
+  if ((Month>5) & (Month<13)) {
+    ALF = ALF + (cmp(K<0)*cmp(Month<10)+cmp(K>0)*cmp(Month>8))*pi
+  }
+  Q = sin(EP*RAD)*sin(L2*RAD)
+  DELT = atan(Q/sqrt(1-Q*Q))
+  DEC = DELT*180/pi
+  ALFA = ALF*180/pi
+  T1 = (J-2.41502E+06)/36525;
+  # TSL = Temps sideral local en heure décimale }
+  PT = 1.05*sin(OM*RAD)/3600;
+  PR = (0.08*sin((199-72002*T1)*RAD))/3600
+  TSL = 6.64079 +2400.051278*T1+ (0.095*(T1^2)/3600) - PT-PR+ LON/15+ H*1.0027379
+  TSL = TSL-24*absTrunc(TSL/24)
+  
+  AH = TSL-ALFA/15
+  R = sin(AH*15*RAD)/(sin(LAT*RAD)*cos(AH*15*RAD)-cos(LAT*RAD)*atan(DEC*RAD))
+  AZ = atan(R)*180/pi
+  AZ = AZ+180
+  if(AH<0) {
+    AH = AH+24
+  } 
+  AH = AH -24*absTrunc(AH/24)
+  
+  # AZ : azimut du soleil 
+  if ((AH>12) & (AZ>180)) 
+    AZ= AZ+180
+  if ((AH<12) & (AZ<180))
+    AZ = AZ+180  
+
+  if (deviation>=0) {
+    deviation = deviation + (AZ-360)*RAD
+  } else deviation = deviation + AZ*RAD
+
+  deviation <- deviation/RAD
+#return(deviation)
+#}
+```
+
+
+```{r}
+# Le jour julien 0 commence le 24 novembre -4713 (4712 BC) à 12h
+#' Le nombre de jour julien pour les calculs astronomiques
+#' @seealso \code{\link{https://codes-sources.commentcamarche.net/source/31774-calcul-de-la-position-du-soleil-declinaison-angle-horaire-altitude-et-azimut-altaz-solaire}}
+#' @export
+jour.julien <- function( jour,   mois,   annee,   heure,   minute,   seconde)
+{
+        day <- jour + heure/24 + minute/1440 + seconde/86400
+        year <- annee
+        month <- mois
+
+        if (month == 1 || month == 2)
+        {
+                year <- year-1
+                month <- month+12
+        }
+
+        a <- trunc(year/100)
+        b <- 2 - a + trunc(a/4)
+
+        jour_julien <- trunc(365.25*(year+4716)) + trunc(30.6001*(month+1)) + day + b - 1524.5
+        
+        return (as.numeric(jour_julien))
+}
+```
+
+```{r juju}
+juju <- function( jour,   mois,   annee)
+{
+            jour_julien <- (1461 * (annee + 4800 + (mois - 14)/12))/4 +(367 * (mois - 2 - 12 * ((mois - 14)/12)))/12- (3 * ((annee + 4900 + (mois - 14)/12)/100))/4 + jour - 32075.0
+        return (as.numeric(jour_julien) )
+}
+```
+
+
+```{r}
+# https://codes-sources.commentcamarche.net/source/31774-calcul-de-la-position-du-soleil-declinaison-angle-horaire-altitude-et-azimut-altaz-solaire
+
+# Pour controler
+# https://www.sunearthtools.com/dp/tools/pos_sun.php?lang=fr
+# https://fr.planetcalc.com/320/
+
+jour2= 28 ; mois2= 04; annee2= 1994; heure2= 12; minute2= 51; seconde2= 10
+longitude= 20; longmin= 20; longsec= 46    # Est est positif, et Ouest est négatif
+latitude= 50; latmin= 41; latsec= 53; deviation = 0
+tz = "UTC"
+sun.azimuth(jour2, mois2, annee2, heure2, minute2, seconde2, longitude, longmin, longsec, latitude, latmin, latsec)
+360-sun.azimuth(jour2, mois2, annee2, heure2, minute2, seconde2, longitude, longmin, longsec, latitude, latmin, latsec)
+```
+
+
+```{r sun.azimuth}
+#' Calcul l'azimuth du soleil en un lieu à une date donnée à une heure "UTC"
+#' @seealso \code{\link{https://codes-sources.commentcamarche.net/source/31774-calcul-de-la-position-du-soleil-declinaison-angle-horaire-altitude-et-azimut-altaz-solaire}}
+#' @seealso \code{\link{https://fr.planetcalc.com/320/}}
+#' @export
+sun.azimuth <- function(Day, Month, Year, Hour, Minute, Seconde=0, longdeg, longmin=0, longsec=0, latdeg, latmin=0, latsec=0) {
+# -----------------------------heure d'hiver ou d'été---------------------------
+correction_heure <- 0
+
+jj <- jour.julien(jour2, mois2, annee2, heure2, minute2, seconde2) - correction_heure/24.0 - 2451545.0
+
+
+#-------------calculs ascension droite et délinaison-------------
+g <- 357.529 + 0.98560028*jj
+q <- 280.459 + 0.98564736*jj
+l <- q + 1.915 * sin(g*pi/180.0) + 0.020*sin(2*g*pi/180.0) # Ellipticité
+e <- 23.439 - 0.00000036*jj
+
+ascension_droite <- atan(cos(e*pi/180.0)*sin(l*pi/180.0)/cos(l*pi/180.0))*(180.0/pi)/15.0
+if (cos(l*pi/180.0) < 0)
+{
+        ascension_droite <- 12.0 + ascension_droite
+}
+if (cos(l*pi/180.0)>0 && sin(l*pi/180.0) < 0)
+{
+        ascension_droite <- ascension_droite + 24.0
+}
+declinaison <- asin(sin(e*pi/180.0)*sin(l*pi/180.0))*180.0/pi
+
+
+nb_siecle <- jj/36525.0
+heure_siderale1 <- (24110.54841+(8640184.812866*nb_siecle)+(0.093104*(nb_siecle*nb_siecle))-(0.0000062*(nb_siecle*nb_siecle*nb_siecle)))/3600.0
+heure_siderale2 <- ((heure_siderale1/24.0) - trunc(heure_siderale1/24.0)) * 24.0
+
+angleH <- 360.0*heure_siderale2/23.9344
+angleT <- (heure2-correction_heure-12.0+minute2/60.0+seconde2/3600.0)*360.0/23.9344 # jour sidéraux = 23h56min 4,0989s -> 23,93447h -> 0,9972696 jour solaire
+angle <- angleT + angleH
+
+angle_horaire <- angle - ascension_droite*15.0 + longitude
+
+#-------------calculs altitude et azimut-------------------------
+
+
+altitude <- asin( sin(declinaison*pi/180.0)*sin(latitude*pi/180.0) - cos(declinaison*pi/180.0)*cos(latitude*pi/180.0)*cos(angle_horaire*pi/180.0) )*180.0/pi
+
+azimut <- acos( (sin(declinaison*pi/180.0)-sin(latitude*pi/180.0)*sin(altitude*pi/180.0)) / (cos(latitude*pi/180.0)*cos(altitude*pi/180.0)) )*180.0/pi
+sinazimut <- (cos(declinaison*pi/180.0)*sin(angle_horaire*pi/180.0)) / cos(altitude*pi/180.0)
+if (sinazimut<0)
+{
+        azimut <-360-azimut;
+}
+
+return(as.numeric(azimut))
+}
+```
+
+
+
+```{r test sun.azimuth}
+
+sun.azimuth (10, 11, 2019, 11, 19, Seconde=0, 48, longmin=0, longsec=0, 45, latmin=0, latsec=0, deviation = 0)
+
+```
+# Relocation
+## GAD
+controlé OK
+```{r GAD}
+#' Geocentric Axial Dipole
+#' Correction Dipôle Axiale Centré
+#' @return I.reloc en degré
+#' @example relocate.GAD(65, 47.12)
+relocate.GAD <- function( I.site, lat.site,  lat.reloc = "Paris")
+{
+  if (lat.reloc == "Paris") {
+    lat.reloc <- 48.85
+  }
+  if (lat.reloc == "Madrid") {
+    lat.reloc <- 40.4
+  }
+  if (lat.reloc == "Meriden") {
+     lat.reloc <- 52.43
+  }
+  if (lat.reloc == "Athenes") {
+    lat.reloc <- 37.96
+  }
+  
+  I.reloc <- I.site + 0.5 * (3 * cos(I.site * pi /180)^2 + 1) * (lat.reloc - lat.site)
+     
+  return(data.frame(I.reloc = I.reloc) )
+}
+```
+
+
+## VDM
+Controlé OK
+```{r VDM}
+#' Virtual Dipôle Moment
+#' @example relocate.VDM(55, 65,5, 47.12, 2.175,"Paris")
+relocate.VDM <- function( F.site, I.site, D.site, lat.site, lon.site, lat.reloc = "Paris", lon.reloc = 0)
+{
+  if (lat.reloc == "Paris") {
+    lon.reloc <- 2.3
+    lat.reloc <- 48.85
+  }
+  if (lat.reloc == "Madrid") {
+    lon.reloc <- -3.68
+    lat.reloc <- 40.4
+  }
+  if (lat.reloc == "Meriden") {
+    lon.reloc <- -1.62
+    lat.reloc <- 52.43
+  }
+  if (lat.reloc == "Athenes") {
+    lon.reloc <- 23.72
+    lat.reloc <- 37.96
+  }
+  
+  rad <- pi /180
+  LAR <- lat.reloc * rad
+  LGR <- lon.reloc * rad
+  LA <- lat.site * rad
+  LG <- lon.site * rad
+
+  # Calcul de la distance p du pôle 
+  pol <- (pi / 2) - atan(tan(I.site * rad) / 2)
+  lap <- asin(sin(LA) * cos(pol) + cos(LA) * sin(pol) * cos(D.site * rad))
+  beta <- asin(sin(pol) * sin(D.site * rad) / cos(lap))
+  if (cos(pol) >= (sin(LA) * sin(lap)))
+  {
+    lgp <- LG + beta
+  }
+  else 
+  {
+      lgp <- LG + pi - beta
+  }
+
+  # Calcul de Iij et Dij corrigés
+  pol <- acos(sin(LAR) * sin(lap) + cos(LAR) * cos(lap) * cos(lgp - LGR))
+  I.reloc <-  as.numeric(atan(2 * tan((pi / 2) - pol)) )
+  F.reloc <-  as.numeric( F.site * sqrt((3 * cos(I.site * rad)^2 + 1) / (3 *  cos(I.reloc)^2 + 1)) )
+
+  return(data.frame(I.reloc = I.reloc /rad , F.reloc = F.reloc, lat.pole = lap / rad , lon.pole = lgp / rad))
+}
+```
+
+## VADM
+Controlé OK
+```{r VADM}
+#' Virtual Axial Dipole Moment VADM
+#' @example relocate.VADM(55, 47.12) # resitué par defaul à Paris
+#' @example relocate.VADM(55, 47.12, "Paris")
+#' @example relocate.VADM(55, 47.12, lat.reloc = 48.85")
+relocate.VADM <- function( F.site,  lat.site,  lat.reloc = "Paris")
+{
+  if (lat.reloc == "Paris") {
+    lat.reloc <- 48.85
+  }
+  if (lat.reloc == "Madrid") {
+    lat.reloc <- 40.4
+  }
+  if (lat.reloc == "Meriden") {
+     lat.reloc <- 52.43
+  }
+  if (lat.reloc == "Athenes") {
+    lat.reloc <- 37.96
+  }
+  F.reloc <-  as.numeric(F.site * sqrt((3 * sin(lat.reloc * pi /180)^2 + 1) / (3 * sin(lat.site * pi /180)^2 + 1)) )
+  return(data.frame(F.reloc = F.reloc))
+}
+```
+
+## VGP
+Controlé OK
+```{r VGP}
+#' Correction Virtual Geomagnetic Pole
+#' VGP exacte: Westphal, p.117 et Merill McElhinny, p.80
+#' Paris lat:48.85 lon:2.3
+#' Madrid lat:40.4 lon:-3.68
+#' Meriden lat:52.43 lon:-1.62
+#' Athenes lat:37.96 lon:23.72
+#' 
+relocate.VGP <- function(I.site, D.site, lat.site, lon.site,  lat.reloc = "Paris", lon.reloc = 0)
+{
+  rad <- as.numeric(pi /180)
+  degre <- as.numeric(180 /pi)
+  
+  if (lat.reloc == "Paris") {
+    lon.reloc <- 2.3
+    lat.reloc <- 48.85
+  }
+  if (lat.reloc == "Madrid") {
+    lon.reloc <- -3.68
+    lat.reloc <- 40.4
+  }
+  if (lat.reloc == "Meriden") {
+    lon.reloc <- -1.62
+    lat.reloc <- 52.43
+  }
+  if (lat.reloc == "Athenes") {
+    lon.reloc <- 23.72
+    lat.reloc <- 37.96
+  }
+  LAR <- lat.reloc * rad
+  LGR <- lon.reloc * rad
+  LA <- lat.site * rad
+  LG <- lon.site * rad
+  # Calcul de la distance p du pôle 
+  pol <- (pi / 2) - atan(tan(I.site * rad) / 2)
+  lap <- asin(sin(LA) * cos(pol) + cos(LA) * sin(pol) * cos(D.site * rad))
+  beta <- asin(sin(pol) * sin(D.site * rad) / cos(lap))
+  if (cos(pol) >= (sin(LA) * sin(lap))) 
+  {
+    lgp <- LG + beta
+  }
+  else 
+  {
+    lgp <- LG + pi - beta
+  }
+  # Calcul de Iij et Dij corrigés
+  pol <- acos(sin(LAR) * sin(lap) + cos(LAR) * cos(lap) * cos(lgp - LGR))
+  I.reloc <- atan(2 * tan((pi / 2) - pol)) * degre 
+  D.reloc <- asin(sin(lgp - LGR) * cos(lap) / sin(pol)) * degre 
+
+  return(data.frame(I.reloc = as.numeric(I.reloc),  D.reloc = as.numeric(D.reloc), lat.pole = as.numeric(lap*degre) , lon.pole = as.numeric(lgp*degre) ) )
+}
+```
+
+# Vieux fichier
+
+
+```{r read.AM.oldType.mesures}
+file.AM <- "~/Documents/AM/old-type.AMD"
+#file.AM <- "~/Documents/AM/66006_Ansignan/66006A.AMD"
+test.file <- read.AM.oldType.info(file.AM, encoding = "macroman")
+
+```
+
+

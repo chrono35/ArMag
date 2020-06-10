@@ -41,5 +41,5 @@ Trace un diagramme de zijderveld1 en calculant la composante entre les étapes T
 par défaut la fonction n'affiche pas les étapes d'anisotropie et ne corrige pas les directions de l'anisotropie
 }
 \seealso{
-\code{\link{composante.partielle.T1T2, zijderveld2.T1T2}}
+\code{\link{partial.component.T1T2, zijderveld2.T1T2}}
 }
