@@ -271,7 +271,7 @@ desaim(mes.sel2, etap.J0 = NULL)
 desaim(mes, etap.J0 = 0, point.col = rainbow(length(mes.info$name)))
 desaim(rbind(mes.sel2, mes.sel3), normalize = TRUE)
 
-composante.partielle(mes.sel2$X, mes.sel2$Y, mes.sel2$Z)
+partial.component(mes.sel2$X, mes.sel2$Y, mes.sel2$Z)
 ```
 
 ```{r assemblé}
@@ -353,7 +353,7 @@ TabX <- Data$X[iT1:iT2]
 TabY <- Data$Y[iT1:iT2]
 TabZ <- Data$Z[iT1:iT2]
 
-vp <- composante.partiel(TabX, TabY, TabZ, en0 = en0)
+vp <- partial.component(TabX, TabY, TabZ, en0 = en0)
 #ntab <- length(TabX)
 
  somx <- 0; somy <- 0; somz <- 0
@@ -428,7 +428,7 @@ for (sp in 1: length(mes.info$number)){
   sp.cor <- correction.anisotropy(sp.mes, sp.ani)
   
   # determination de la composante
-  sp.cp <- composante.partielle(sp.cor$X, sp.cor$Y, sp.cor$Z)
+  sp.cp <- partial.component(sp.cor$X, sp.cor$Y, sp.cor$Z)
   
   # repliement
   sp.cp <- repliement.auto(sp.cp$I, sp.cp$D, name = sp.mes$name)
@@ -483,7 +483,7 @@ show.step = TRUE
   TabY <- Data$Y[iT1:iT2]
   TabZ <- Data$Z[iT1:iT2]
 
-  vp <- composante.partielle(TabX, TabY, TabZ, en0 = en0)
+  vp <- partial.component(TabX, TabY, TabZ, en0 = en0)
   ntab <- length(TabX)
 
   somx <- 0; somy <- 0; somz <- 0

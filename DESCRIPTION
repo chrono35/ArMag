@@ -1,13 +1,13 @@
 Package: ArMag
-Title: Compute paleo and archeo magnetic measurements from Rennes Lab
-Version: 0.0.0.9000
+Title: ArMag
+Version: 0.0.0.9010
 Authors@R: 
     person(given = "Philippe", 
            family = "Dufresne",
            role = c("aut", "cre"),
            email = "philippe.dufresne@univ-rennes1.fr",
            comment = c(ORCID = "orcid.org/0000-0002-5799-5681"))
-Description: Tools to manage and compute archeologic and geologic magnetic data.
+Description: Tools to manage and compute archeologic and geologic magnetic data. Compute paleo and archeo magnetic measurements from Rennes Lab
 License: Creative Commons Attribution-ShareAlike International License
 Encoding: UTF-8
 LazyData: true
