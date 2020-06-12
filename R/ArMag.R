@@ -2967,7 +2967,7 @@ partial.vector <- function(TabX, TabY, TabZ, en0 = TRUE)
   ntab <- length(TabX);
 
   if ( (ntab<1) || (ntab!=length(TabY)) || (ntab!=length(TabZ))) {
-    warning("No mesure, to calculate the partial vectore")
+    warning("No mesure, to calculate the partial vector")
     Data <- c( X = 0, Y = 0, Z = 0,
                I = 0, D = 0, F = 0,
                Sl = NA, MAD = NA )
@@ -2976,7 +2976,7 @@ partial.vector <- function(TabX, TabY, TabZ, en0 = TRUE)
   }
 
   if ( ntab == 1) {
-    message("Only mesure, to calculate the partial vector")
+    message("Only one mesure, to calculate the partial vector")
     vp1 <- to.polar(TabX[1], TabY[1], TabZ[1])
     Data <- c( X = TabX[1], Y = TabY[1], Z = TabZ[1],
                I = vp1$I, D = vp1$D, F = vp1$F,
@@ -3036,7 +3036,7 @@ partial.vector <- function(TabX, TabY, TabZ, en0 = TRUE)
 
 
   if (( v.mad$values[1] == 0) || ((v.mad$values[2] + v.mad$values[3])/ v.mad$values[1] < 0)) {
-    warning('MAD non calculable')
+    warning('MAD uncalculable')
     MAD <- NA
   } else {
     MAD <- atan(sqrt( ((v.mad$values[2] + v.mad$values[3])/ v.mad$values[1]) ));
@@ -3448,14 +3448,11 @@ rotation.mesure <- function(Data, deviation)
 #' Le jour julien 0 commence le 24 novembre -4713 (4712 BC) à 12h
 #' @seealso \code{\link{https://codes-sources.commentcamarche.net/source/31774-calcul-de-la-position-du-soleil-declinaison-angle-horaire-altitude-et-azimut-altaz-solaire}}
 #' @export
-julian.day <- function( jour,   mois,   annee,   heure,   minute,   seconde)
+julian.day <- function( day, month, year, hour, minute, seconde)
 {
-  day <- jour + heure/24.0 + minute/1440.0 + seconde/86400.0
-  year <- annee
-  month <- mois
+  day.hour <- Day + hour/24.0 + minute/1440.0 + seconde/86400.0
 
-  if (month == 1 || month == 2)
-  {
+  if (month == 1 || month == 2) {
     year <- year-1.0
     month <- month+12.0
   }
@@ -3463,9 +3460,9 @@ julian.day <- function( jour,   mois,   annee,   heure,   minute,   seconde)
   a <- trunc(year/100.0)
   b <- 2 - a + trunc(a/4.0)
 
-  jour_julien <- trunc(365.25*(year+4716.0)) + trunc(30.6001*(month+1.0)) + day + b - 1524.5
+  julian <- trunc(365.25*(year+4716.0)) + trunc(30.6001*(month+1.0)) + day.hour + b - 1524.5
 
-  return (as.numeric(jour_julien))
+  return (as.numeric(julian))
 }
 
 #' Calcul l'azimuth du soleil en un lieu à une date donnée à une heure "UTC"
@@ -3489,12 +3486,10 @@ sun.azimuth <- function(Day, Month, Year, Hour, Minute, Seconde=0, longdeg, long
   e <- 23.439 - 0.00000036*jj
 
   ascension_droite <- atan(cos(e*pi/180.0)*sin(l*pi/180.0)/cos(l*pi/180.0))*(180.0/pi)/15.0
-  if (cos(l*pi/180.0) < 0)
-  {
+  if (cos(l*pi/180.0) < 0) {
     ascension_droite <- 12.0 + ascension_droite
   }
-  if (cos(l*pi/180.0)>0 && sin(l*pi/180.0) < 0)
-  {
+  if (cos(l*pi/180.0)>0 && sin(l*pi/180.0) < 0) {
     ascension_droite <- ascension_droite + 24.0
   }
   declinaison <- asin(sin(e*pi/180.0)*sin(l*pi/180.0))*180.0/pi
@@ -3516,8 +3511,7 @@ sun.azimuth <- function(Day, Month, Year, Hour, Minute, Seconde=0, longdeg, long
 
   azimut <- acos( (sin(declinaison*pi/180.0) - sin(latitude*pi/180.0)*sin(altitude*pi/180.0)) / (cos(latitude*pi/180.0)*cos(altitude*pi/180.0)) )*180.0/pi
   sinazimut <- (cos(declinaison*pi/180.0)*sin(angle_horaire*pi/180.0)) / cos(altitude*pi/180.0)
-  if (sinazimut < 0)
-  {
+  if (sinazimut < 0) {
     azimut <- 360 - azimut;
   }
 
@@ -3528,6 +3522,8 @@ sun.azimuth <- function(Day, Month, Year, Hour, Minute, Seconde=0, longdeg, long
 
 #' Geocentric Axial Dipole
 #' Reduction suivant le Dipôle Axiale Centré
+#' @param lat.reloc Latitude de réduction. On peut aussi utiliser "Paris" pour 48.85
+#' "Madrid" pour 40.4; "Meriden" pour 52.43; "Athenes" pour 37.96
 #' @return I.reloc en degré
 #' @examples
 #' relocate.GAD(65, 47.12)

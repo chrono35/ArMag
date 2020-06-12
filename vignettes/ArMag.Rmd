@@ -1,0 +1,153 @@
+---
+vignette: |
+  %\VignetteIndexEntry{ArMag} %\VignetteEngine{knitr::rmarkdown} %\VignetteEncoding{UTF-8}
+author: "Dufresne Philippe"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_vignette:
+    fig_caption: yes  
+  vignette: default
+  
+title: "Calcul statistique sur les composantes magnétiques avec le package ArMag"
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## Introduction
+
+This package is an extraction of the functions of the calculation software on magnetic components developed at the Rennes Archaeomagnetism Laboratory, hosted at the Geosciences-Rennes laboratory.
+
+## Installing ArMag
+
+ArMag will run in Windows, Mac OS X or Linux. To install ArMAg you first need to install [R](https://www.r-project.org). I would also recommend installing [Rstudio](http://www.rstudio.com) as a nice desktop environment for using R. Once in R you can type:
+
+```{r,eval=FALSE}
+# install.packages('ArMag')
+```
+
+
+at the R command prompt to install ArMag. If you then type:
+
+```{r}
+# library(ArMag)
+```
+
+## Installing ArMag via GitHub
+```{r echo = TRUE}
+
+if (!require(devtools))
+ {install.packages("devtools")}
+
+devtools::install_github("chrono35/ArMag", force = TRUE)
+library("ArMag") #, lib.loc="/Library/Frameworks/R.framework/Versions/3.5/Resources/library")
+```
+
+it will load in all the ArMag functions.
+
+## Loading Rennes' AM file
+You need two functions, the first one reads the information, corresponding to the headers of each sample, the second one reads the measurements of each sample.
+```{r}
+
+file.AM <- "../examples/14039C.AMP"
+
+mes <- NULL
+mes.info <- read.AM.info (file.AM)
+mes <- read.AM.mesures(file.AM)
+
+```
+
+## Empty file generation
+Function used before making the measurements.
+Warning, this function overwrites the existing file
+```{r genere AMD}
+file.AM <- "../examples/test.txt"
+list.ech <- c("1T",   "17T",  "35T",  "47T",  "50T",  "59T",  "83T",  "87T",  "89T",  "94T",  "100T", "102T", "103T" )
+genere.AMD(file.AM, list.ech)
+```
+
+## Plot of NRN values
+A simple, R command allows to select the steps with the value 0, corresponding to step 0N0
+```{r lambert}
+select <- NULL
+# select$I <- mes$I[mes$step.value== 0]
+# select$D <- mes$I[mes$step.value== 0]
+select <- mes[mes$step.value== 0,]
+lambert(select, inc.lim = c(0,90))
+```
+
+## mcFadden statistic on NRN value
+Example of the calculation of the mcFadden statistic on the selected samples
+```{r stat mcFadden}
+stat.mcFadden(select)
+
+```
+
+## Extraction of measurements corresponding to a sample using its name
+```{r selection}
+mes.ech <- NULL
+mes.ech <- extract.mesures.specimen.name("10P1", mes)
+```
+
+## Zijderveld plot
+```{r fonction plot.zjiderveld1, fig.show='hold'}
+par(pty="s") # force une figure carré
+zijderveld1(mes.ech$X, mes.ech$Y, mes.ech$Z) 
+par(mfrow = c(1,2), pty="m", cex.lab = 0.5, cex.axis = 0.6) # separated into 2 columns and restored a maximum size figure
+# cex.lab set the text size of the steps
+zijderveld1(mes.ech, legend.pos = "topright")
+zijderveld2(mes.ech, pt.names = NULL)
+```
+
+## Plot the schmitt-Lambert projection
+Each function using different parameters
+```{r comparatif fonction plot, fig.show='hold'}
+lambert.XYZ.specimen(mes.ech)
+lambert.ID.specimen(mes.ech)
+```
+
+## desaimantation and partial component
+
+```{r, fig.show='hold'}
+mes.sel2 <- extract.mesures.specimen.name("1P1", mes)
+mes.sel3 <- extract.mesures.specimen.name("16P1", mes)
+desaim(mes.sel2, step.J0 = NULL)
+desaim(mes, step.J0 = 0, pt.col = rainbow(length(mes.info$name)))
+desaim(rbind(mes.sel2, mes.sel3), normalize = TRUE)
+
+partial.component(mes.sel2$X, mes.sel2$Y, mes.sel2$Z)
+```
+
+## Synthetic view of a sample
+The zijderveld1.T1T2 and zijderveld2.T1T2 functions remove the anisotropy steps by default
+
+```{r assemblé, fig.show='hold', fig.cap="Synthetic view"}
+
+par(mfrow = c(2, 2), cex.lab = 0.7, cex.axis = .7, cex = 0.7, cex.main = 1, cex.sub = 0.1,
+    mai = c(0.5, 0.5, 0.7, 0.3), oma = c(0, 1, 1, 1))#, pty ="s" )
+zijderveld1.T1T2(mes.sel2)
+zijderveld2.T1T2(mes.sel2)
+
+# removal of anisotropy steps
+mes.sel2 <- remove.step(mes.sel2, verbose = FALSE) 
+lambert(mes.sel2, inc.lim = c(0, 90))
+desaim(mes.sel2, step.J0 = NULL)
+```
+
+## Sun azimuth
+```{r sun.azimuth}
+sun.azimuth (10, 11, 2019, 11, 19, Seconde=0, 48, longmin=0, longsec=0, 45, latmin=0, latsec=0)
+```
+
+## More Examples
+
+You can write math expressions, e.g. $Y = X\beta + \epsilon$, footnotes^[A footnote here.], and tables, e.g. using `knitr::kable()`.
+
+```{r, echo=FALSE, results='asis'}
+knitr::kable(head(mtcars, 10))
+```
+

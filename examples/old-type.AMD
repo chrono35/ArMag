@@ -1,0 +1,38 @@
+Commune : Salleles-d'Aude
+Site : Four 13
+Latitude  :  43 12'  0"
+Longitude :   3  0'  0"
+Prlvements sur structure en place
+Date de prlvement : 25/ 7/1990
+Date de Mesure : 14/ 6/1991
+
+Ident     Opt  Long  ----Orientation----    Hlab    Tatr1   Tatr2   Tatr3   Tatr4    Phi/Z0   Tet/X1
+Ident     Mesure  Etape  Ordre  Inclinaison   Dclinaison   Aimantation
+
+  1P           22    NM    -2  15'   0"    47.1                                        0.2    180.0
+  1P       ARN     20C    ---       62.50       255.20      5.7526E-03
+  1P       DES    200C      1       62.50       256.00      5.7095E-03
+  1P       ANI       ZZ     1T       82.10       148.20      5.0215E-03
+  1P       ANI       XX     2T       -3.50         3.20      5.5328E-03    
+  1P       ANI       YY     3T       -0.70       268.10      5.6938E-03
+  1P       ANI      ZZB     4T       82.40       145.60      4.9372E-03
+
+  1P-01        22    NM    -2  36'   0"    50.0                                        0.0      0.3
+  1P-01    ARN     20C    ---       68.67        12.38      8.6328E-02
+  1P-01    DES    100C      1       68.10        13.59      8.4046E-02
+  1P-01    DES    180C      2       67.46        11.70      7.2893E-02
+  1P-01    DES    230C      3       68.16        12.00      6.5543E-02
+  1P-01    DES    270C      4       68.24        16.29      5.9798E-02
+  1P-01    DES    320C      5       68.66        15.09      5.0025E-02
+  1P-01    DES    370C      6       68.17        16.64      3.7327E-02
+  1P-01    DES    420C      7       69.50        13.72      2.2615E-02
+  1P-01    DES    470C      8       73.84        16.75      1.1644E-02
+  1P-01    DES    520C      9       76.59        16.64      3.8378E-03
+  1P-01    ANI       ZZ     1D       89.06        11.26      6.5933E-02  
+  1P-01    ANI       ZZ     1I      -89.45        77.27      5.8327E-02
+  1P-01    ANI       XX     2D        1.68        -0.52      6.8387E-02
+  1P-01    ANI       XX     2I        2.32       180.01      6.4305E-02
+  1P-01    ANI       YY     3D        0.65        90.18      6.3115E-02
+  1P-01    ANI       YY     3I        3.85       269.15      6.1947E-02
+  1P-01    ANI      ZZB     4D       89.91       187.07      6.6774E-02
+  1P-01    ANI      ZZB     4I      -87.68        -7.95      5.9453E-02
