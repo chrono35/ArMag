@@ -5,7 +5,7 @@
 \title{Le nombre de jour julien pour les calculs astronomiques
 Le jour julien 0 commence le 24 novembre -4713 (4712 BC) à 12h}
 \usage{
-\method{julian}{day}(jour, mois, annee, heure, minute, seconde)
+\method{julian}{day}(day, month, year, hour, minute, seconde)
 }
 \description{
 Le nombre de jour julien pour les calculs astronomiques

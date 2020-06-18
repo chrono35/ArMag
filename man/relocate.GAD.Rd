@@ -7,6 +7,10 @@ Reduction suivant le Dipôle Axiale Centré}
 \usage{
 relocate.GAD(I.site, lat.site, lat.reloc = "Paris")
 }
+\arguments{
+\item{lat.reloc}{Latitude de réduction. On peut aussi utiliser "Paris" pour 48.85
+"Madrid" pour 40.4; "Meriden" pour 52.43; "Athenes" pour 37.96}
+}
 \value{
 I.reloc en degré
 }

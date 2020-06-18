@@ -508,6 +508,9 @@ to.cartesian <- function(inc, dec, aim=1)
     res$X <- as.numeric( aim*cos(inc[i]/180*pi)*cos(dec[i]/180*pi) )
     res$Y <- as.numeric( aim*cos(inc[i]/180*pi)*sin(dec[i]/180*pi) )
     res$Z <- as.numeric( aim*sin(inc[i]/180*pi) )
+    res$I <- inc[i]
+    res$D <- dec[i]
+    res$F <- aim[i]
     resT <- c(resT, res)
   }
   return( resT )
@@ -525,9 +528,14 @@ to.polar <- function(X, Y, Z)
   res <- NULL
   resT <- NULL
   for (i in 1:length(X)) {
-    res$F <- as.numeric( sqrt(X[i]*X[i] + Y[i]*Y[i] + Z[i]*Z[i]) )
-    res$I <- as.numeric( n_arcsin(Z[i]/res$F) /pi*180 )
+    res$X <- X[i]
+    res$Y <- Y[i]
+    res$Z <- Z[i]
+    aim <-  as.numeric( sqrt(X[i]*X[i] + Y[i]*Y[i] + Z[i]*Z[i]) )
+    res$I <- as.numeric( n_arcsin(Z[i]/aim) /pi*180 )
     res$D <- as.numeric( angleD(X[i],Y[i]) /pi*180 )
+    res$F <- aim
+
     resT <- c(resT, res)
   }
   return( resT )
