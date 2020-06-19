@@ -3987,7 +3987,7 @@ igrf13syn <- function(isv, date, itype, alt, colat, elong) {
 #'   by convention we use the two last character of the variable step to indicate the type of manip
 #'   example 100RA , 100 is the temperature (step.value) , R is the sens of the magnetisation and A is the name of the step (step.name)
 #'@param mesures data.frame with the package convention format
-#'@param relative plot with a relative value in %
+#'@param relative plot with a relative value in percent
 #'@param verbose show comment
 #'@param show.plot  display the plot
 #'@param TH lab field

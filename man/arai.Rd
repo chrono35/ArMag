@@ -29,7 +29,7 @@ arai(
 \arguments{
 \item{mesures}{data.frame with the package convention format}
 
-\item{relative}{plot with a relative value in %}
+\item{relative}{plot with a relative value in percent}
 
 \item{verbose}{show comment}
 
