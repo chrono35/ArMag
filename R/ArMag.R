@@ -4001,12 +4001,11 @@ igrf13syn <- function(isv, date, itype, alt, colat, elong) {
 #'@param end.step.value the last step.value (temperature) used to determinate the magnetic field
 #'@param loop.col the color of the line showing the the check loop process
 #'@param pt.col the color of the line and the plot
-#' @references  Coe 1978 : DOI: 10.1029/JB083iB04p01740
+#'@references  Coe 1978 : DOI: 10.1029/JB083iB04p01740
 #' Prévost et Al. 1985 DOI: 10.1029/JB090iB12p10417
 #'
-#' @export
-arai <- function(mesures, relative = TRUE, verbose = TRUE, show.plot = TRUE, TH = 60, aim.coef = 1E-10*1E6, step.J0 = "20N0", show.step.value = FALSE,
-                 R.mark = 'R', V.mark = 'V', P.mark = 'P', L.mark = "L", Q.mark = "Q", pt.col = "blue", loop.col = "forestgreen", begin.step.value = 0, end.step.value = 1000) {
+#'@export
+arai <- function(mesures, relative = TRUE, verbose = TRUE, show.plot = TRUE, TH = 60, aim.coef = 1E-10*1E6, step.J0 = "20N0", show.step.value = FALSE, R.mark = 'R', V.mark = 'V', P.mark = 'P', L.mark = "L", Q.mark = "Q", pt.col = "blue", loop.col = "forestgreen", begin.step.value = 0, end.step.value = 1000) {
   # __________________
   if (is.null(step.J0)) {
     step.J0 <- mes.sel$step[1]
