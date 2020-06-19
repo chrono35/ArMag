@@ -26,6 +26,37 @@ arai(
   end.step.value = 1000
 )
 }
+\arguments{
+\item{mesures}{data.frame with the package convention format}
+
+\item{relative}{plot with a relative value in percent}
+
+\item{verbose}{show comment}
+
+\item{show.plot}{display the plot}
+
+\item{TH}{lab field}
+
+\item{aim.coef}{used to correct the measurement often 1E-10x1E6xvolume}
+
+\item{step.J0}{is the step of the natural magnetisation eg "0N0"}
+
+\item{show.step.value}{display on the plot the value of each step}
+
+\item{R.mark}{= 'R', V.mark = 'V' conventional notation to mark the sens of the magnetisation with the step name}
+
+\item{P.mark}{= 'P' mark the pTRM check loop}
+
+\item{L.mark}{= "L", Q.mark = "Q" mark to indiquate the slow cooling step and the quick (fast-normal) cooling step}
+
+\item{pt.col}{the color of the line and the plot}
+
+\item{loop.col}{the color of the line showing the the check loop process}
+
+\item{begin.step.value}{the first step.value (temperature) used to determinate the magnetic field}
+
+\item{end.step.value}{the last step.value (temperature) used to determinate the magnetic field}
+}
 \description{
 Standart calcul en plot to study paleo and archeo magnetic magnétisation
   by convention we use the two last character of the variable step to indicate the type of manip
