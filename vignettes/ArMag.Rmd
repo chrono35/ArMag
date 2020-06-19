@@ -4,10 +4,10 @@ vignette: |
 author: "Dufresne Philippe"
 date: "`r Sys.Date()`"
 output:
+  
   rmarkdown::html_vignette:
     fig_caption: yes  
   vignette: default
-  
 title: "Calcul statistique sur les composantes magnétiques avec le package ArMag"
 ---
 

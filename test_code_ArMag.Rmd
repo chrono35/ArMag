@@ -105,12 +105,6 @@ stat.mcFadden(select$I[1:8], select$D[1:8])
 ```
 
 
-
-
-# Codage symetrisation matrice
-
-
-
 # Codage correction anisotropie
 ```{r}
 # calcul les nouveaux paramètres d'un echantillon avec un tenseur donnée
@@ -222,7 +216,7 @@ ani
 ```{r}
 TH <- 60
 mes.sel <- NULL
-#mes.sel2 <- extract.mesures.specimen.name("19D", mes2)
+
 mes.sel1 <- extract.mesures.specimen.number(1, mes)
 mes.sel2 <- extract.mesures.specimen.number(2, mes)
 mes.sel3 <- extract.mesures.specimen.number(3, mes)
@@ -233,7 +227,6 @@ ani3 <- anisotropy.eigen.tensor(mes.sel3, step.value = 550 )
 
 Data <- rbind(ani1, ani2, ani3)
 lambert.ID.tensors(Data, point.col = c("blue", "red", "green"))
-#
 
 numbers <- c(7)
 Data <- anisotropy.eigen.tensors.numbers(numbers, mes, mes.info, 400)
@@ -265,10 +258,10 @@ mes.seltt <- rbind(mes.sel1, mes.sel2)
 
 
 ```{r}
-mes.sel2 <- extract.mesures.specimen.name("1T", mes)
-mes.sel3 <- extract.mesures.specimen.name("17T", mes)
+mes.sel2 <- extract.mesures.specimen.name("1P1", mes)
+mes.sel3 <- extract.mesures.specimen.name("16P1", mes)
 desaim(mes.sel2, etap.J0 = NULL)
-desaim(mes, etap.J0 = 0, point.col = rainbow(length(mes.info$name)))
+desaim(mes, etap.J0 = 0, pt.col = rainbow(length(mes.info$name)))
 desaim(rbind(mes.sel2, mes.sel3), normalize = TRUE)
 
 partial.component(mes.sel2$X, mes.sel2$Y, mes.sel2$Z)
@@ -292,109 +285,15 @@ desaim(mes.sel2, etap.J0 = NULL)
 
 
 ```{r genere AMD}
-file.AM <- "~/Documents/AM/test.txt"
+file.AM <- "examples/test.txt"
 list.ech <- c("1T",   "17T",  "35T",  "47T",  "50T",  "59T",  "83T",  "87T",  "89T",  "94T",  "100T", "102T", "103T" )
-
+genere.AMD(file.AM, list.ech)
 ```
 
 
 
 # Calcul vecteur partiel
-```{r code trace vecteur partiel}
-# Procedure Calcul_vecteur_partiel(TabX,TabY,TabZ:array of Real; VAR MAD,SL,Xp,Yp,Zp:Real;en0:boolean;var Xm,Ym,Zm:Real);
-# X, Y, Z, les coordonnées cartésiennes du vecteur partiel
-en0 <- FALSE
-T1 <- 200
-T2 <- 400
 
-withAni = FALSE
-step.code <- c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB")
-mes.sel2 <- extract.mesures.specimen.name("1T", mes)
-ani.step.value <- NULL
-
-
-res.list <- mes.sel2
-
-if (withAni == FALSE) { # suppression des étape d anisotropie
- if (is.null(ani.step.value)) {
-   for (i in 1:length(Data$Etap)) {
-     if (substring(Data$Etap[i], 4) == step.code[3])
-       ani.step.value <- Data$Etap.value[i]
-   }
- }
-  ani.step <- trimws(paste(ani.step.value, step.code, sep = ""))
-
- 
- selec <- NULL
- for (i in 1:length(ani.step)) {
-   selec <- c( selec, which(trimws(mes.sel2$Etap) == trimws(ani.step[i])) )
- }
- 
- if (length(selec) > 0)
-    res.list <- mes.sel2[-selec,]
-}
-         
-Data <- res.list
-# recherche étape en dessous de T1
-iT1 <- 1
-while(Data$Etap.value[iT1] < T1) {
-  iT1 <- iT1 + 1
-}
-
-# recherche étape au dessus de T2
-iT2 <- length(Data$Etap.value)
-while(Data$Etap.value[iT2] > T2) {
-  iT2 <- iT2 -1
-}
-
-# Calcul de la composante partielle
-
-TabX <- Data$X[iT1:iT2]
-TabY <- Data$Y[iT1:iT2]
-TabZ <- Data$Z[iT1:iT2]
-
-vp <- partial.component(TabX, TabY, TabZ, en0 = en0)
-#ntab <- length(TabX)
-
- somx <- 0; somy <- 0; somz <- 0
- 
- if (en0 == FALSE) {
-   somx <- sum(TabX)
-   somy <- sum(TabY)
-   somz <- sum(TabZ)
- } 
-    
-  xm <- somx/ ntab
-  ym <- somy/ ntab
-  zm <- somz/ ntab
-
-  
-  
-  # a, b : Valeurs indiquant le point d’interception sur l’axe des y et la pente de la droite -> y = a + bx
-  # droite sur les déviations
-  bd <- vp$X/vp$Y
-  ad <- xm - bd*ym
-   # droite sur les inclinaisons, +Z est négatif
-  bi <- -vp$Z/vp$Y
-  ai <- -zm - bi*ym
-  
-  Y.r <- range(Data$X)
-  Z.r <- range(Data$Z)
-  ylim <- c(min(Y.r[1], -Z.r[2]), max(Y.r[2], -Z.r[1]))
-  
-  if (ylim[1]>0)
-    ylim[1]<-0
-  
-  if (ylim[2]<0)
-    ylim[2]<-0
-
-  
-  zijderveld1(Data$X[1:iT1], Data$Y[1:iT1], Data$Z[1:iT1],  ylim = ylim) 
-  zijderveld1(Data$X[iT1:iT2], Data$Y[iT1:iT2], Data$Z[iT1:iT2], pt.col = c("red", "red") , new = FALSE)
-  zijderveld1(Data$X[iT2:length(Data$X)], Data$Y[iT2:length(Data$X)], Data$Z[iT2:length(Data$X)], new = FALSE)
-  abline(ad, bd)
-  abline(ai, bi)
-```
 
 
 
@@ -420,12 +319,18 @@ for (sp in 1: length(mes.info$number)){
 
   # évaluation de l'anisotropie
   sp.ani <- anisotropy.matrix.symetric(sp.mes, step.value = 550, TH = TH, volume = volume )
- 
-  # suppression des étapes d'anisotropie
-  sp.mes <- remove.step(sp.mes) #, step.value = "0", step.code = "N") 
+ # controle de l'existance de l'anisotropie
+  if (!is.na(sum(sp.ani))) {
+    # suppression des étapes d'anisotropie
+    sp.mes <- remove.step(sp.mes) #, step.value = "0", step.code = "N") 
+      
+    # correction de l'anisotropie  
+    sp.cor <- correction.anisotropy(sp.mes, sp.ani)
     
-  # correction de l'anisotropie  
-  sp.cor <- correction.anisotropy(sp.mes, sp.ani)
+  } else {
+    warning("No anisotropy step \n")
+    sp.cor <- sp.mes
+  }
   
   # determination de la composante
   sp.cp <- partial.component(sp.cor$X, sp.cor$Y, sp.cor$Z)
@@ -442,99 +347,7 @@ stat.mcFadden(sp.res$I, sp.res$D)
 lambert(sp.res, inc.lim = c(0,90))
 ```
 
-```{r}
 
-Data <- spe.83
-T1 = 100
-T2 = 350
-show.step = TRUE
- withAni = FALSE; ani.step.value = NULL;
-                             step.code = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB");
-                             legend.pos = NULL; legend.txt = c("(Y, X)", "(Y, Z)");
-                             en0 = FALSE
-
-
-  if (is.null(T1))
-    T1 <- Data$step.value[1]
-  if (is.null(T2))
-    T2 <- Data$step.value[length(Data$step.value)]
-
-
-  res.list <- Data
-
-  if (withAni == FALSE) { # suppression des étape d anisotropie
-    Data <- remove.step(Data, ani.step.value = ani.step.value, step.code = step.code)
-  }
-  # recherche étape en dessous de T1
-  iT1 <- 1
-  while(Data$step.value[iT1] < T1) {
-    iT1 <- iT1 + 1
-  }
-
-  # recherche étape au dessus de T2
-  iT2 <- length(Data$step.value)
-  while(Data$step.value[iT2] > T2) {
-    iT2 <- iT2 -1
-  }
-
-  # Calcul de la composante partielle
-
-  TabX <- Data$X[iT1:iT2]
-  TabY <- Data$Y[iT1:iT2]
-  TabZ <- Data$Z[iT1:iT2]
-
-  vp <- partial.component(TabX, TabY, TabZ, en0 = en0)
-  ntab <- length(TabX)
-
-  somx <- 0; somy <- 0; somz <- 0
-
-  if (en0 == FALSE) {
-    somx <- sum(TabX)
-    somy <- sum(TabY)
-    somz <- sum(TabZ)
-  }
-
-  xm <- somx/ ntab
-  ym <- somy/ ntab
-  zm <- somz/ ntab
-
-  # a, b : Valeurs indiquant le point d’interception sur l’axe des y et la pente de la droite -> y = a + bx
-  # droite sur les déviations axe (Y, X)
-  bd <- vp$X/vp$Y
-  ad <- xm - bd*ym
-  # droite sur les inclinaisons axe (Y, Z), +Z est négatif
-  bi <- -vp$Z/vp$Y
-  ai <- -zm - bi*ym
-
-  Y.r <- range(Data$X)
-  Z.r <- range(Data$Z)
-  ylim <- c(min(Y.r[1], -Z.r[2]), max(Y.r[2], -Z.r[1]))
-
-  if (ylim[1]>0)
-    ylim[1]<-0
-
-  if (ylim[2]<0)
-    ylim[2]<-0
-
-  if (show.step == TRUE) {
-    pt.names <- Data$step
-  } else {
-     pt.names <- rep("", length(Data$X) )
-  }
-   
-
-  zijderveld1(Data$X[1:iT1], Data$Y[1:iT1], Data$Z[1:iT1],  ylim = ylim, pt.names = pt.names[1:iT1], legend.pos = legend.pos, legend.txt = legend.txt )
-  if (iT2 != length(Data$X))
-    zijderveld1(Data$X[iT2:length(Data$X)], Data$Y[iT2:length(Data$X)], Data$Z[iT2:length(Data$X)], pt.names = pt.names[iT2:length(Data$X)], new = FALSE)
-
-  zijderveld1(Data$X[iT1:iT2], Data$Y[iT1:iT2], Data$Z[iT1:iT2], pt.col = c("red", "red") , pt.names = pt.names[iT1:iT2], new = FALSE)
-
-  abline(ad, bd)
-  abline(ai, bi)
-
-  Data$step
-
-```
 
 # Calcul azimut du soleil
 ```{r}
@@ -720,232 +533,13 @@ sun.azimuth(jour2, mois2, annee2, heure2, minute2, seconde2, longitude, longmin,
 ```
 
 
-```{r sun.azimuth}
-#' Calcul l'azimuth du soleil en un lieu à une date donnée à une heure "UTC"
-#' @seealso \code{\link{https://codes-sources.commentcamarche.net/source/31774-calcul-de-la-position-du-soleil-declinaison-angle-horaire-altitude-et-azimut-altaz-solaire}}
-#' @seealso \code{\link{https://fr.planetcalc.com/320/}}
-#' @export
-sun.azimuth <- function(Day, Month, Year, Hour, Minute, Seconde=0, longdeg, longmin=0, longsec=0, latdeg, latmin=0, latsec=0) {
-# -----------------------------heure d'hiver ou d'été---------------------------
-correction_heure <- 0
-
-jj <- jour.julien(jour2, mois2, annee2, heure2, minute2, seconde2) - correction_heure/24.0 - 2451545.0
-
-
-#-------------calculs ascension droite et délinaison-------------
-g <- 357.529 + 0.98560028*jj
-q <- 280.459 + 0.98564736*jj
-l <- q + 1.915 * sin(g*pi/180.0) + 0.020*sin(2*g*pi/180.0) # Ellipticité
-e <- 23.439 - 0.00000036*jj
-
-ascension_droite <- atan(cos(e*pi/180.0)*sin(l*pi/180.0)/cos(l*pi/180.0))*(180.0/pi)/15.0
-if (cos(l*pi/180.0) < 0)
-{
-        ascension_droite <- 12.0 + ascension_droite
-}
-if (cos(l*pi/180.0)>0 && sin(l*pi/180.0) < 0)
-{
-        ascension_droite <- ascension_droite + 24.0
-}
-declinaison <- asin(sin(e*pi/180.0)*sin(l*pi/180.0))*180.0/pi
-
-
-nb_siecle <- jj/36525.0
-heure_siderale1 <- (24110.54841+(8640184.812866*nb_siecle)+(0.093104*(nb_siecle*nb_siecle))-(0.0000062*(nb_siecle*nb_siecle*nb_siecle)))/3600.0
-heure_siderale2 <- ((heure_siderale1/24.0) - trunc(heure_siderale1/24.0)) * 24.0
-
-angleH <- 360.0*heure_siderale2/23.9344
-angleT <- (heure2-correction_heure-12.0+minute2/60.0+seconde2/3600.0)*360.0/23.9344 # jour sidéraux = 23h56min 4,0989s -> 23,93447h -> 0,9972696 jour solaire
-angle <- angleT + angleH
-
-angle_horaire <- angle - ascension_droite*15.0 + longitude
-
-#-------------calculs altitude et azimut-------------------------
-
-
-altitude <- asin( sin(declinaison*pi/180.0)*sin(latitude*pi/180.0) - cos(declinaison*pi/180.0)*cos(latitude*pi/180.0)*cos(angle_horaire*pi/180.0) )*180.0/pi
-
-azimut <- acos( (sin(declinaison*pi/180.0)-sin(latitude*pi/180.0)*sin(altitude*pi/180.0)) / (cos(latitude*pi/180.0)*cos(altitude*pi/180.0)) )*180.0/pi
-sinazimut <- (cos(declinaison*pi/180.0)*sin(angle_horaire*pi/180.0)) / cos(altitude*pi/180.0)
-if (sinazimut<0)
-{
-        azimut <-360-azimut;
-}
-
-return(as.numeric(azimut))
-}
-```
-
-
 
 ```{r test sun.azimuth}
 
-sun.azimuth (10, 11, 2019, 11, 19, Seconde=0, 48, longmin=0, longsec=0, 45, latmin=0, latsec=0, deviation = 0)
+sun.azimuth (10, 11, 2019, 11, 19, Seconde=0, 48, longmin=0, longsec=0, 45, latmin=0, latsec=0)
 
 ```
-# Relocation
-## GAD
-controlé OK
-```{r GAD}
-#' Geocentric Axial Dipole
-#' Correction Dipôle Axiale Centré
-#' @return I.reloc en degré
-#' @example relocate.GAD(65, 47.12)
-relocate.GAD <- function( I.site, lat.site,  lat.reloc = "Paris")
-{
-  if (lat.reloc == "Paris") {
-    lat.reloc <- 48.85
-  }
-  if (lat.reloc == "Madrid") {
-    lat.reloc <- 40.4
-  }
-  if (lat.reloc == "Meriden") {
-     lat.reloc <- 52.43
-  }
-  if (lat.reloc == "Athenes") {
-    lat.reloc <- 37.96
-  }
-  
-  I.reloc <- I.site + 0.5 * (3 * cos(I.site * pi /180)^2 + 1) * (lat.reloc - lat.site)
-     
-  return(data.frame(I.reloc = I.reloc) )
-}
-```
 
-
-## VDM
-Controlé OK
-```{r VDM}
-#' Virtual Dipôle Moment
-#' @example relocate.VDM(55, 65,5, 47.12, 2.175,"Paris")
-relocate.VDM <- function( F.site, I.site, D.site, lat.site, lon.site, lat.reloc = "Paris", lon.reloc = 0)
-{
-  if (lat.reloc == "Paris") {
-    lon.reloc <- 2.3
-    lat.reloc <- 48.85
-  }
-  if (lat.reloc == "Madrid") {
-    lon.reloc <- -3.68
-    lat.reloc <- 40.4
-  }
-  if (lat.reloc == "Meriden") {
-    lon.reloc <- -1.62
-    lat.reloc <- 52.43
-  }
-  if (lat.reloc == "Athenes") {
-    lon.reloc <- 23.72
-    lat.reloc <- 37.96
-  }
-  
-  rad <- pi /180
-  LAR <- lat.reloc * rad
-  LGR <- lon.reloc * rad
-  LA <- lat.site * rad
-  LG <- lon.site * rad
-
-  # Calcul de la distance p du pôle 
-  pol <- (pi / 2) - atan(tan(I.site * rad) / 2)
-  lap <- asin(sin(LA) * cos(pol) + cos(LA) * sin(pol) * cos(D.site * rad))
-  beta <- asin(sin(pol) * sin(D.site * rad) / cos(lap))
-  if (cos(pol) >= (sin(LA) * sin(lap)))
-  {
-    lgp <- LG + beta
-  }
-  else 
-  {
-      lgp <- LG + pi - beta
-  }
-
-  # Calcul de Iij et Dij corrigés
-  pol <- acos(sin(LAR) * sin(lap) + cos(LAR) * cos(lap) * cos(lgp - LGR))
-  I.reloc <-  as.numeric(atan(2 * tan((pi / 2) - pol)) )
-  F.reloc <-  as.numeric( F.site * sqrt((3 * cos(I.site * rad)^2 + 1) / (3 *  cos(I.reloc)^2 + 1)) )
-
-  return(data.frame(I.reloc = I.reloc /rad , F.reloc = F.reloc, lat.pole = lap / rad , lon.pole = lgp / rad))
-}
-```
-
-## VADM
-Controlé OK
-```{r VADM}
-#' Virtual Axial Dipole Moment VADM
-#' @example relocate.VADM(55, 47.12) # resitué par defaul à Paris
-#' @example relocate.VADM(55, 47.12, "Paris")
-#' @example relocate.VADM(55, 47.12, lat.reloc = 48.85")
-relocate.VADM <- function( F.site,  lat.site,  lat.reloc = "Paris")
-{
-  if (lat.reloc == "Paris") {
-    lat.reloc <- 48.85
-  }
-  if (lat.reloc == "Madrid") {
-    lat.reloc <- 40.4
-  }
-  if (lat.reloc == "Meriden") {
-     lat.reloc <- 52.43
-  }
-  if (lat.reloc == "Athenes") {
-    lat.reloc <- 37.96
-  }
-  F.reloc <-  as.numeric(F.site * sqrt((3 * sin(lat.reloc * pi /180)^2 + 1) / (3 * sin(lat.site * pi /180)^2 + 1)) )
-  return(data.frame(F.reloc = F.reloc))
-}
-```
-
-## VGP
-Controlé OK
-```{r VGP}
-#' Correction Virtual Geomagnetic Pole
-#' VGP exacte: Westphal, p.117 et Merill McElhinny, p.80
-#' Paris lat:48.85 lon:2.3
-#' Madrid lat:40.4 lon:-3.68
-#' Meriden lat:52.43 lon:-1.62
-#' Athenes lat:37.96 lon:23.72
-#' 
-relocate.VGP <- function(I.site, D.site, lat.site, lon.site,  lat.reloc = "Paris", lon.reloc = 0)
-{
-  rad <- as.numeric(pi /180)
-  degre <- as.numeric(180 /pi)
-  
-  if (lat.reloc == "Paris") {
-    lon.reloc <- 2.3
-    lat.reloc <- 48.85
-  }
-  if (lat.reloc == "Madrid") {
-    lon.reloc <- -3.68
-    lat.reloc <- 40.4
-  }
-  if (lat.reloc == "Meriden") {
-    lon.reloc <- -1.62
-    lat.reloc <- 52.43
-  }
-  if (lat.reloc == "Athenes") {
-    lon.reloc <- 23.72
-    lat.reloc <- 37.96
-  }
-  LAR <- lat.reloc * rad
-  LGR <- lon.reloc * rad
-  LA <- lat.site * rad
-  LG <- lon.site * rad
-  # Calcul de la distance p du pôle 
-  pol <- (pi / 2) - atan(tan(I.site * rad) / 2)
-  lap <- asin(sin(LA) * cos(pol) + cos(LA) * sin(pol) * cos(D.site * rad))
-  beta <- asin(sin(pol) * sin(D.site * rad) / cos(lap))
-  if (cos(pol) >= (sin(LA) * sin(lap))) 
-  {
-    lgp <- LG + beta
-  }
-  else 
-  {
-    lgp <- LG + pi - beta
-  }
-  # Calcul de Iij et Dij corrigés
-  pol <- acos(sin(LAR) * sin(lap) + cos(LAR) * cos(lap) * cos(lgp - LGR))
-  I.reloc <- atan(2 * tan((pi / 2) - pol)) * degre 
-  D.reloc <- asin(sin(lgp - LGR) * cos(lap) / sin(pol)) * degre 
-
-  return(data.frame(I.reloc = as.numeric(I.reloc),  D.reloc = as.numeric(D.reloc), lat.pole = as.numeric(lap*degre) , lon.pole = as.numeric(lgp*degre) ) )
-}
-```
 
 # test igrf13syn
 ```{r}
@@ -963,10 +557,371 @@ igrf13syn(isv=isv, date=date, itype=itype , alt=alt, colat= colat, elong=elong)
 
 
 ```{r read.AM.oldType.mesures}
-file.AM <- "~/Documents/AM/old-type.AMD"
-#file.AM <- "~/Documents/AM/66006_Ansignan/66006A.AMD"
-test.file <- read.AM.oldType.info(file.AM, encoding = "macroman")
+file.AM <- "examples/old-type.AMD"
+oldType.file.info <- read.AM.oldType.info(file.AM, encoding = "macroman")
+oldType.file <- read.AM.oldType.mesures(file.AM, encoding = "macroman")
 
 ```
 
+# test codage diagramme ARAI
+```{r}
+file.INT <- "examples/INT_example.AMD"
+
+mesINT <- NULL
+mesINT <- read.AM.mesures(file.INT)
+mesINT.info <- read.AM.info (file.INT)
+mes.sel<- extract.mesures.specimen.name("40001B_11B1", mesINT)
+```
+
+```{r}
+# reference 
+# Coe 1978 : DOI: 10.1029/JB083iB04p01740
+# Prévost et Al. 1985 DOI: 10.1029/JB090iB12p10417
+par(pty="s", "xaxp")
+relative = FALSE
+verbose = TRUE
+show.plot = TRUE
+vol=10.8
+TH = 60
+aim.coef = 1E-10*1E6/vol #1E6
+show.step.value = FALSE
+R.mark = 'R'  # Positive pTRM
+V.mark = 'V'  # Negative pTRM
+P.mark = 'P'  # pTRM check
+L.mark = "L"  # sLow cooling 
+Q.mark = "Q"  # Quick cooling
+pt.col = "blue"
+loop.col = "forestgreen"
+step.J0 = "20N0" # ou NULL
+
+begin.step.value = 0
+end.step.value = 700
+
+par(pty="s", "xaxp")
+arai(mes.sel, begin.step.value = 250, end.step.value = 700, aim.coef = 1E-10*1E6/vol)
+
+```
+
+```{r arai}
+arai <- function(mesures, relative = TRUE, verbose = TRUE, show.plot = TRUE, TH = 60, aim.coef = 1E-10*1E6, show.step.value = FALSE, R.mark = 'R', V.mark = 'V', P.mark = 'P', L.mark = "L", Q.mark = "Q", pt.col = "blue", loop.col = "forestgreen", step.J0 = "20N0", begin.step.value = 0, end.step.value = 1000) {
+# __________________
+if (is.null(step.J0)) {
+  step.J0 <- mes.sel$step[1]
+}
+
+ATRR <- mesures[which(substr(mesures$step, nchar(mesures$step)-1, nchar(mesures$step)-1 ) == R.mark),]
+ATRV <- mesures[which(substr(mesures$step, nchar(mesures$step)-1, nchar(mesures$step)-1 ) == V.mark),]
+
+J0 <- mesures [which(trimws(mesures$step) ==trimws(step.J0) ), ]
+if (J0$F < 0 ) {
+  warning("error on step.J0, F must be positive")
+  
+} else {
+  ATRR <- rbind.data.frame(J0, ATRR)
+  ATRV <- rbind.data.frame(J0, ATRV)
+}
+
+for (i in 1:length(ATRR$step) ) {
+  ATRR$step.name[i] <- substr(ATRR$step[i], nchar(ATRR$step[i]), nchar(ATRR$step[i]) )
+}
+for (i in 1:length(ATRV$step) ) {
+  ATRV$step.name[i] <- substr(ATRV$step[i], nchar(ATRV$step[i]), nchar(ATRV$step[i]) )
+}
+
+
+ARN <- NULL
+ATR <- NULL
+RN <- NULL
+TR <- NULL
+pt.col.res <- NULL
+# tableau ATR vs ARN
+for (i in ATRR$step.name) {
+  iATRR <- which(ATRR$step.name == i)
+  iATRV <- which(ATRV$step.name == i)
+  
+  atrXR <- ATRR[iATRR, ]$X *aim.coef
+  atrXV <- ATRV[iATRV, ]$X *aim.coef
+  
+  atrYR <- ATRR[iATRR, ]$Y *aim.coef
+  atrYV <- ATRV[iATRV, ]$Y *aim.coef
+  
+  atrZR <- ATRR[iATRR, ]$Z *aim.coef
+  atrZV <- ATRV[iATRV, ]$Z *aim.coef
+  
+  if (ATRR[iATRR, ]$step.value != ATRV[iATRV, ]$step.value) {
+    warning(paste0("Error in step.name within step.value = ", ATRR[iATRR, ]$step, ATRV[iATRV, ]$step) )
+    next
+  }
+  
+  RN$X <- (atrXR + atrXV)/2
+  RN$Y <- (atrYR + atrYV)/2
+  RN$Z <- (atrZR + atrZV)/2
+  
+  RN <- to.polar(RN$X, RN$Y, RN$Z)
+  RN$step.value <- ATRR[iATRR, ]$step.value
+  RN$step.name <- i
+ 
+  ARN <-rbind.data.frame(ARN, RN, stringsAsFactors = FALSE)
+  
+  TR$X <- (atrXR - atrXV)/2
+  TR$Y <- (atrYR - atrYV)/2
+  TR$Z <- (atrZR - atrZV)/2
+  TR <- to.polar(TR$X, TR$Y, TR$Z)
+  TR$step.value <- ATRR[iATRR, ]$step.value
+  TR$step.name <- i
+  
+  ATR <-rbind.data.frame(ATR, TR, stringsAsFactors = FALSE)
+ if ((RN$step.value >= begin.step.value) && (RN$step.value <= end.step.value)) {
+   pt.col.res <- c(pt.col.res, "red")
+ } else {
+   pt.col.res <- c(pt.col.res, pt.col)
+ }
+}
+xlim <- range(ATR$F)
+ylim <- range(ARN$F)
+
+if (relative == TRUE) {
+  ATRmax <- max(ATR$F) / 100
+  ARNmax <- max(ARN$F) / 100
+} else {
+  ATRmax <- 1
+  ARNmax <- 1
+}
+
+# Plot Arai
+if (show.plot == TRUE) {
+  
+  xlim <- range(ATR$F/ATRmax)
+  ylim <- range(ARN$F/ARNmax)
+  if (relative == TRUE) {
+    xlab <- "% ATR"
+    ylab <- "% ARN"
+  } else {
+    xlab <- "ATR"
+    ylab <- "ARN"
+  }
+
+  plot(y = ARN$F/ARNmax, x = ATR$F/ATRmax, type='o', col = pt.col.res, pch = 20, xlim = xlim, ylim = ylim, xlab = xlab, ylab = ylab)
+  if (show.step.value == TRUE) {
+    text(y= ARN$F, x=ATR$F, ARN$step.value, adj = 0)
+  }
+}
+
+# stat with all points
+Xmoy <- mean(ATR$F) 
+Ymoy <- mean(ARN$F) 
+n <- length(ATR$F)  
+
+# calcul with a population, not with a sample
+covYX <- cov(ATR$F, ARN$F) * (n-1)/n 
+S2x <- var(ATR$F) * (n-1)/n 
+S2y <- var(ARN$F) * (n-1)/n 
+
+a_tot <- -sqrt(S2y/S2x)
+b_tot <- Ymoy - a_aff*Xmoy
+JTRM <- (-b_tot/a_tot)
+
+# loop pTRM check
+ATRP <- mesures[which(substr(mesures$step, nchar(mesures$step)-1, nchar(mesures$step)-1 ) == P.mark),]
+for (i in 1:length(ATRP$step) ) {
+  ATRP$step.name[i] <- substr(ATRP$step[i], nchar(ATRP$step[i]), nchar(ATRP$step[i]) )
+}
+
+# Plot loop
+TP <- NULL
+ATP <- NULL
+for (i in ATRP$step.name) {
+  iATRV <- which(ATRV$step.name == i)
+  iATRP <- which(ATRP$step.name == i)
+  
+  atrXV <- ATRV[iATRV, ]$X *aim.coef
+  atrXP <- ATRP[iATRP, ]$X *aim.coef
+  
+  atrYV <- ATRV[iATRV, ]$Y *aim.coef
+  atrYP <- ATRP[iATRP, ]$Y *aim.coef
+  
+  atrZV <- ATRV[iATRV, ]$Z *aim.coef
+  atrZP <- ATRP[iATRP, ]$Z *aim.coef
+  
+  
+  TP$X <-(atrXP - atrXV)/2
+  TP$Y <- (atrYP - atrYV)/2
+  TP$Z <- (atrZP - atrZV)/2
+  TP <- to.polar(TP$X, TP$Y, TP$Z)
+  TP$step.value <- ATRP[iATRP, ]$step.value
+  TP$step.name <- i
+  
+  ATP <-rbind.data.frame(ATP, TP, stringsAsFactors = FALSE)
+  
+  arnLoop.name <- ARN[which(ARN$step.name == i), ]
+  arnLoop.value <- ARN[which(ARN$step.value == TP$step.value), ]
+  atrLoop <- ATR[which(ATR$step.name == i), ]
+  if (show.plot == TRUE) {
+    points( x= TP$F/ATRmax, y= arnLoop.value$F/ARNmax, col = loop.col, pch = 4)
+    lines( x= c(atrLoop$F/ATRmax, TP$F/ATRmax, TP$F/ATRmax), y = c(arnLoop.name$F/ARNmax, arnLoop.name$F/ARNmax, arnLoop.value$F/ARNmax), col = loop.col)
+  }
+}
+
+res<- NULL
+res$ARN <- ARN
+res$ATR <- ATR
+res$ATP <- ATP
+
+# Statistic 
+
+n <- 0
+Crm <- CrmMax <- 0
+tabX <- NULL
+tabY <- NULL
+for (i in 1:length(ARN$step.name))  {
+  if ((ARN$step.value[i] >= begin.step.value) && (ARN$step.value[i] <= end.step.value)) {
+    tabX <- c( tabX, ATR[which(ATR$step.value == ARN$step.value[i]),]$F  /ATRmax)
+    tabY <- c( tabY, ARN$F[i]  /ARNmax)
+     n <- n+1
+     
+     if (n==1) {
+       incl_ET1.rad <- ARN$I[i]/180*pi
+     } else {
+        Crm <- ( sin( incl_ET1.rad -ARN$I[i]/180*pi) /sin(incl_ET1.rad -pi/2))*ARN$F[i]
+        if (abs(Crm)>CrmMax) {
+          CrmMax <- abs(Crm)
+        } 
+     }
+   
+    
+  }
+}
+CrmMax <- CrmMax/ ( tabX[length(tabX)] - tabX[1])*100
+
+if (n >= 2) {
+  Xmoy <- mean(tabX) 
+  Ymoy <- mean(tabY) 
+  
+  # calcul sur une population, pas sur un echantillon
+  covYX <- cov(tabY, tabX) * (n-1)/n 
+  S2x <- var(tabX) * (n-1)/n 
+  S2y <- var(tabY) * (n-1)/n 
+
+  a_aff <- -sqrt(S2y/S2x)
+  b_aff <- Ymoy - a_aff*Xmoy
+  
+  abline(b_aff, a_aff, col= "red")
+  
+  # Calcul du coef. de corrélation linéaire de la droite entre les 2 étapes
+  R <- cor(tabY, tabX) 
+ 
+  # calcul de la variance eq n°3 : Prévost et Al. 1985 DOI: 10.1029/JB090iB12p10417
+
+  s <-  covYX/sqrt(S2x*S2y)
+  if (s < -1) {
+     warning('Error on sigma Prévost =', s);
+      s<- abs(s);
+     
+  } else {
+       s <- sqrt( 2+(2*s));
+       sigmaPrevost85 <- s/sqrt(n-2);
+       # Calcul de sigma pour Coe 1978 : DOI: 10.1029/JB083iB04p01740
+       sigmaCoe <- ((2*S2y)-2*a_aff*covYX) /((n-2)*S2x)
+       sigmaCoe <- sqrt(sigmaCoe)
+     
+  } 
+  # fraction of pTRM used
+  fs1s2 <- function(tx,ty, i1, i2) {
+    (a_aff*tabX[i1] + b_aff  + tabY[i1] )/2 - (a_aff*tabX[i2] + b_aff + tabY[i2])/2 
+  }
+  
+  nStep <- length(tabX)
+  # Coe et Al. 1978)
+  fCoe78 <- fs1s2(tabX*ATRmax, tabY*ATRmax, 1, nStep) /b_aff
+  
+  g<-0
+  for (i in 2:length(tabX)) {
+    g <- g + fs1s2(tabX*ATRmax, tabY*ATRmax, i-1, i)^2
+  }
+  g <- 1 - g/(fCoe78*b_aff)^2
+  
+  qCoe78 <- abs(a_aff)*fCoe78*g/sigmaCoe;
+  
+  qPrevost85 <- fCoe78*g/sigmaCoe
+  
+  SigFe <- sigmaCoe*TH
+  Fe <- -a_aff*TH
+    
+  if (verbose == TRUE) {
+    Commentaire <- paste0('Coef. Corr. lin. R= ', format(R, digits = 3), ' pour ', n,' points')
+    Commentaire <- c(Commentaire, paste0(' Sigmab ( Coe 1978) = ',format(sigmaCoe, digits = 3)) )
+    Commentaire <- c(Commentaire, paste0('with lab field : ', TH, ' µT => Fe= ', format(Fe, digits = 3), ' ± ', format(SigFe, digits = 3), ' µT (Coe et Al. 1978)') )
+    Commentaire <- c(Commentaire, paste0('f = ', format(fCoe78*100, digits = 4), '% (Coe et Al. 1978)') )
+    Commentaire <- c(Commentaire, paste0('q = ', format(qCoe78, digits = 3)) )
+    Commentaire <- c(Commentaire, paste0('g  = ', format(g, digits = 3)) )
+    Commentaire <- c(Commentaire, paste0('Crm  = ', format(CrmMax, digits = 4), ' (Coe 1984)') )
+    
+    
+    Commentaire <- c(Commentaire, paste0('q (Prévost 85) = ', format(qPrevost85, digits = 3)) )
+    Commentaire <- c(Commentaire, paste0('sigma (Prévost 85) = ', format(sigmaPrevost85, digits = 3)) )
+     print(Commentaire)           
+  }
+  
+  # Cooling rate
+  # slow step
+  ATRL <- mes.sel[which(substr(mes.sel$step, nchar(mes.sel$step)-1, nchar(mes.sel$step)-1 ) == L.mark),]
+  for (i in 1:length(ATRL$step) ) {
+    ATRL$step.name[i] <- substr(ATRL$step[i], nchar(ATRL$step[i]), nchar(ATRL$step[i]) )
+  }
+  ATRQ <- mes.sel[which(substr(mes.sel$step, nchar(mes.sel$step)-1, nchar(mes.sel$step)-1 ) == Q.mark),]
+  for (i in 1:length(ATRQ$step) ) {
+    ATRQ$step.name[i] <- substr(ATRQ$step[i], nchar(ATRQ$step[i]), nchar(ATRQ$step[i]) )
+  }
+  
+  # quick step
+  for (i in ATRL$step.name) {
+    iARN <- which(ARN$step.name == i)
+    iATR <- which(ATR$step.name == i)
+    
+    iATRL <- which(ATRL$step.name == i)
+    atrXL <- ATRL[iATRL, ]$X*aim.coef  - ARN[iARN, ]$X 
+    atrYL <- ATRL[iATRL, ]$Y *aim.coef - ARN[iARN, ]$Y 
+    atrZL <- ATRL[iATRL, ]$Z*aim.coef  - ARN[iARN, ]$Z 
+    trL <- to.polar(atrXL, atrYL, atrZL)
+    rateL <- (trL$F - ATR[iATR, ]$F) / (ATR[iATR, ]$F)
+    FeL <- Fe*(1-rateL)
+    SigFeL <- SigFe * (1-rateL)
+    
+    iATRQ <- which(ATRQ$step.name == i)
+    atrXQ <- ATRQ[iATRQ, ]$X *aim.coef - ARN[iARN, ]$X 
+    atrYQ <- ATRQ[iATRQ, ]$Y *aim.coef - ARN[iARN, ]$Y
+    atrZQ <- ATRQ[iATRQ, ]$Z *aim.coef - ARN[iARN, ]$Z
+    trQ <- to.polar(atrXQ, atrYQ, atrZQ)
+    rateQ <- (trQ$F - ATR[iATR, ]$F) / (ATR[iATR, ]$F)
+    
+    if (verbose == TRUE) {
+      Commentaire <- paste0('Speed Rate with slow step: ', format(rateL*100, digits = 4), ' %')
+      Commentaire <- c( Commentaire, paste0('Derive speed Rate with quick step: ', format(rateQ*100, digits = 4), ' %') )
+      Commentaire <- c( Commentaire, paste0('Fe Lent= ', format(FeL, digits = 3), ' ± ', format(SigFeL, digits = 3), ' µT') )
+      
+      print(Commentaire)      
+                       
+    }  
+  }
+  
+  res$stat <- data.frame(Fe, SigFe, FeL, SigFeL, rateL, rateQ, sigmaCoe, JTRM, fCoe78, qCoe78, g, CrmMax, qPrevost85, sigmaPrevost85)
+}
+return(res)
+}
+
+```
+```{r test calcul}
+cov(tabX,tabY)
+cov(tabY,tabX)
+som =0
+for (i in 1:length(tabX)) {
+  som <- som + (tabX[i]-mean(tabX))*(tabY[i]-mean(tabY))
+}
+
+```
+
+```{r}
+plot(y= ARN$F, x=ATR$F, type='o', col = "blue", pch=16)
+plot(ARN$F~ATR$F, type='b')
+```
 
