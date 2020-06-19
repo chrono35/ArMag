@@ -3464,7 +3464,7 @@ rotation.mesure <- function(Data, deviation)
 #' @export
 julian.day <- function( day, month, year, hour, minute, seconde)
 {
-  day.hour <- Day + hour/24.0 + minute/1440.0 + seconde/86400.0
+  day.hour <- day + hour/24.0 + minute/1440.0 + seconde/86400.0
 
   if (month == 1 || month == 2) {
     year <- year-1.0
