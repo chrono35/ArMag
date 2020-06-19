@@ -110,14 +110,14 @@ lambert.XYZ.specimen(mes.ech)
 lambert.ID.specimen(mes.ech)
 ```
 
-## desaimantation and partial component
+## demagnetizing and partial component
 
 ```{r, fig.show='hold'}
 mes.sel2 <- extract.mesures.specimen.name("1P1", mes)
 mes.sel3 <- extract.mesures.specimen.name("16P1", mes)
-desaim(mes.sel2, step.J0 = NULL)
-desaim(mes, step.J0 = 0, pt.col = rainbow(length(mes.info$name)))
-desaim(rbind(mes.sel2, mes.sel3), normalize = TRUE)
+demag(mes.sel2, step.J0 = NULL)
+demag(mes, step.J0 = 0, pt.col = rainbow(length(mes.info$name)))
+demag(rbind(mes.sel2, mes.sel3), normalize = TRUE)
 
 partial.component(mes.sel2$X, mes.sel2$Y, mes.sel2$Z)
 ```
@@ -135,7 +135,41 @@ zijderveld2.T1T2(mes.sel2)
 # removal of anisotropy steps
 mes.sel2 <- remove.step(mes.sel2, verbose = FALSE) 
 lambert(mes.sel2, inc.lim = c(0, 90))
-desaim(mes.sel2, step.J0 = NULL)
+demag(mes.sel2, step.J0 = NULL)
+```
+## Arai - intensity plot
+```{r}
+file.INT <- "../examples/INT_example.AMD"
+
+mesINT <- NULL
+mesINT <- read.AM.mesures(file.INT)
+mesINT.info <- read.AM.info (file.INT)
+mes.sel<- extract.mesures.specimen.name("40001B_11B1", mesINT)
+# reference 
+# Coe 1978 : DOI: 10.1029/JB083iB04p01740
+# Prévost et Al. 1985 DOI: 10.1029/JB090iB12p10417
+par(pty="s", "xaxp")
+relative = FALSE
+verbose = TRUE
+show.plot = TRUE
+vol=10.8
+TH = 60
+aim.coef = 1E-10*1E6/vol #1E6
+show.step.value = FALSE
+R.mark = 'R'  # Positive pTRM
+V.mark = 'V'  # Negative pTRM
+P.mark = 'P'  # pTRM check
+L.mark = "L"  # sLow cooling 
+Q.mark = "Q"  # Quick cooling
+pt.col = "blue"
+loop.col = "forestgreen"
+step.J0 = "20N0" # ou NULL
+
+begin.step.value = 0
+end.step.value = 700
+
+par(pty="s", "xaxp")
+arai(mes.sel, begin.step.value = 250, end.step.value = 700, aim.coef = 1E-10*1E6/vol)
 ```
 
 ## Sun azimuth
