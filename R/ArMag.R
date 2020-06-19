@@ -4105,7 +4105,7 @@ arai <- function(mesures, relative = TRUE, verbose = TRUE, show.plot = TRUE, TH 
   S2y <- var(ARN$F) * (n-1)/n
 
   a_tot <- -sqrt(S2y/S2x)
-  b_tot <- Ymoy - a_aff*Xmoy
+  b_tot <- Ymoy - a_tot*Xmoy
   JTRM <- (-b_tot/a_tot)
 
   # loop pTRM check
