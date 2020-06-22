@@ -177,8 +177,25 @@ par(pty="s", "xaxp")
 arai(mes.sel, begin.step.value = 250, end.step.value = 700, aim.coef = 1E-10*1E6/vol)
 ```
 
-## Sun azimuth
+# Sun azimuth
 ```{r sun.azimuth}
-sun.azimuth (10, 11, 2019, 11, 19, Seconde=0, 48, longmin=0, longsec=0, 45, latmin=0, latsec=0)
+sun.azimuth (10, 11, 2019, 11, 19, seconde=0, 48, longmin=0, longsec=0, 45, latmin=0, latsec=0)
 ```
 
+# igrf13syn
+  This is a synthesis routine for the 13th generation [IGRF](https://www.ngdc.noaa.gov/IAGA/vmod/igrf.html) as agreed in December 2019 by IAGA Working Group V-MOD. It is valid 1900.0 to 2025.0 inclusive. Values for dates from 1945.0 to 2015.0 inclusive are definitive, otherwise they are non-definitive.
+  Reference:
+
+ [Thébault, E., Finlay, C.C., Beggan, C.D. et al. International Geomagnetic Reference Field: the 12th generation. Earth Planet Sp 67, 79 (2015).  https://doi.org/10.1186/s40623-015-0228-9](https://earth-planets-space.springeropen.com/articles/10.1186/s40623-015-0228-9)
+
+  
+```{r}
+isv <- 1
+date <- 2000
+itype <- 1
+alt <- 50
+colat <- 90 - 45
+elong <- 10
+
+igrf13syn(isv=isv, date=date, itype=itype , alt=alt, colat= colat, elong=elong)
+```

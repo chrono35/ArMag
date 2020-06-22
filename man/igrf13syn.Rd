@@ -64,7 +64,8 @@ elong <- 10
 
 }
 \references{
-International Geomagnetic Reference Field(\link{https://earth-planets-space.springeropen.com/articles/10.1186/s40623-015-0228-9}): the 12th generation, Erwan Thébault, Christopher C Finlay, Ciarán D Beggan, Patrick Alken, Julien Aubert, Olivier Barrois, Francois Bertrand, Tatiana Bondar, Axel Boness, Laura Brocco, Elisabeth Canet, Aude Chambodut, Arnaud Chulliat, Pierdavide Coïsson, Francois Civet, Aimin Du, Alexandre Fournier, Isabelle Fratter, Nicolas Gillet, Brian Hamilton, Mohamed Hamoudi, Gauthier Hulot, Thomas Jager, Monika Korte, Weijia Kuang, Xavier Lalanne, Benoit Langlais, Jean-Michel Léger, Vincent Lesur, Frank J Lowes et al. Earth, Planets and Space 2015, 67:79 (27 May 2015)
+Thébault, E., Finlay, C.C., Beggan, C.D. et al. International Geomagnetic Reference Field: the 12th generation. Earth Planet Sp 67, 79 (2015).
+https://doi.org/10.1186/s40623-015-0228-9 (\link{https://earth-planets-space.springeropen.com/articles/10.1186/s40623-015-0228-9}): the 12th generation, Erwan Thébault, Christopher C Finlay, Ciarán D Beggan, Patrick Alken, Julien Aubert, Olivier Barrois, Francois Bertrand, Tatiana Bondar, Axel Boness, Laura Brocco, Elisabeth Canet, Aude Chambodut, Arnaud Chulliat, Pierdavide Coïsson, Francois Civet, Aimin Du, Alexandre Fournier, Isabelle Fratter, Nicolas Gillet, Brian Hamilton, Mohamed Hamoudi, Gauthier Hulot, Thomas Jager, Monika Korte, Weijia Kuang, Xavier Lalanne, Benoit Langlais, Jean-Michel Léger, Vincent Lesur, Frank J Lowes et al. Earth, Planets and Space 2015, 67:79 (27 May 2015)
 }
 \seealso{
 \code{\link{https://www.ngdc.noaa.gov/IAGA/vmod/igrf.html}}
