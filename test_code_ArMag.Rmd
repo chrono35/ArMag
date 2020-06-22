@@ -425,7 +425,7 @@ sun.azimuth(jour2, mois2, annee2, heure2, minute2, seconde2, longitude, longmin,
 
 ```{r test sun.azimuth}
 
-sun.azimuth (10, 11, 2019, 11, 19, Seconde=0, 48, longmin=0, longsec=0, 45, latmin=0, latsec=0)
+sun.azimuth (10, 11, 2019, 11, 19, seconde=0, 48, longmin=0, longsec=0, 45, latmin=0, latsec=0)
 
 ```
 

@@ -1,6 +1,6 @@
 Package: ArMag
 Title: ArMag
-Version: 0.0.0.9010
+Version: 0.0.1.0001
 Authors@R: 
     person(given = "Philippe", 
            family = "Dufresne",

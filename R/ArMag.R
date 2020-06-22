@@ -3514,7 +3514,7 @@ sun.azimuth <- function(day, month, year, hour, minute, seconde=0, longdeg, long
   heure_siderale2 <- ((heure_siderale1/24.0) - trunc(heure_siderale1/24.0)) * 24.0
 
   angleH <- 360.0*heure_siderale2/23.9344
-  angleT <- (Hour - correction_heure - 12.0 + Minute/60.0 + Seconde/3600.0)*360.0/23.9344 # jour sidéraux = 23h56min 4,0989s -> 23,93447h -> 0,9972696 jour solaire
+  angleT <- (hour - correction_heure - 12.0 + minute/60.0 + seconde/3600.0)*360.0/23.9344 # jour sidéraux = 23h56min 4,0989s -> 23,93447h -> 0,9972696 jour solaire
   angle <- angleT + angleH
 
   angle_horaire <- angle - ascension_droite*15.0 + longitude
