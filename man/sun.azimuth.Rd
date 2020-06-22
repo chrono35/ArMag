@@ -5,12 +5,12 @@
 \title{Calcul l'azimuth du soleil en un lieu à une date donnée à une heure "UTC"}
 \usage{
 sun.azimuth(
-  Day,
-  Month,
-  Year,
-  Hour,
-  Minute,
-  Seconde = 0,
+  day,
+  month,
+  year,
+  hour,
+  minute,
+  seconde = 0,
   longdeg,
   longmin = 0,
   longsec = 0,

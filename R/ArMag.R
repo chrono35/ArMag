@@ -3483,14 +3483,14 @@ julian.day <- function( day, month, year, hour, minute, seconde)
 #' @seealso \code{\link{https://codes-sources.commentcamarche.net/source/31774-calcul-de-la-position-du-soleil-declinaison-angle-horaire-altitude-et-azimut-altaz-solaire}}
 #' @seealso \code{\link{https://fr.planetcalc.com/320/}}
 #' @export
-sun.azimuth <- function(Day, Month, Year, Hour, Minute, Seconde=0, longdeg, longmin=0, longsec=0, latdeg, latmin=0, latsec=0)
+sun.azimuth <- function(day, month, year, hour, minute, seconde=0, longdeg, longmin=0, longsec=0, latdeg, latmin=0, latsec=0)
 {
   longitude <- DMS.to.DD(longdeg, longmin, longsec)
   latitude <- DMS.to.DD(latdeg, latmin, latsec)
   #     Heure d'hiver ou d'été
   correction_heure <- 0
 
-  jj <- julian.day(Day, Month, Year, Hour, Minute, Seconde) - correction_heure/24.0 - 2451545.0
+  jj <- julian.day(day, month, year, hour, minute, seconde) - correction_heure/24.0 - 2451545.0
 
 
   #     Calculs ascension droite et délinaison

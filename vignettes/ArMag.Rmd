@@ -4,15 +4,18 @@ vignette: |
 author: "Dufresne Philippe"
 date: "`r Sys.Date()`"
 output:
-  
   rmarkdown::html_vignette:
-    fig_caption: yes  
-  vignette: default
+  vignette: >
+   %\VignetteIndexEntry{ArMag}
+   %\VignetteEngine{knitr::rmarkdown}
+   %\VignetteEncoding{UTF-8}
+    
 title: "Calcul statistique sur les composantes magnétiques avec le package ArMag"
 ---
 
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(
+  fig.width=7, fig.height = 5, fig.align = 'center',
   collapse = TRUE,
   comment = "#>"
 )
@@ -107,7 +110,9 @@ zijderveld2(mes.ech, pt.names = NULL)
 Each function using different parameters
 ```{r comparatif fonction plot, fig.show='hold'}
 lambert.XYZ.specimen(mes.ech)
-lambert.ID.specimen(mes.ech)
+# remove anisotropîe step
+mes.ech.ssAni<-remove.step(mes.ech)
+lambert.ID.specimen(mes.ech.ssAni)
 ```
 
 ## demagnetizing and partial component
@@ -175,13 +180,5 @@ arai(mes.sel, begin.step.value = 250, end.step.value = 700, aim.coef = 1E-10*1E6
 ## Sun azimuth
 ```{r sun.azimuth}
 sun.azimuth (10, 11, 2019, 11, 19, Seconde=0, 48, longmin=0, longsec=0, 45, latmin=0, latsec=0)
-```
-
-## More Examples
-
-You can write math expressions, e.g. $Y = X\beta + \epsilon$, footnotes^[A footnote here.], and tables, e.g. using `knitr::kable()`.
-
-```{r, echo=FALSE, results='asis'}
-knitr::kable(head(mtcars, 10))
 ```
 
