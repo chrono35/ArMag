@@ -27,7 +27,7 @@ This package is an extraction of the functions of the calculation software on ma
 
 ## Installing ArMag
 
-ArMag will run in Windows, Mac OS X or Linux. To install ArMAg you first need to install [R](https://www.r-project.org). I would also recommend installing [Rstudio](http://www.rstudio.com) as a nice desktop environment for using R. Once in R you can type:
+ArMag will run in Windows, Mac OS X or Linux. To install ArMag you first need to install [R](https://www.r-project.org). I would also recommend installing [Rstudio](http://www.rstudio.com) as a nice desktop environment for using R. Once in R you can type:
 
 ```{r,eval=FALSE}
 # install.packages('ArMag')
@@ -142,6 +142,7 @@ mes.sel2 <- remove.step(mes.sel2, verbose = FALSE)
 lambert(mes.sel2, inc.lim = c(0, 90))
 demag(mes.sel2, step.J0 = NULL)
 ```
+
 ## Arai - intensity plot
 ```{r}
 file.INT <- "../examples/INT_example.AMD"

@@ -3304,7 +3304,7 @@ zijderveld1.T1T2 <- function(Data, T1 = NULL, T2 = NULL, show.step = FALSE, igno
 
 }
 
-#' trace un diagramme de zijderveld en calculant la composante entre les étapes T1 et T2
+#' Trace un diagramme de zijderveld en calculant la composante entre les step.value T1 et T2
 #' @param T1 correspond à step.value ou température la plus basse
 #' @param T2 correspond à step.value ou température la plus haute
 #' @param en0 booléen permettant de forcer la composante partielle de passer par l'origine
@@ -3458,8 +3458,9 @@ rotation.mesure <- function(Data, deviation)
 
 # Calcul astronomique ----
 
-#' Le nombre de jour julien pour les calculs astronomiques
-#' Le jour julien 0 commence le 24 novembre -4713 (4712 BC) à 12h
+# Le jour julien 0 commence le 24 novembre -4713 (4712 BC) à 12h
+#' The number of Julian days for astronomical calculations
+#'  Julian Day 0 starts November 24th -4713 (4712 BC) at 12:00 pm
 #' @seealso \code{\link{https://codes-sources.commentcamarche.net/source/31774-calcul-de-la-position-du-soleil-declinaison-angle-horaire-altitude-et-azimut-altaz-solaire}}
 #' @export
 julian.day <- function( day, month, year, hour, minute, seconde)
@@ -3479,7 +3480,8 @@ julian.day <- function( day, month, year, hour, minute, seconde)
   return (as.numeric(julian))
 }
 
-#' Calcul l'azimuth du soleil en un lieu à une date donnée à une heure "UTC"
+
+#' Calculate the azimuth of the sun in a place at a given date at a given time "UTC".
 #' @seealso \code{\link{https://codes-sources.commentcamarche.net/source/31774-calcul-de-la-position-du-soleil-declinaison-angle-horaire-altitude-et-azimut-altaz-solaire}}
 #' @seealso \code{\link{https://fr.planetcalc.com/320/}}
 #' @export
@@ -3492,8 +3494,7 @@ sun.azimuth <- function(day, month, year, hour, minute, seconde=0, longdeg, long
 
   jj <- julian.day(day, month, year, hour, minute, seconde) - correction_heure/24.0 - 2451545.0
 
-
-  #     Calculs ascension droite et délinaison
+  #     Calculs ascension droite et déclinaison
   g <- 357.529 + 0.98560028*jj
   q <- 280.459 + 0.98564736*jj
   l <- q + 1.915 * sin(g*pi/180.0) + 0.020*sin(2*g*pi/180.0) # Ellipticité
