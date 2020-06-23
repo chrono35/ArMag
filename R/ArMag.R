@@ -1904,13 +1904,14 @@ read.AM.orient <- function (file.AM, encoding="macroman")
 genere.AMD <- function(file.AMD = "fichier.AMD", list.ech, shape = "Cyl" , encoding = "macroman")
 {
   entete<- c( "Spinner_Molspin 2008" ,
-              "Commune : Laval",
-              "Site : St Pierre-le-Potier",
+              "Commune : à définir",
+              "Site : à définir",
               "Latitude  :   0°  0'  0\" ",
               "Longitude :   0°  0'  0\" IGRF:+00.0",
               "Prélèvements sur matériaux déplacés",
               "Type de carottage : à plat",
-              "Date de création : 27/05/2019", "","")
+              paste0("Date de création : " , format(Sys.time(), "%d/%m/%Y")),
+              "","")
 
   txt.mesures <- entete
   for (i in 1:length(list.ech)) {
@@ -1935,13 +1936,14 @@ genere.AMD <- function(file.AMD = "fichier.AMD", list.ech, shape = "Cyl" , encod
 genere.AMP <- function(file.AMP = "fichier.AMP", list.ech, shape = "Cyl" , encoding = "macroman")
 {
   entete<- c( "Spinner_Molspin 2008" ,
-              "Commune : Laval",
-              "Site : St Pierre-le-Potier",
+              "Commune : à définir",
+              "Site : à Definir",
               "Latitude  :   0°  0'  0\" ",
               "Longitude :   0°  0'  0\" IGRF:+00.0",
               "Prélèvements sur matériaux déplacés",
               "Type de carottage : à plat",
-              "Date de création : 27/05/2019", "","")
+              paste0("Date de création : " , format(Sys.time(), "%d/%m/%Y")),
+              "","")
 
   txt.mesures <- entete
   for (i in 1:length(list.ech)) {
