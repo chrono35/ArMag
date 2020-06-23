@@ -410,7 +410,7 @@ Y <- function(i, d, ray=1, i.min = 0, box.range)
 #' @export
 DMS.to.DD <- function(degre, minute, second = 0)
 {
-  if (degre>0) {
+  if (degre>=0) {
     return(as.numeric(degre + minute/60 + second/3600) )
   } else {
     return(as.numeric(degre - minute/60 - second/3600) )
@@ -1916,7 +1916,7 @@ genere.AMD <- function(file.AMD = "fichier.AMD", list.ech, shape = "Cyl" , encod
   txt.mesures <- entete
   for (i in 1:length(list.ech)) {
     txt.mesures <- c( txt.mesures,
-                      paste("Id:", format(list.ech[i], width = 13), "in:000.0 az:000.0 Tet:000.0 Psy:000.0 v:12.27 com:TH50.0µT ", shape, sep = ""),
+                      paste("Id:", format(list.ech[i], width = 13), "in:000.0 az:000.0 Tet:000.0 Psy:000.0 v:01.00 com:TH 0.0µT ", shape, sep = ""),
                       "Repère:",
                       "CompDes:  T1:0000T+  T2:0000T+  T3:0000T-  T4:0000T-",
                       "")
@@ -1940,7 +1940,7 @@ genere.AMP <- function(file.AMP = "fichier.AMP", list.ech, shape = "Cyl" , encod
               "Site : à Definir",
               "Latitude  :   0°  0'  0\" ",
               "Longitude :   0°  0'  0\" IGRF:+00.0",
-              "Prélèvements sur matériaux déplacés",
+              "Prélèvements sur structure en place",
               "Type de carottage : à plat",
               paste0("Date de création : " , format(Sys.time(), "%d/%m/%Y")),
               "","")
@@ -1948,7 +1948,7 @@ genere.AMP <- function(file.AMP = "fichier.AMP", list.ech, shape = "Cyl" , encod
   txt.mesures <- entete
   for (i in 1:length(list.ech)) {
     txt.mesures <- c( txt.mesures,
-                      paste("Id:", format(list.ech[i], width = 13), "in:000.0 az:000.0 Tet:000.0 Psy:000.0 v:12.27 com:TH50.0µT ", shape, sep = ""),
+                      paste("Id:", format(list.ech[i], width = 13), "in:000.0 az:000.0 Tet:000.0 Psy:000.0 v:01.00 com:TH 0.0µT ", shape, sep = ""),
                       "Orient:NM  J: 1  M: 1  A:2000  H: 00  M: 0  S: 0  SM:000.0",
                       "CompDes:  T1:0000T+  T2:0000T+  T3:0000T-  T4:0000T-",
                       "")
