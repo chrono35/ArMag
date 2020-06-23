@@ -1898,7 +1898,7 @@ read.AM.orient <- function (file.AM, encoding="macroman")
 
   return(list.mesure)
 }
-#' Fonction de création de fichier pour les magnétomètres ----
+#' Fonction de création de fichier pour les magnétomètres, pour des matériaux déplacés ----
 #' @param encoding mettre "macroman" pour les mesures au molspin
 #' @export
 genere.AMD <- function(file.AMD = "fichier.AMD", list.ech, shape = "Cyl" , encoding = "macroman")
@@ -1924,7 +1924,38 @@ genere.AMD <- function(file.AMD = "fichier.AMD", list.ech, shape = "Cyl" , encod
 
   # Ecriture du fichier
 
-  filCon <- file(file.AM, encoding = encoding)
+  filCon <- file(file.AMD, encoding = encoding)
+  writeLines(txt.mesures, filCon)
+  close(filCon)
+}
+
+#' Fonction de création de fichier pour les magnétomètres, pour des structures en place ----
+#' @param encoding mettre "macroman" pour les mesures au molspin
+#' @export
+genere.AMP <- function(file.AMP = "fichier.AMP", list.ech, shape = "Cyl" , encoding = "macroman")
+{
+  entete<- c( "Spinner_Molspin 2008" ,
+              "Commune : Laval",
+              "Site : St Pierre-le-Potier",
+              "Latitude  :   0°  0'  0\" ",
+              "Longitude :   0°  0'  0\" IGRF:+00.0",
+              "Prélèvements sur matériaux déplacés",
+              "Type de carottage : à plat",
+              "Date de création : 27/05/2019", "","")
+
+  txt.mesures <- entete
+  for (i in 1:length(list.ech)) {
+    txt.mesures <- c( txt.mesures,
+                      paste("Id:", format(list.ech[i], width = 13), "in:000.0 az:000.0 Tet:000.0 Psy:000.0 v:12.27 com:TH50.0µT ", shape, sep = ""),
+                      "Orient:NM  J: 1  M: 1  A:2000  H: 00  M: 0  S: 0  SM:000.0",
+                      "CompDes:  T1:0000T+  T2:0000T+  T3:0000T-  T4:0000T-",
+                      "")
+  }
+
+
+  # Ecriture du fichier
+
+  filCon <- file(file.AMP, encoding = encoding)
   writeLines(txt.mesures, filCon)
   close(filCon)
 }

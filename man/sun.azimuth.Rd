@@ -2,7 +2,7 @@
 % Please edit documentation in R/ArMag.R
 \name{sun.azimuth}
 \alias{sun.azimuth}
-\title{Calcul l'azimuth du soleil en un lieu à une date donnée à une heure "UTC"}
+\title{Calculate the azimuth of the sun in a place at a given date at a given time "UTC".}
 \usage{
 sun.azimuth(
   day,
@@ -20,7 +20,7 @@ sun.azimuth(
 )
 }
 \description{
-Calcul l'azimuth du soleil en un lieu à une date donnée à une heure "UTC"
+Calculate the azimuth of the sun in a place at a given date at a given time "UTC".
 }
 \seealso{
 \code{\link{https://codes-sources.commentcamarche.net/source/31774-calcul-de-la-position-du-soleil-declinaison-angle-horaire-altitude-et-azimut-altaz-solaire}}

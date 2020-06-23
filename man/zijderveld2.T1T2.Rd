@@ -2,7 +2,7 @@
 % Please edit documentation in R/ArMag.R
 \name{zijderveld2.T1T2}
 \alias{zijderveld2.T1T2}
-\title{trace un diagramme de zijderveld en calculant la composante entre les étapes T1 et T2}
+\title{Trace un diagramme de zijderveld en calculant la composante entre les step.value T1 et T2}
 \usage{
 zijderveld2.T1T2(
   Data,
@@ -34,7 +34,7 @@ zijderveld2.T1T2(
 \item{TRUE}{permet de voir les étapes d'anisotropie}
 }
 \description{
-trace un diagramme de zijderveld en calculant la composante entre les étapes T1 et T2
+Trace un diagramme de zijderveld en calculant la composante entre les step.value T1 et T2
 }
 \seealso{
 \code{\link{partial.component.T1T2, zijderveld2.T1T2}}

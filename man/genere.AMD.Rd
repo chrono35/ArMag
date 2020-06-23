@@ -2,7 +2,7 @@
 % Please edit documentation in R/ArMag.R
 \name{genere.AMD}
 \alias{genere.AMD}
-\title{Fonction de création de fichier pour les magnétomètres ----}
+\title{Fonction de création de fichier pour les magnétomètres, pour des matériaux déplacés ----}
 \usage{
 genere.AMD(
   file.AMD = "fichier.AMD",
@@ -15,5 +15,5 @@ genere.AMD(
 \item{encoding}{mettre "macroman" pour les mesures au molspin}
 }
 \description{
-Fonction de création de fichier pour les magnétomètres ----
+Fonction de création de fichier pour les magnétomètres, pour des matériaux déplacés ----
 }

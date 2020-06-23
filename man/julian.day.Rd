@@ -2,14 +2,14 @@
 % Please edit documentation in R/ArMag.R
 \name{julian.day}
 \alias{julian.day}
-\title{Le nombre de jour julien pour les calculs astronomiques
-Le jour julien 0 commence le 24 novembre -4713 (4712 BC) à 12h}
+\title{The number of Julian days for astronomical calculations
+ Julian Day 0 starts November 24th -4713 (4712 BC) at 12:00 pm}
 \usage{
 \method{julian}{day}(day, month, year, hour, minute, seconde)
 }
 \description{
-Le nombre de jour julien pour les calculs astronomiques
-Le jour julien 0 commence le 24 novembre -4713 (4712 BC) à 12h
+The number of Julian days for astronomical calculations
+ Julian Day 0 starts November 24th -4713 (4712 BC) at 12:00 pm
 }
 \seealso{
 \code{\link{https://codes-sources.commentcamarche.net/source/31774-calcul-de-la-position-du-soleil-declinaison-angle-horaire-altitude-et-azimut-altaz-solaire}}
