@@ -921,6 +921,10 @@ lambert.ID.point <- function (inc, dec , pt.names = NA, labels = NA, label.pos =
   if (!is.null(index.supprim)) {
     inc <- inc[-index.supprim]
     dec <- dec[-index.supprim]
+
+    if (!is.na(pt.names) ) {
+      pt.names <- pt.names[-index.supprim]
+    }
   }
 
 
