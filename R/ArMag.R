@@ -922,7 +922,7 @@ lambert.ID.point <- function (inc, dec , pt.names = NA, labels = NA, label.pos =
     inc <- inc[-index.supprim]
     dec <- dec[-index.supprim]
 
-    if (!is.na(pt.names) ) {
+    if (length(pt.names) > 0) {
       pt.names <- pt.names[-index.supprim]
     }
   }
@@ -942,13 +942,13 @@ lambert.ID.point <- function (inc, dec , pt.names = NA, labels = NA, label.pos =
 
   oldpar <- par("xpd", "mar", "pty")
 
-    # setting up coord. system
-    if (new == TRUE) {
-      par(mar = mar, pty = "s")
+  # setting up coord. system
+  if (new == TRUE) {
+    par(mar = mar, pty = "s")
 
-      maxlength <- 100 # la valeur n'a pas d'influence, la fonction plot() calcul le reste
-      plot(c(-maxlength, maxlength), c(-maxlength, maxlength), type = "n", axes = FALSE, new = new)
-    }
+    maxlength <- 100 # la valeur n'a pas d'influence, la fonction plot() calcul le reste
+    plot(c(-maxlength, maxlength), c(-maxlength, maxlength), type = "n", axes = FALSE, new = new)
+  }
 
  # par(xpd = TRUE)
 
