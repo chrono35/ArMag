@@ -3425,7 +3425,7 @@ zijderveld2.T1T2 <- function(Data, T1 = NULL, T2 = NULL, show.step = FALSE, igno
     pt.names <- rep("", length(Data$X) )
   }
 
-  zijderveld2(Data$X[1:iT1], Data$Y[1:iT1], Data$Z[1:iT1], pt.names = pt.names[1:iT1], legend.pos = legend.pos, legend.txt = legend.txt, main = main )
+  zijderveld2(Data$X[1:iT1], Data$Y[1:iT1], Data$Z[1:iT1], ylim =ylim, pt.names = pt.names[1:iT1], legend.pos = legend.pos, legend.txt = legend.txt, main = main )
   if (iT2 != length(Data$X))
     zijderveld2(Data$X[iT2:length(Data$X)], Data$Y[iT2:length(Data$X)], Data$Z[iT2:length(Data$X)], pt.names = pt.names[iT2:length(Data$X)], new = FALSE)
 
