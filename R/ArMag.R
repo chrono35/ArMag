@@ -1,6 +1,6 @@
 #  Licence ----
 #
-#  Copyright or © or Copr. CNRS	2019
+#  Copyright or © or Copr. CNRS	2020
 #
 #
 # This package is under
@@ -16,7 +16,7 @@
 #' @author "Philippe DUFRESNE"
 
 # Equation du 3 degrées
-# résolution du 3 eme degres pour calcul mcFadden importé de ARMAG
+# résolution du 3 eme degre pour calcul mcFadden importé de ARMAG
 # modifier suivant livre photocopié
 # Fonction interne
 EQUATION_DEGRE_3 <- function(A1, A2, A3)
@@ -62,7 +62,7 @@ EQUATION_DEGRE_3 <- function(A1, A2, A3)
 }
 
 # Equation du 4 degrées
-# résolution du 4 ème degres pour calcul mcFadden importé de ARMAG
+# résolution du 4 ème degre pour calcul mcFadden importé de ARMAG
 # Fonction interne
 EQUATION_DEGRE_4 <- function(B1, B2, B3, B4)
 {
@@ -202,8 +202,7 @@ stat.mcFadden <- function(Data, dec = NULL, inc.absolue = TRUE)
   # Calcul des sommes
   N <- length(inc)
 
-  if (N<=2)
-  {
+  if (N<=2) {
       warning("length(inc) < 3")
       return()
   }
@@ -612,7 +611,7 @@ lambert.ID.grid <- function (main = "", xlab = "", ylab = "", labels = NA, label
     par( pty = "s")
 
     maxlength <- 100 # la valeur n'a pas d'influence, la fonction plot() calcul le reste
-    plot(c(-maxlength, maxlength), c(-maxlength, maxlength), type = "n", axes = FALSE,main = main, xlab = xlab, ylab = ylab, new = new)
+    plot(c(-maxlength, maxlength), c(-maxlength, maxlength), type = "n", axes = FALSE, main = main, xlab = xlab, ylab = ylab, new = new)
   }
 
   labelsD <- NULL
@@ -3384,6 +3383,18 @@ zijderveld2.T1T2 <- function(Data, T1 = NULL, T2 = NULL, show.step = FALSE, igno
   TabX <- Data$X[iT1:iT2]
   TabY <- Data$Y[iT1:iT2]
   TabZ <- Data$Z[iT1:iT2]
+
+
+    Y.r <- range(Y)
+    Z.r <- range(Z)
+    ylim <- c(min(Y.r[1], -Z.r[2]), max(Y.r[2], -Z.r[1]))
+   # if (isometric == TRUE) {
+   #   if (ylim[1]>0)
+   #     ylim[1]<-0
+   #   if (ylim[2]<0)
+   #     ylim[2]<-0
+   # }
+
 
   vp <- partial.component(TabX, TabY, TabZ, en0 = en0)
   ntab <- length(TabX)
