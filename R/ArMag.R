@@ -3385,15 +3385,6 @@ zijderveld2.T1T2 <- function(Data, T1 = NULL, T2 = NULL, show.step = FALSE, igno
   TabZ <- Data$Z[iT1:iT2]
 
 
-    Y.r <- range(Y)
-    Z.r <- range(Z)
-    ylim <- c(min(Y.r[1], -Z.r[2]), max(Y.r[2], -Z.r[1]))
-   # if (isometric == TRUE) {
-   #   if (ylim[1]>0)
-   #     ylim[1]<-0
-   #   if (ylim[2]<0)
-   #     ylim[2]<-0
-   # }
 
 
   vp <- partial.component(TabX, TabY, TabZ, en0 = en0)
@@ -3424,6 +3415,16 @@ zijderveld2.T1T2 <- function(Data, T1 = NULL, T2 = NULL, show.step = FALSE, igno
   } else {
     pt.names <- rep("", length(Data$X) )
   }
+
+  Y.r <- range(Data$Y)
+  Z.r <- range(Data$Z)
+  ylim <- c(min(Y.r[1], -Z.r[2]), max(Y.r[2], -Z.r[1]))
+  # if (isometric == TRUE) {
+  #   if (ylim[1]>0)
+  #     ylim[1]<-0
+  #   if (ylim[2]<0)
+  #     ylim[2]<-0
+  # }
 
   zijderveld2(Data$X[1:iT1], Data$Y[1:iT1], Data$Z[1:iT1], ylim =ylim, pt.names = pt.names[1:iT1], legend.pos = legend.pos, legend.txt = legend.txt, main = main )
   if (iT2 != length(Data$X))
