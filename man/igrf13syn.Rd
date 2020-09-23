@@ -22,14 +22,15 @@ for dates greater than 2025.0. Must be double precision.}
 
 \item{colat}{= colatitude (0-180)}
 
-\item{elong}{= east-longitude (0-360)
-    alt, colat and elong must be double precision.
-  OUTPUT
+\item{elong}{= east-longitude (0-360)}
+}
+\value{
+x,y,z
     x     = north component (nT) if isv = 0, nT/year if isv = 1
     y     = east component (nT) if isv = 0, nT/year if isv = 1
     z     = vertical component (nT) if isv = 0, nT/year if isv = 1
     f     = total intensity (nT) if isv = 0, rubbish if isv = 1
-
+    if isv=0 I, D and f are returned else I=NA, D=NA and f=NA
     To get the other geomagnetic elements (D, I, H and secular
     variations dD, dH, dI and dF) use routines ptoc and ptocsv.
 
@@ -45,7 +46,7 @@ for dates greater than 2025.0. Must be double precision.}
     Coefficients at 1995.0 incorrectly rounded (rounded up instead of
     to even) included as these are the coefficients published in Excel
     spreadsheet July 2005.
-igrf13syn(isv=isv, date=date, itype=itype , alt=alt, colat= colat, elong=elong)}
+igrf13syn(isv=isv, date=date, itype=itype , alt=alt, colat= colat, elong=elong)
 }
 \description{
 This is a synthesis routine for the 13th generation IGRF as agreed
@@ -57,9 +58,10 @@ This is a synthesis routine for the 13th generation IGRF as agreed
 \examples{
 isv <- 1
 date <- 2000
-itype <- 1
-alt <- 50
-colat <- 90 - 45
+itype <- 1 # geodetic (spheroid) alt from the sea
+alt <- 50 # in km
+lat <- 45 # Nord positive
+colat <- 90 - lat
 elong <- 10
 
 }

@@ -10,7 +10,7 @@
 #  http://www.r-project.org/Licenses/
 #  _________________________________________________________________________________
 
-# Version 2020-01-15
+# Version 2020-09-23
 #
 
 #' @author "Philippe DUFRESNE"
@@ -2970,6 +2970,7 @@ demag <- function( Data, F = NULL,  pt.col = "blue3", pch = 21, type = "b",
 
 }
 
+# Orientation correction ----
 
 #' Correction de carottage sur tranche
 #' Tourne les mesures de manière à retrouver le résultat suivant la convention de carottage à plat
@@ -3004,8 +3005,246 @@ correction.carottage.enbout <- function(mesures.brutes)
   return(mesures.convent)
 }
 
+#' Correction de repère d'orientement avec la norme archeomagnetique
+#' Pour les Matériaux déplacés:
+#' on utilise Inc et Az pour faire la correction de #, c'est à dire repère de carrotage perpendiculaire au bord long
+#: Inc=0 Az =90°
+#' cela revient à tourner dans le sens trigonométrique dans les stéréogrammes
+#' @seealso \code{\link{correction.paleo}}, \code{\link{correction.bevel}}, \code{\link{correction.bending}}
+#' @export
+correction.archeo <-function(mes, inc=0, az=0) {
+  rad = pi /180
 
-# Partial component  ---
+  inc <- inc * rad
+  az  <- az * rad
+
+  M_rot_In <- matrix(data = 0, 3,3)
+  M_rot_In[1,1] = cos(inc);
+  M_rot_In[1,2] = 0;
+  M_rot_In[1,3] = sin(inc);
+  M_rot_In[2,1] = 0;
+  M_rot_In[2,2] = 1;
+  M_rot_In[2,3] = 0;
+  M_rot_In[3,1] = -sin(inc);
+  M_rot_In[3,2] = 0;
+  M_rot_In[3,3] = cos(inc);
+
+  #M_rot_temp <-  M_rot_In %*% M_rot_temp
+
+  M_rot_Az <- matrix(data = 0, 3,3)
+  M_rot_Az[1,1] = cos(az)
+  M_rot_Az[1,2] = sin(az)
+  M_rot_Az[1,3] = 0
+  M_rot_Az[2,1] = -sin(az)
+  M_rot_Az[2,2] = cos(az)
+
+  M_rot_Az[2,3] = 0
+  M_rot_Az[3,1] = 0
+  M_rot_Az[3,2] = 0
+  M_rot_Az[3,3] = 1
+
+  M_rot = M_rot_Az %*% M_rot_In
+
+  #système matriciel}
+  res<- mes # copy all variable
+  tmp <- NULL
+  for (i in 1:nrow(mes)) {
+    tmp <- matrix(c(mes$X[i], mes$Y[i],mes$Z[i]), 3, 1 )
+    tmp <- M_rot %*% tmp
+    tmp <- to.polar(tmp[1], tmp[2], tmp[3])
+
+    res$X[i] <- tmp$X
+    res$Y[i] <- tmp$Y
+    res$Z[i] <- tmp$Z
+    res$I[i] <- tmp$I
+    res$D[i] <- tmp$D
+    res$F[i] <- tmp$F
+  }
+
+  return(res)
+}
+
+
+#' C'est la correction de repère utilisée en paléomag
+#' @param  Inc =0   si carotte verticale et   Inc=90° si carotte horizontale
+#' @param  Az est compté positif dans le sens des aiguilles d'une montre
+#' @seealso \code{\link{correction.archeo}}, \code{\link{correction.bevel}} , \code{\link{correction.bending}}
+#' @export
+correction.paleo <-function(mes, inc=0, az=0) {
+  rad = pi /180
+
+  inc <- inc * rad
+  az  <- az * rad
+
+  M_rot_In <- matrix(data = 0, 3,3)
+  M_rot_In[1,1] = cos(inc);
+  M_rot_In[1,2] = 0;
+  M_rot_In[1,3] = sin(inc);
+  M_rot_In[2,1] = 0;
+  M_rot_In[2,2] = 1;
+  M_rot_In[2,3] = 0;
+  M_rot_In[3,1] = -sin(inc);
+  M_rot_In[3,2] = 0;
+  M_rot_In[3,3] = cos(inc);
+
+  #M_rot_temp <-  M_rot_In %*% M_rot_temp
+
+  M_rot_Az <- matrix(data = 0, 3,3)
+  M_rot_Az[1,1] = sin(az)
+  M_rot_Az[1,2] = cos(az)
+  M_rot_Az[1,3] = 0
+  M_rot_Az[2,1] = -cos(az)
+  M_rot_Az[2,2] = sin(az)
+
+  M_rot_Az[2,3] = 0
+  M_rot_Az[3,1] = 0
+  M_rot_Az[3,2] = 0
+  M_rot_Az[3,3] = 1
+
+  M_rot = M_rot_Az %*% M_rot_In
+
+  #système matriciel}
+  res<- mes # copy all variable
+  tmp <- NULL
+  for (i in 1:nrow(mes)) {
+    tmp <- matrix(c(mes$X[i], mes$Y[i],mes$Z[i]), 3, 1 )
+    tmp <- M_rot %*% tmp
+    tmp <- to.polar(tmp[1], tmp[2], tmp[3])
+
+    res$X[i] <- tmp$X
+    res$Y[i] <- tmp$Y
+    res$Z[i] <- tmp$Z
+    res$I[i] <- tmp$I
+    res$D[i] <- tmp$D
+    res$F[i] <- tmp$F
+  }
+
+  return(res)
+}
+
+#' Correction biseau - bevel
+#' En archéomagnétisme correspond à une erreur de carottage par rapport à l'axe théorique de carottage,
+#' à une mauvaise perpendicularité du carottage généralement
+#' @param  Theta est exprimé entre 0 et 90° (toujours positif)
+#' @param psi est compté positif dans le sens des aiguilles d'une montre et donc négatif dans le sens inverse...
+#'  Note: la correction de biseau - bevel se fait avant la correction de repère
+#' @seealso \code{\link{correction.paleo}}, \code{\link{correction.archeo}}, \code{\link{correction.bending}}
+#' @export
+correction.bevel <-function(mes, theta=0, psi=0) {
+  rad = pi /180
+  phi = 0 # initialisation
+
+  theta <- theta*rad
+  psi <- psi *rad
+
+  #rotation teta négatif pour amener le repère dans le plan du biseau
+  theta = - theta;
+  # détermination de Phi
+  if (abs(psy)==(pi/2)) {
+    phi <- -psi
+  } else {
+    phi <- -atan(tan(psi)*cos(theta))  #angle dans le plan de sciage}
+    if (psi>=+(pi/2))  phi = phi - pi;
+    if (psi<=-(pi/2))  phi = phi + pi;
+  }
+
+
+  M_rot_Phi <- matrix(data = 0, 3,3)
+  M_rot_Phi[1,1] = cos(phi);
+  M_rot_Phi[1,2] = sin(phi);
+  M_rot_Phi[1,3] = 0;
+  M_rot_Phi[2,1] = -sin(phi);
+  M_rot_Phi[2,2] = cos(phi);
+  M_rot_Phi[2,3] = 0;
+  M_rot_Phi[3,1] = 0;
+  M_rot_Phi[3,2] = 0;
+  M_rot_Phi[3,3] = 1;
+
+  M_rot_theta <- matrix(data = 0, 3,3)
+  M_rot_theta[1,1] = cos(theta);
+  M_rot_theta[1,2] = 0;
+  M_rot_theta[1,3] = -sin(theta);
+  M_rot_theta[2,1] = 0;
+  M_rot_theta[2,2] = 1;
+  M_rot_theta[2,3] = 0;
+  M_rot_theta[3,1] = sin(theta);
+  M_rot_theta[3,2] = 0;
+  M_rot_theta[3,3] = cos(theta);
+
+  M_rot_theta_phi <- M_rot_theta %*%  M_rot_Phi
+
+  M_rot_psi <- matrix(data = 0, 3,3)
+  M_rot_psi[1,1] = cos(psi)
+  M_rot_psi[1,2] = sin(psi)
+  M_rot_psi[1,3] = 0
+  M_rot_psi[2,1] = -sin(psi)
+  M_rot_psi[2,2] = cos(psi)
+  M_rot_psi[2,3] = 0
+  M_rot_psi[3,1] = 0
+  M_rot_psi[3,2] = 0
+  M_rot_psi[3,3] = 1
+
+  M_rot <-  M_rot_psy %*% M_rot_theta_phi
+
+  #système matriciel}
+  res<- mes # copy all variable
+  tmp <- NULL
+  for (i in 1:nrow(mes)) {
+    tmp <- matrix(c(mes$X[i], mes$Y[i],mes$Z[i]), 3, 1 )
+    tmp <- M_rot %*% tmp
+    tmp <- to.polar(tmp[1], tmp[2], tmp[3])
+
+    res$X[i] <- tmp$X
+    res$Y[i] <- tmp$Y
+    res$Z[i] <- tmp$Z
+    res$I[i] <- tmp$I
+    res$D[i] <- tmp$D
+    res$F[i] <- tmp$F
+  }
+
+  return(res)
+}
+
+#' Correction de pli = bending
+#' Note: la correction de pli- bending se fait aprés la correction de repère
+#' @seealso \code{\link{correction.paleo}}, \code{\link{correction.archeo}}, \code{\link{correction.bevel}}
+correction.bending <- function(mes, dip, str) {
+  rad <- pi/180
+  dip <- dip *rad
+  str <- str *rad
+
+  M_rot_Pli <- matrix(data = 0, 3,3)
+  M_rot_Pli[1,1] = cos(str)* cos(str)+ sin(str)* sin(str)* cos(dip)
+  M_rot_Pli[1,2] = cos(str)* sin(str)*(1- cos(dip))
+  M_rot_Pli[1,3] = - sin(dip)* sin(str)
+  M_rot_Pli[2,1] = cos(str)* sin(str)*(1- cos(dip))
+  M_rot_Pli[2,2] =  sin(str)* sin(str)+ cos(dip)* cos(str)* cos(str)
+  M_rot_Pli[2,3] =  sin(dip)* cos(str)
+  M_rot_Pli[3,1] =  sin(dip)* sin(str)
+  M_rot_Pli[3,2] =- sin(dip)* cos(str)
+  M_rot_Pli[3,3] = cos(dip);
+
+  #système matriciel}
+  res<- mes # copy all variable
+  tmp <- NULL
+  for (i in 1:nrow(mes)) {
+    tmp <- matrix(c(mes$X[i], mes$Y[i],mes$Z[i]), 3, 1 )
+    tmp <- M_rot %*% tmp
+    tmp <- to.polar(tmp[1], tmp[2], tmp[3])
+
+    res$X[i] <- tmp$X
+    res$Y[i] <- tmp$Y
+    res$Z[i] <- tmp$Z
+    res$I[i] <- tmp$I
+    res$D[i] <- tmp$D
+    res$F[i] <- tmp$F
+  }
+
+  return(res)
+}
+
+
+# Partial component  ----
 
 #' Calcul les directions du vecteur partiel pour une série d'étape
 #' @param en0 permet de calculer la composante qui passe par l'origine (0, 0)
@@ -3049,7 +3288,7 @@ partial.vector <- function(TabX, TabY, TabZ, en0 = TRUE)
   ym <- somy/ ntab
   zm <- somz/ ntab
 
-  Mom <-0; # variable pour Kirschink
+  Mom <- 0; # variable pour Kirschink
   # calcul du moment suivant kischvink
   #  c.à.d. longueur du chemin total entre les points
   for ( j in 2 : ntab) {
@@ -3067,7 +3306,7 @@ partial.vector <- function(TabX, TabY, TabZ, en0 = TRUE)
 
 
   sxx <- sum((TabX-xm)^2); sxy <- sum((TabX-xm)*(TabY-ym)); sxz <- sum((TabX-xm)*(TabZ-zm))
-  syy <- sum((TabY-ym)^2);         syz <- sum((TabY-ym)*(TabZ-zm))
+  syy <- sum((TabY-ym)^2); syz <- sum((TabY-ym)*(TabZ-zm))
   szz <- sum((TabZ-zm)^2);
   # Matrice d inertie des points x, y, z pour le calcul de la droite
   Ixx = syy+szz;  Ixy = -sxy;     Ixz = -sxz;
@@ -3253,7 +3492,7 @@ partial.component.T1T2 <- function(Data, T1 = NULL, T2 = NULL, corr.ani = FALSE,
 #' @param withAni permet de voir les étapes d'anisotropie
 #' @param ani.step.value correspond à l'step.value ou la température de la détermination de l'anisotropie
 #' @param main titre de la figure
-#' @param step.code chaîne de caractère représentant les étapes de l'anisotropie "Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB". Cette ordre est obligatoire
+#' @param step.code chaîne de caractère représentant les étapes de l'anisotropie "Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB". LEs mesures doivent suivre cette ordre est obligatoire
 #' @seealso \code{\link{partial.component.T1T2, zijderveld2.T1T2}}
 #' @export
 zijderveld1.T1T2 <- function(Data, T1 = NULL, T2 = NULL, show.step = FALSE, ignore.ani = TRUE, ani.step.value = NULL, main = "",
@@ -3383,8 +3622,6 @@ zijderveld2.T1T2 <- function(Data, T1 = NULL, T2 = NULL, show.step = FALSE, igno
   TabX <- Data$X[iT1:iT2]
   TabY <- Data$Y[iT1:iT2]
   TabZ <- Data$Z[iT1:iT2]
-
-
 
 
   vp <- partial.component(TabX, TabY, TabZ, en0 = en0)
@@ -3809,13 +4046,13 @@ sl <- rep(0, 13)
 #'@param alt   = height in km above sea level if itype = 1;   = distance from centre of Earth in km if itype = 2 (>3485 km)
 #'@param colat = colatitude (0-180)
 #'@param elong = east-longitude (0-360)
-#'     alt, colat and elong must be double precision.
-#'   OUTPUT
+#'
+#'@return x,y,z
 #'     x     = north component (nT) if isv = 0, nT/year if isv = 1
 #'     y     = east component (nT) if isv = 0, nT/year if isv = 1
 #'     z     = vertical component (nT) if isv = 0, nT/year if isv = 1
 #'     f     = total intensity (nT) if isv = 0, rubbish if isv = 1
-#'
+#'     if isv=0 I, D and f are returned else I=NA, D=NA and f=NA
 #'     To get the other geomagnetic elements (D, I, H and secular
 #'     variations dD, dH, dI and dF) use routines ptoc and ptocsv.
 #'
@@ -3839,9 +4076,10 @@ sl <- rep(0, 13)
 #' @examples
 #' isv <- 1
 #' date <- 2000
-#' itype <- 1
-#' alt <- 50
-#' colat <- 90 - 45
+#' itype <- 1 # geodetic (spheroid) alt from the sea
+#' alt <- 50 # in km
+#' lat <- 45 # Nord positive
+#' colat <- 90 - lat
 #' elong <- 10
 #'
 #' @export
@@ -4013,48 +4251,52 @@ igrf13syn <- function(isv, date, itype, alt, colat, elong) {
   ret$x <- x
   ret$y <- y
   ret$z <- z
-  ret$f <-f
 
   if (isv == 0) {
     ret$type <- 'Main-Field'
+    ret$f <- f
+    hsq = x*x + y*y
+    hoz  = sqrt(hsq)
+    dec = atan2(y,x)
+    inc = atan2(z,hoz)
+    ret$dec <- dec/pi*180
+    ret$inc <- inc/pi*180
+    ret$hoz <- hoz
+
   }  else {
     ret$type <- 'Secular Variation'
+    ret$f <- NA
+    ret$dec <- NA
+    ret$inc <- NA
+    ret$hoz <- NA
   }
-
-  hsq = x*x + y*y
-  hoz  = sqrt(hsq)
-  dec = atan2(y,x)
-  inc = atan2(z,hoz)
-  ret$dec <- dec/pi*180
-  ret$inc <- inc/pi*180
-  ret$hoz <- hoz
 
 
   return(ret)
 }
 
 
-#'   Standart calcul en plot to study paleo and archeo magnetic magnétisation
+#'   Standart calcul and plot to study paleo and archeo magnetic magnétisation
 #'   by convention we use the two last character of the variable step to indicate the type of manip
 #'   example 100RA , 100 is the temperature (step.value) , R is the sens of the magnetisation and A is the name of the step (step.name)
 #' @references  Coe 1978 : DOI: 10.1029/JB083iB04p01740
 #' Prévost et Al. 1985 DOI: 10.1029/JB090iB12p10417
 #'
-#'@param mesures data.frame with the package convention format
-#'@param relative plot with a relative value in percent
-#'@param verbose show comment
-#'@param show.plot  display the plot
-#'@param TH lab field
-#'@param aim.coef used to correct the measurement often 1E-10x1E6xvolume
-#'@param show.step.value display on the plot the value of each step
-#'@param R.mark = 'R', V.mark = 'V' conventional notation to mark the sens of the magnetisation with the step name
-#'@param P.mark = 'P' mark the pTRM check loop
-#'@param  L.mark = "L", Q.mark = "Q" mark to indiquate the slow cooling step and the quick (fast-normal) cooling step
-#'@param step.J0 is the step of the natural magnetisation eg "0N0"
-#'@param begin.step.value the first step.value (temperature) used to determinate the magnetic field
-#'@param end.step.value the last step.value (temperature) used to determinate the magnetic field
-#'@param loop.col the color of the line showing the the check loop process
-#'@param pt.col the color of the line and the plot
+#' @param mesures data.frame with the package convention format
+#' @param relative plot with a relative value in percent
+#' @param verbose show comment
+#' @param show.plot  display the plot
+#' @param TH lab field
+#' @param aim.coef used to correct the measurement often 1E-10x1E6 x volume
+#' @param show.step.value display on the plot the value of each step
+#' @param R.mark = 'R', V.mark = 'V' conventional notation to mark the sens of the magnetisation with the step name
+#' @param P.mark = 'P' mark the pTRM check loop
+#' @param  L.mark = "L", Q.mark = "Q" mark to indiquate the slow cooling step and the quick (fast-normal) cooling step
+#' @param step.J0 is the step of the natural magnetisation eg "0N0", default 20N0
+#' @param begin.step.value the first step.value (temperature) used to determinate the magnetic field
+#' @param end.step.value the last step.value (temperature) used to determinate the magnetic field
+#' @param loop.col the color of the line showing the the check loop process
+#' @param pt.col the color of the line and the plot
 #' @export
 arai <- function(mesures, relative = TRUE, verbose = TRUE, show.plot = TRUE, TH = 60, aim.coef = 1E-10*1E6, step.J0 = "20N0", show.step.value = FALSE, R.mark = 'R', V.mark = 'V', P.mark = 'P', L.mark = "L", Q.mark = "Q", pt.col = "blue", loop.col = "forestgreen", begin.step.value = 0, end.step.value = 1000) {
   # __________________

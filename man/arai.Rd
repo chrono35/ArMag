@@ -2,7 +2,7 @@
 % Please edit documentation in R/ArMag.R
 \name{arai}
 \alias{arai}
-\title{Standart calcul en plot to study paleo and archeo magnetic magnétisation
+\title{Standart calcul and plot to study paleo and archeo magnetic magnétisation
   by convention we use the two last character of the variable step to indicate the type of manip
   example 100RA , 100 is the temperature (step.value) , R is the sens of the magnetisation and A is the name of the step (step.name)}
 \usage{
@@ -37,9 +37,9 @@ arai(
 
 \item{TH}{lab field}
 
-\item{aim.coef}{used to correct the measurement often 1E-10x1E6xvolume}
+\item{aim.coef}{used to correct the measurement often 1E-10x1E6 x volume}
 
-\item{step.J0}{is the step of the natural magnetisation eg "0N0"}
+\item{step.J0}{is the step of the natural magnetisation eg "0N0", default 20N0}
 
 \item{show.step.value}{display on the plot the value of each step}
 
@@ -58,7 +58,7 @@ arai(
 \item{end.step.value}{the last step.value (temperature) used to determinate the magnetic field}
 }
 \description{
-Standart calcul en plot to study paleo and archeo magnetic magnétisation
+Standart calcul and plot to study paleo and archeo magnetic magnétisation
   by convention we use the two last character of the variable step to indicate the type of manip
   example 100RA , 100 is the temperature (step.value) , R is the sens of the magnetisation and A is the name of the step (step.name)
 }

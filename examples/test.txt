@@ -1,62 +1,62 @@
 Spinner_Molspin 2008
-Commune : Laval
-Site : St Pierre-le-Potier
+Commune : à définir
+Site : à définir
 Latitude  :   0°  0'  0" 
 Longitude :   0°  0'  0" IGRF:+00.0
 Prélèvements sur matériaux déplacés
 Type de carottage : à plat
-Date de création : 27/05/2019
+Date de création : 23/09/2020
 
 
-Id:1T           in:000.0 az:000.0 Tet:000.0 Psy:000.0 v:12.27 com:TH50.0µT Cyl
+Id:1T           in:000.0 az:000.0 Tet:000.0 Psy:000.0 v:01.00 com:TH 0.0µT Cyl
 Repère:
 CompDes:  T1:0000T+  T2:0000T+  T3:0000T-  T4:0000T-
 
-Id:17T          in:000.0 az:000.0 Tet:000.0 Psy:000.0 v:12.27 com:TH50.0µT Cyl
+Id:17T          in:000.0 az:000.0 Tet:000.0 Psy:000.0 v:01.00 com:TH 0.0µT Cyl
 Repère:
 CompDes:  T1:0000T+  T2:0000T+  T3:0000T-  T4:0000T-
 
-Id:35T          in:000.0 az:000.0 Tet:000.0 Psy:000.0 v:12.27 com:TH50.0µT Cyl
+Id:35T          in:000.0 az:000.0 Tet:000.0 Psy:000.0 v:01.00 com:TH 0.0µT Cyl
 Repère:
 CompDes:  T1:0000T+  T2:0000T+  T3:0000T-  T4:0000T-
 
-Id:47T          in:000.0 az:000.0 Tet:000.0 Psy:000.0 v:12.27 com:TH50.0µT Cyl
+Id:47T          in:000.0 az:000.0 Tet:000.0 Psy:000.0 v:01.00 com:TH 0.0µT Cyl
 Repère:
 CompDes:  T1:0000T+  T2:0000T+  T3:0000T-  T4:0000T-
 
-Id:50T          in:000.0 az:000.0 Tet:000.0 Psy:000.0 v:12.27 com:TH50.0µT Cyl
+Id:50T          in:000.0 az:000.0 Tet:000.0 Psy:000.0 v:01.00 com:TH 0.0µT Cyl
 Repère:
 CompDes:  T1:0000T+  T2:0000T+  T3:0000T-  T4:0000T-
 
-Id:59T          in:000.0 az:000.0 Tet:000.0 Psy:000.0 v:12.27 com:TH50.0µT Cyl
+Id:59T          in:000.0 az:000.0 Tet:000.0 Psy:000.0 v:01.00 com:TH 0.0µT Cyl
 Repère:
 CompDes:  T1:0000T+  T2:0000T+  T3:0000T-  T4:0000T-
 
-Id:83T          in:000.0 az:000.0 Tet:000.0 Psy:000.0 v:12.27 com:TH50.0µT Cyl
+Id:83T          in:000.0 az:000.0 Tet:000.0 Psy:000.0 v:01.00 com:TH 0.0µT Cyl
 Repère:
 CompDes:  T1:0000T+  T2:0000T+  T3:0000T-  T4:0000T-
 
-Id:87T          in:000.0 az:000.0 Tet:000.0 Psy:000.0 v:12.27 com:TH50.0µT Cyl
+Id:87T          in:000.0 az:000.0 Tet:000.0 Psy:000.0 v:01.00 com:TH 0.0µT Cyl
 Repère:
 CompDes:  T1:0000T+  T2:0000T+  T3:0000T-  T4:0000T-
 
-Id:89T          in:000.0 az:000.0 Tet:000.0 Psy:000.0 v:12.27 com:TH50.0µT Cyl
+Id:89T          in:000.0 az:000.0 Tet:000.0 Psy:000.0 v:01.00 com:TH 0.0µT Cyl
 Repère:
 CompDes:  T1:0000T+  T2:0000T+  T3:0000T-  T4:0000T-
 
-Id:94T          in:000.0 az:000.0 Tet:000.0 Psy:000.0 v:12.27 com:TH50.0µT Cyl
+Id:94T          in:000.0 az:000.0 Tet:000.0 Psy:000.0 v:01.00 com:TH 0.0µT Cyl
 Repère:
 CompDes:  T1:0000T+  T2:0000T+  T3:0000T-  T4:0000T-
 
-Id:100T         in:000.0 az:000.0 Tet:000.0 Psy:000.0 v:12.27 com:TH50.0µT Cyl
+Id:100T         in:000.0 az:000.0 Tet:000.0 Psy:000.0 v:01.00 com:TH 0.0µT Cyl
 Repère:
 CompDes:  T1:0000T+  T2:0000T+  T3:0000T-  T4:0000T-
 
-Id:102T         in:000.0 az:000.0 Tet:000.0 Psy:000.0 v:12.27 com:TH50.0µT Cyl
+Id:102T         in:000.0 az:000.0 Tet:000.0 Psy:000.0 v:01.00 com:TH 0.0µT Cyl
 Repère:
 CompDes:  T1:0000T+  T2:0000T+  T3:0000T-  T4:0000T-
 
-Id:103T         in:000.0 az:000.0 Tet:000.0 Psy:000.0 v:12.27 com:TH50.0µT Cyl
+Id:103T         in:000.0 az:000.0 Tet:000.0 Psy:000.0 v:01.00 com:TH 0.0µT Cyl
 Repère:
 CompDes:  T1:0000T+  T2:0000T+  T3:0000T-  T4:0000T-
 

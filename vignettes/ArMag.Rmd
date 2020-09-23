@@ -1,7 +1,7 @@
 ---
 vignette: |
   %\VignetteIndexEntry{ArMag} %\VignetteEngine{knitr::rmarkdown} %\VignetteEncoding{UTF-8}
-author: "Dufresne Philippe"
+author: "Dufresne Philippe <philippe.dufresne@univ-rennes1.fr>"
 date: "`r Sys.Date()`"
 output:
   rmarkdown::html_vignette:
@@ -10,7 +10,7 @@ output:
    %\VignetteEngine{knitr::rmarkdown}
    %\VignetteEncoding{UTF-8}
     
-title: "Calcul statistique sur les composantes magnétiques avec le package ArMag"
+title: "Statistical calculation on magnetic components with the ArMag package"
 ---
 
 ```{r setup, include = FALSE}
@@ -21,18 +21,17 @@ knitr::opts_chunk$set(
 )
 ```
 
-## Introduction
+# Introduction
 
 This package is an extraction of the functions of the calculation software on magnetic components developed at the Rennes Archaeomagnetism Laboratory, hosted at the Geosciences-Rennes laboratory.
 
-## Installing ArMag
+# Installing ArMag
 
 ArMag will run in Windows, Mac OS X or Linux. To install ArMag you first need to install [R](https://www.r-project.org). I would also recommend installing [Rstudio](http://www.rstudio.com) as a nice desktop environment for using R. Once in R you can type:
 
 ```{r,eval=FALSE}
 # install.packages('ArMag')
 ```
-
 
 at the R command prompt to install ArMag. If you then type:
 
@@ -41,6 +40,7 @@ at the R command prompt to install ArMag. If you then type:
 ```
 
 ## Installing ArMag via GitHub
+
 ```{r echo = TRUE}
 
 if (!require(devtools))
@@ -50,9 +50,11 @@ devtools::install_github("chrono35/ArMag", force = TRUE)
 library("ArMag") #, lib.loc="/Library/Frameworks/R.framework/Versions/3.5/Resources/library")
 ```
 
-it will load in all the ArMag functions.
+It will load in all the ArMag functions.
 
+# Manage file
 ## Loading Rennes' AM file
+
 You need two functions, the first one reads the information, corresponding to the headers of each sample, the second one reads the measurements of each sample.
 ```{r}
 
@@ -65,6 +67,7 @@ mes <- read.AM.mesures(file.AM)
 ```
 
 ## Empty file generation
+
 Function used before making the measurements.
 Warning, this function overwrites the existing file
 ```{r genere AMD}
@@ -73,17 +76,18 @@ list.ech <- c("1T",   "17T",  "35T",  "47T",  "50T",  "59T",  "83T",  "87T",  "8
 genere.AMD(file.AM, list.ech)
 ```
 
+# Calculation and visualisation of measurements
 ## Plot of NRN values
+
 A simple, R command allows to select the steps with the value 0, corresponding to step 0N0
 ```{r lambert}
 select <- NULL
-# select$I <- mes$I[mes$step.value== 0]
-# select$D <- mes$I[mes$step.value== 0]
 select <- mes[mes$step.value== 0,]
 lambert(select, inc.lim = c(0,90))
 ```
 
 ## mcFadden statistic on NRN value
+
 Example of the calculation of the mcFadden statistic on the selected samples
 ```{r stat mcFadden}
 stat.mcFadden(select)
@@ -91,12 +95,14 @@ stat.mcFadden(select)
 ```
 
 ## Extraction of measurements corresponding to a sample using its name
+
 ```{r selection}
 mes.ech <- NULL
-mes.ech <- extract.mesures.specimen.name("10P1", mes)
+mes.ech <- extract.mesures.specimen.name("3P2", mes)
 ```
 
 ## Zijderveld plot
+
 ```{r fonction plot.zjiderveld1, fig.show='hold'}
 par(pty="s") # force une figure carré
 zijderveld1(mes.ech$X, mes.ech$Y, mes.ech$Z) 
@@ -107,6 +113,7 @@ zijderveld2(mes.ech, pt.names = NULL)
 ```
 
 ## Plot the schmitt-Lambert projection
+
 Each function using different parameters
 ```{r comparatif fonction plot, fig.show='hold'}
 lambert.XYZ.specimen(mes.ech)
@@ -115,7 +122,7 @@ mes.ech.ssAni<-remove.step(mes.ech)
 lambert.ID.specimen(mes.ech.ssAni)
 ```
 
-## demagnetizing and partial component
+## Demagnetizing and partial component
 
 ```{r, fig.show='hold'}
 mes.sel2 <- extract.mesures.specimen.name("1P1", mes)
@@ -178,25 +185,28 @@ par(pty="s", "xaxp")
 arai(mes.sel, begin.step.value = 250, end.step.value = 700, aim.coef = 1E-10*1E6/vol)
 ```
 
-# Sun azimuth
+# Astronomical calculation
+## Sun azimuth
 ```{r sun.azimuth}
 sun.azimuth (10, 11, 2019, 11, 19, seconde=0, 48, longmin=0, longsec=0, 45, latmin=0, latsec=0)
 ```
 
-# igrf13syn
+## igrf13syn
   This is a synthesis routine for the 13th generation [IGRF](https://www.ngdc.noaa.gov/IAGA/vmod/igrf.html) as agreed in December 2019 by IAGA Working Group V-MOD. It is valid 1900.0 to 2025.0 inclusive. Values for dates from 1945.0 to 2015.0 inclusive are definitive, otherwise they are non-definitive.
   Reference:
 
  [Thébault, E., Finlay, C.C., Beggan, C.D. et al. International Geomagnetic Reference Field: the 12th generation. Earth Planet Sp 67, 79 (2015).  https://doi.org/10.1186/s40623-015-0228-9](https://earth-planets-space.springeropen.com/articles/10.1186/s40623-015-0228-9)
 
+to compare online http://www.geomag.bgs.ac.uk/data_service/models_compass/igrf_calc.html
   
 ```{r}
-isv <- 1
-date <- 2000
-itype <- 1
-alt <- 50
-colat <- 90 - 45
-elong <- 10
+isv <- 0 #0=Main ou 1=Variation
+date <- 1910
+itype <- 1 # geodetic (spheroid) alt from the sea
+alt <- 30 # in km
+lat <- 50
+colat <- 90 - lat
+elong <- -10
 
 igrf13syn(isv=isv, date=date, itype=itype , alt=alt, colat= colat, elong=elong)
 ```

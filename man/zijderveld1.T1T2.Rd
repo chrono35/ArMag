@@ -30,7 +30,7 @@ zijderveld1.T1T2(
 
 \item{main}{titre de la figure}
 
-\item{step.code}{chaîne de caractère représentant les étapes de l'anisotropie "Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB". Cette ordre est obligatoire}
+\item{step.code}{chaîne de caractère représentant les étapes de l'anisotropie "Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB". LEs mesures doivent suivre cette ordre est obligatoire}
 
 \item{en0}{booléen permettant de forcer la composante partielle à passer par l'origine}
 
