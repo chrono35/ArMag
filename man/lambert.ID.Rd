@@ -39,7 +39,7 @@ lambert.ID(
   dec.max = 270,
   new = TRUE,
   pch = 21,
-  ...
+  type = "o"
 )
 }
 \description{

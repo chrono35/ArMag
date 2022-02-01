@@ -28,7 +28,7 @@ lambert.ID.specimen(
   grid.bg = "transparent",
   grid.left = FALSE,
   grid.unit = NULL,
-  point.symbols = 1,
+  type = "o",
   pt.col = "blue3",
   bg = pt.col,
   inc.lim = c(0, 90),

@@ -16,6 +16,7 @@ lambert.ID.point(
   mar = c(2, 2, 3, 2),
   pt.col = par("fg"),
   bg = pt.col,
+  type = "o",
   inc.lim = NULL,
   dec.min = -90,
   dec.max = 270,

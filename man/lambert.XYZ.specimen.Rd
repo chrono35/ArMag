@@ -29,7 +29,7 @@ lambert.XYZ.specimen(
   grid.bg = "transparent",
   grid.left = FALSE,
   grid.unit = NULL,
-  point.symbols = 1,
+  type = "o",
   pt.col = "blue",
   bg = pt.col,
   inc.lim = c(0, 90),

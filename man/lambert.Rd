@@ -2,7 +2,8 @@
 % Please edit documentation in R/ArMag.R
 \name{lambert}
 \alias{lambert}
-\title{Place des points I et D dans un repère Lambert avec un data.frame}
+\title{lambert
+Place des points I et D dans un repère Lambert avec un data.frame}
 \usage{
 lambert(
   data,
@@ -65,5 +66,6 @@ lambert(
 \item{pch}{permet de changer la forme du symbole}
 }
 \description{
+lambert
 Place des points I et D dans un repère Lambert avec un data.frame
 }

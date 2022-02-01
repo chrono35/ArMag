@@ -29,7 +29,7 @@ lambert.XYZ(
   grid.bg = "transparent",
   grid.left = FALSE,
   grid.unit = NULL,
-  point.symbols = 1,
+  type = "o",
   pt.col = "blue3",
   bg = pt.col,
   inc.lim = NULL,
@@ -40,8 +40,7 @@ lambert.XYZ(
   dec.min = -90,
   dec.max = 270,
   new = TRUE,
-  pch = 21,
-  ...
+  pch = 21
 )
 }
 \description{
