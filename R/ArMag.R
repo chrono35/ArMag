@@ -10,7 +10,7 @@
 #  http://www.r-project.org/Licenses/
 #  _________________________________________________________________________________
 
-# Version 2020-09-23
+# Version 2022-02-01
 #
 
 #' @author "Philippe DUFRESNE"
@@ -1058,7 +1058,7 @@ lambert.ID.circle.points <- function (i.mean, d.mean, delta)
 #' @param absolue permet de tracer la partie inclinaison négative des cercles
 #' @export
 lambert.ID.circle <- function (i.mean, d.mean, delta, inc.lim = NULL, dec.min = -90, dec.max = 270,
-                                    col = par("fg"), clockwise = TRUE, absolue = TRUE, ...)
+                                    col = par("fg"), clockwise = TRUE, absolue = TRUE, lty = par("lty"), ...)
 {
 
   pt <- lambert.ID.circle.points(i.mean, d.mean, delta)
@@ -1102,9 +1102,9 @@ lambert.ID.circle <- function (i.mean, d.mean, delta, inc.lim = NULL, dec.min = 
       x1 <- xpos[i]
       y1 <- ypos[i]
       if (pt$I[i]<0)
-        segments(x0, y0, x1, y1, lty = 3, col = col, ...)
+        segments(x0, y0, x1, y1, lty = 3, col = col, lty = lty, ...)
       else
-        segments(x0, y0, x1, y1, lty = 1, col = col, ...)
+        segments(x0, y0, x1, y1, lty = 1, col = col, lty = lty, ...)
 
       x0 <- xpos[i]
       y0 <- ypos[i]
@@ -3684,7 +3684,7 @@ zijderveld2.T1T2 <- function(Data, T1 = NULL, T2 = NULL, show.step = FALSE, igno
 #' @param step.code chaîne de caractère représentant par exemple les étapes de l'anisotropie "Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB", ou des erreurs "??"
 #' @param verbose affiche des commentaires et avertissements
 #' @export
-remove.step <- function(Data, step.value = NULL, step.code = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"), verbose =TRUE )
+remove.step <- function(Data, step.value = NULL, step.code = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"), verbose = TRUE )
 {
   selec <- NULL
   if (is.null(step.value)) {
@@ -3693,7 +3693,7 @@ remove.step <- function(Data, step.value = NULL, step.code = c("Z+", "Z-", "X+",
         step.value <- Data$step.value[i]
     }
   } else  if (step.value == "") {
-    for (i in 1:length(mes$step))
+    for (i in 1:length(Data$step))
     {
       for (j in 1: length(step.code)) {
         selec <- c( selec, which(substring(Data$step, 4) == step.code[j]) )
