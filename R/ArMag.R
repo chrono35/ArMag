@@ -1058,7 +1058,7 @@ lambert.ID.circle.points <- function (i.mean, d.mean, delta)
 #' @param absolue permet de tracer la partie inclinaison négative des cercles
 #' @export
 lambert.ID.circle <- function (i.mean, d.mean, delta, inc.lim = NULL, dec.min = -90, dec.max = 270,
-                                    col = par("fg"), clockwise = TRUE, absolue = TRUE, lty = par("lty"), ...)
+                                    col = par("fg"), clockwise = TRUE, absolue = TRUE, lty = 1, ...)
 {
 
   pt <- lambert.ID.circle.points(i.mean, d.mean, delta)
@@ -1102,9 +1102,9 @@ lambert.ID.circle <- function (i.mean, d.mean, delta, inc.lim = NULL, dec.min = 
       x1 <- xpos[i]
       y1 <- ypos[i]
       if (pt$I[i]<0)
-        segments(x0, y0, x1, y1, lty = 3, col = col, lty = lty, ...)
+        segments(x0, y0, x1, y1, lty = lty+2, col = col,  ...)
       else
-        segments(x0, y0, x1, y1, lty = 1, col = col, lty = lty, ...)
+        segments(x0, y0, x1, y1, lty = lty, col = col,  ...)
 
       x0 <- xpos[i]
       y0 <- ypos[i]

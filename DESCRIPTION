@@ -1,6 +1,6 @@
 Package: ArMag
 Title: ArMag
-Version: 1.0.2.0924
+Version: 1.0.2.0925
 Authors@R: 
     person(given = "Philippe", 
            family = "Dufresne",
