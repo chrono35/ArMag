@@ -14,6 +14,8 @@
 #
 
 #' @author "Philippe DUFRESNE"
+#' @name ArMag
+#' @docType package
 
 # Equation du 3 degrées
 # résolution du 3 eme degre pour calcul mcFadden importé de ARMAG
@@ -743,10 +745,10 @@ lambert.ID.grid <- function (main = "", xlab = "", ylab = "", labels = NA, label
       }
     }
 
-
      par(xpd = FALSE)
 }
 
+#' lambert
 #' Place des points I et D dans un repère Lambert avec un data.frame
 #' @param data data.frame avec les variables $I d'inclinaison et $D de déclinaison
 #' @param pt.names  Correspond à la liste des noms des points. Laissée vide n'affiche rien. Si on met pt.names = "", cela affiche les noms
@@ -799,7 +801,7 @@ lambert.ID <- function (inc, dec , pt.names = NA, labels = NA, label.pos = NULL,
                                  grid.left = FALSE, grid.unit = NULL, point.symbols = 1, pt.col = par("fg"), bg = pt.col,
                                  inc.lim = NULL, radial.labels = NULL,
                                  boxed.radial = TRUE, poly.col = NA,
-                                 dec.min = -90, dec.max = 270, new = TRUE, pch = 21, ...)
+                                 dec.min = -90, dec.max = 270, new = TRUE, pch = 21, type = 'o')
 {
 
   if (is.null(inc.lim))
@@ -824,7 +826,7 @@ lambert.ID <- function (inc, dec , pt.names = NA, labels = NA, label.pos = NULL,
       new <- FALSE
   }
   lambert.ID.point(inc, dec, dec.min = dec.min, dec.max = dec.max, inc.lim = inc.lim,
-                        pt.names = pt.names, pt.col = pt.col, bg = bg, pch = pch, new = new)
+                        pt.names = pt.names, pt.col = pt.col, bg = bg, pch = pch, new = new, type = type)
 
 
 }
@@ -900,7 +902,7 @@ lambert.ID.position <- function (data, declinaisons = NULL, position = "P",  pt.
 lambert.ID.point <- function (inc, dec , pt.names = NA, labels = NA, label.pos = NULL,
                              start = 0, clockwise = TRUE,
                              lty = par("lty"),  mar = c(2, 2, 3, 2),
-                             pt.col = par("fg"), bg = pt.col,
+                             pt.col = par("fg"), bg = pt.col, type = 'o',
                              inc.lim = NULL,
                              dec.min = -90, dec.max = 270, new = TRUE, pch = 21, ...)
 {
@@ -999,10 +1001,10 @@ lambert.ID.point <- function (inc, dec , pt.names = NA, labels = NA, label.pos =
       if(pt.col[i] != "transparent") {
         if (inc[i]<0) {
           bg.col <- gray(0.95)
-          points(xpos[i], ypos[i], pch = pch[i],  col = pt.col[i], bg = bg.col,...)
+          points(xpos[i], ypos[i], pch = pch[i],  col = pt.col[i], bg = bg.col,  lty=lty, type = type)
         }
         else
-          points(xpos[i], ypos[i], pch = pch[i],  col = pt.col[i], bg = pt.col[i],  ...)
+          points(xpos[i], ypos[i], pch = pch[i],  col = pt.col[i], bg = pt.col[i],  lty=lty, type = type)
       }
     }
 
@@ -1186,15 +1188,15 @@ lambert.XYZ <- function( X, Y , Z, pt.names = NA, labels = NA, label.pos = NULL,
                                    lty = par("lty"), lwd = par("lwd"), mar = c(2, 2, 3, 2),
                                    show.grid = TRUE, show.grid.labels = 10, show.radial.grid = TRUE,
                                    grid.col = "gray", grid.bg = "transparent",
-                                   grid.left = FALSE, grid.unit = NULL, point.symbols = 1, pt.col = "blue3", bg = pt.col,
+                                   grid.left = FALSE, grid.unit = NULL, type = 'o', pt.col = "blue3", bg = pt.col,
                                    inc.lim = NULL, radial.labels = NULL,
                                    boxed.radial = TRUE, poly.col = NA, add = FALSE,
-                                   dec.min = -90, dec.max = 270, new = TRUE, pch = 21, ...)
+                                   dec.min = -90, dec.max = 270, new = TRUE, pch = 21)
 {
   I <- to.polar.I(X, Y, Z)
   D <- to.polar.D(X, Y, Z)
   lambert.ID(I, D, pt.names = pt.names, label.pos = label.pos, main = main, show.grid = show.grid,
-             inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, pt.col = pt.col,  pch = 23, new = new)
+             inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, pt.col = pt.col,  pch = pch, new = new, lty = lty, type = type)
 
 }
 
@@ -1206,7 +1208,7 @@ lambert.XYZ.specimen <- function( Data, Y , Z, pt.names = "", labels = NA, label
                          lty = par("lty"), lwd = par("lwd"), mar = c(2, 2, 3, 2),
                          show.grid = TRUE, show.grid.labels = 10, show.radial.grid = TRUE,
                          grid.col = "lightgray", grid.bg = "transparent",
-                         grid.left = FALSE, grid.unit = NULL, point.symbols = 1, pt.col = "blue", bg = pt.col,
+                         grid.left = FALSE, grid.unit = NULL, type = 'o', pt.col = "blue", bg = pt.col,
                          inc.lim = c(0, 90), radial.labels = NULL,
                          boxed.radial = TRUE, poly.col = NA, add = FALSE,
                          dec.min = -90, dec.max = 270, new = TRUE, pch = 21, ...)
@@ -1236,7 +1238,7 @@ lambert.XYZ.specimen <- function( Data, Y , Z, pt.names = "", labels = NA, label
                   grid.col = grid.col,
              inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, line.col = line.col, pt.col = pt.col, bg= par("fg"), new = new)
   lambert.ID(I, D, pt.names = "", label.pos = label.pos, main = "", show.grid = FALSE,
-                  inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, line.col = line.col, pt.col = pt.col,  pch = 21, new = FALSE)
+                  inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, line.col = line.col, pt.col = pt.col,  pch = pch, type=type, new = FALSE)
 }
 
 #' Place des points I et D dans un repère Lambert avec un data.frame
@@ -1247,7 +1249,7 @@ lambert.ID.specimen <- function( Data, D , pt.names = "", labels = NA, label.pos
                                        lty = par("lty"), lwd = par("lwd"), mar = c(2, 2, 3, 2),
                                        show.grid = TRUE, show.grid.labels = 10, show.radial.grid = TRUE,
                                        grid.col = "lightgray", grid.bg = "transparent",
-                                       grid.left = FALSE, grid.unit = NULL, point.symbols = 1, pt.col = "blue3", bg = pt.col,
+                                       grid.left = FALSE, grid.unit = NULL, type = 'o', pt.col = "blue3", bg = pt.col,
                                        inc.lim = c(0, 90), radial.labels = NULL,
                                        boxed.radial = TRUE, poly.col = NA, add = FALSE,
                                        dec.min = -90, dec.max = 270, new = TRUE, pch = 21, ...)
@@ -1274,7 +1276,7 @@ lambert.ID.specimen <- function( Data, D , pt.names = "", labels = NA, label.pos
                   grid.col = grid.col,
                   inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, line.col = line.col, pt.col = pt.col, bg= par("fg"), new = new)
   lambert.ID(I, D, pt.names = "", label.pos = label.pos, main = "", show.grid = FALSE,
-                  inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, line.col = line.col, pt.col = pt.col,  pch = 21, new = FALSE)
+                  inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, line.col = line.col, pt.col = pt.col,  pch = pch, new = FALSE, type=type)
 }
 
 #' Trace un diagramme de Zijderveld type 1
@@ -1866,6 +1868,7 @@ read.AM.info <- function (file.AM, encoding="macroman")
 
   return(list.mesure)
 }
+
 #' Lecture des infos d'orientation sur mesures d'un fichier AM
 #' @return une data.frame avec les infos sur les spécimens
 #' @export
@@ -1901,6 +1904,7 @@ read.AM.orient <- function (file.AM, encoding="macroman")
 
   return(list.mesure)
 }
+
 #' Fonction de création de fichier pour les magnétomètres, pour des matériaux déplacés ----
 #' @param encoding mettre "macroman" pour les mesures au molspin
 #' @export
