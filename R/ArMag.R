@@ -2491,6 +2491,266 @@ anisotropy.eigen.matrix <- function(mesures, step.value, step.code = c("Z+", "Z-
 
 }
 
+#' Calcul de la matrice moyenne symétrisée d'anisotropie moyen (anisotropie totale)
+#' @param Data.mesures data.frame contenant les mesures
+#' @param step.value typiquement la température des mesures d'anisotropie
+#' @param Data.number numéro des échantillons
+#' @seealso \code{\link{anisotropy.mean.eigen.tensor}}
+#' @return une matrice carrée 3 x3
+#' @export
+anisotropy.mean.matrix.total <- function (Data.mesures, Data.number, step.value, step.code = c("ZZ", 
+    "XX", "YY", "ZB")) 
+{
+    ani.moyen <- matrix(c(0, 0, 0, 0, 0, 0, 0, 0, 0), nrow = 3, 
+        ncol = 3)
+    for (spe in 1:length(Data.number)) {
+        spe.mes <- extract.mesures.specimen.number(Data.number[spe], 
+            Data.mesures)
+        ani.moyen <- ani.moyen + anisotropy.matrix.symetric.total(mesures = spe.mes, 
+            step.value = step.value, step.code = step.code)
+    }
+    ani.moyen <- ani.moyen/length(Data.number)
+    kxx <- ani.moyen[1, 1]
+    kyy <- ani.moyen[2, 2]
+    kzz <- ani.moyen[3, 3]
+    kxy <- (ani.moyen[1, 2] + ani.moyen[2, 1])/2
+    kxz <- (ani.moyen[1, 3] + ani.moyen[3, 1])/2
+    kyz <- (ani.moyen[2, 3] + ani.moyen[3, 2])/2
+    suscept <- (kxx + kyy + kzz)/3
+    mat.sym <- matrix(c(kxx/suscept, kxy/suscept, kxz/suscept, 
+        kxy/suscept, kyy/suscept, kyz/suscept, kxz/suscept, kyz/suscept, 
+        kzz/suscept), 3, 3)
+    return(mat.sym)
+}
+
+#' Calcul de la direction et des valeurs du vecteur propre d'anisotropie moyen (anisotropie totale)
+#' @param Data.mesures data.frame contenant les mesures
+#' @param step.value typiquement la température des mesures d'anisotropie
+#' @param Data.number numéro des échantillons
+#' @seealso \code{\link{anisotropy.eigen.matrix}}, \code{\link{anisotropy.mean.matrix.total}}
+#' @return un data.frame avec les colonnes "L1", "L2", "L3", "L1.Inc", "L1.Dec", "L2.Inc", "L2.Dec", "L3.Inc", "L3.Dec", "F13", "F12", "F23"
+#' @export
+anisotropy.mean.eigen.tensor.total <- function (Data.mesures, Data.number, step.value, step.code = c("ZZ", 
+    "XX", "YY", "ZB")) 
+{
+    mat.sym <- anisotropy.mean.matrix.total(Data.mesures, Data.number, 
+        step.value = step.value, step.code = step.code)
+    v <- eigen(mat.sym, symmetric = TRUE)
+    v1 <- to.polar(v$vectors[1, 1], v$vectors[2, 1], v$vectors[3, 
+        1])
+    v2 <- to.polar(v$vectors[1, 2], v$vectors[2, 2], v$vectors[3, 
+        2])
+    v3 <- to.polar(v$vectors[1, 3], v$vectors[2, 3], v$vectors[3, 
+        3])
+    if (v3$I < 0) {
+        v3$I <- -v3$I
+        v3$D <- D.AM(v3$D + 180)
+        v2$I <- -v2$I
+        v2$D <- D.AM(v2$D + 180)
+    }
+    F13 <- v$values[1]/v$values[3]
+    F12 <- v$values[1]/v$values[2]
+    F23 <- v$values[2]/v$values[3]
+    Data <- c(L1 = v$values[1], L2 = v$values[2], L3 = v$values[3], 
+        L1.Inc = v1$I, L1.Dec = v1$D, L2.Inc = v2$I, L2.Dec = v2$D, 
+        L3.Inc = v3$I, L3.Dec = v3$D, F13 = F13, F12 = F12, F23 = F23)
+    col.names <- c("L1", "L2", "L3", "L1.Inc", "L1.Dec", "L2.Inc", 
+        "L2.Dec", "L3.Inc", "L3.Dec", "F13", "F12", "F23")
+    return(as.data.frame(t(Data), col.names = col.names))
+}
+
+
+#' Calcul la matrice d'anisotropie symetrisée et normalisé pour un spécimen (anisotropie totale)
+#' qui sert à la correction
+#' @param mesures data.frame contenant les mesures
+#' @param step.value typiquement la température des mesures d'anisotropie
+#' @param step.code code indiquant les étapes. les noms peuvent changer, mais pas l'ordre
+#' @param volume la valeur du volume du spécimen
+#' @param TH la valeur du champ appliqué
+#' @return un data.frame avec les colonnes "L1", "L1.Inc", "L1.Dec", "L2", "L2.Inc", "L2.Dec", "L3", "L3.Inc", "L3.Dec", "F13", "F12", "F23"
+#' @export
+anisotropy.matrix.symetric.total <- function (mesures, step.value, step.code = c("ZZ", 
+    "XX", "YY", "ZB"), ...) 
+{
+    ani.step <- trimws(paste(as.character(step.value), step.code, 
+        sep = ""))
+    selec <- NULL
+    for (i in 1:length(ani.step)) {
+        selec <- c(selec, which(trimws(mesures$step) == trimws(ani.step[i])))
+    }
+    res.list <- NULL
+    res.list <- mesures[selec, ]
+    res.list <- res.list
+    
+    if (res.list$X[2] < 0){
+      
+      res.list$X[1] <- -1*res.list$X[1]
+      res.list$X[2] <- -1*res.list$X[2]
+      res.list$X[3] <- -1*res.list$X[3]
+      
+    }
+    
+    if (res.list$Y[3] < 0){
+      
+      res.list$Y[1] <- -1*res.list$Y[1]
+      res.list$Y[2] <- -1*res.list$Y[2]
+      res.list$Y[3] <- -1*res.list$Y[3]
+      
+    }
+    
+    if (res.list$Z[1] < 0){
+      
+      res.list$Z[1] <- -1*res.list$Z[1]
+      res.list$Z[2] <- -1*res.list$Z[2]
+      res.list$Z[3] <- -1*res.list$Z[3]
+      
+    }
+    
+    mat.reel <- matrix(c(res.list$X[2], (res.list$X[3]), (res.list$X[1]),
+                         (res.list$Y[2]), (res.list$Y[3]), (res.list$Y[1]),
+                         (res.list$Z[2]), (res.list$Z[3]), (res.list$Z[1])), 3, 3)
+    coef.norm <- 1
+    kxx <- mat.reel[1, 1]/coef.norm
+    kyy <- mat.reel[2, 2]/coef.norm
+    kzz <- mat.reel[3, 3]/coef.norm
+    kxy <- (mat.reel[1, 2] + mat.reel[2, 1])/2/coef.norm
+    kxz <- (mat.reel[1, 3] + mat.reel[3, 1])/2/coef.norm
+    kyz <- (mat.reel[2, 3] + mat.reel[3, 2])/2/coef.norm
+    suscept <- (kxx + kyy + kzz)/3
+    mat.sym.norm <- matrix(c(kxx/suscept, kxy/suscept, kxz/suscept, 
+        kxy/suscept, kyy/suscept, kyz/suscept, kxz/suscept, kyz/suscept, 
+        kzz/suscept), 3, 3)
+    return(mat.sym.norm)
+}
+
+#' Calcul des tenseurs d'anisotropie pour tous les spécimens d'une liste de mesures (anisotropie totale)
+#' @return un data.frame avec les colonnes "L1", "L2", "L3", "L1.Inc", "L1.Dec", "L2.Inc", "L2.Dec", "L3.Inc", "L3.Dec", "F13", "F12", "F23"
+#' @export
+
+anisotropy.eigen.tensors.total.all <- function (Data.mesures, Data.number, step.value, step.code = c("ZZ", 
+    "XX", "YY", "ZB")) 
+{
+    numbers <- NULL
+    for (i in 1:length(Data.number)) {
+        if (length(which(numbers == Data.number[i])) == 0) 
+            numbers <- c(numbers, Data.number[i])
+    }
+    Data <- NULL
+    for (i in 1:length(numbers)) {
+        mesures <- extract.mesures.specimen.number(numbers[i], 
+            Data.mesures)
+        ani <- anisotropy.eigen.tensor.total(mesures, step.value = step.value, 
+            step.code = step.code)
+        Data <- rbind(Data, ani)
+    }
+    col.names <- col.names <- c("L1", "L2", "L3", "L1.Inc", "L1.Dec", 
+        "L2.Inc", "L2.Dec", "L3.Inc", "L3.Dec", "F13", "F12", 
+        "F23")
+    return(as.data.frame(Data, col.names = col.names))
+}
+
+#' Calcul des directions et valeurs des vecteurs propres d'anisotropie totale pour un spécimen à une certaine température
+#' @param mesures data.frame contenant les mesures
+#' @param step.value typiquement la température des mesures d'anisotropie
+#' @param step.code code indiquant les étapes. Les noms peuvent changer, mais pas l'ordre
+#' @seealso \code{\link{anisotropy.eigen.matrix}}
+#' @return un data.frame avec les colonnes "L1", "L1.Inc", "L1.Dec", "L2", "L2.Inc", "L2.Dec", "L3", "L3.Inc", "L3.Dec", "F13", "F12", "F23"
+#' @export
+
+anisotropy.eigen.tensor.total <- function (mesures, step.value, step.code = c("ZZ", "XX", 
+     "YY", "ZB")) 
+{
+    ani.step <- trimws(paste(as.character(step.value), step.code, 
+        sep = ""))
+    selec <- NULL
+    for (i in 1:length(ani.step)) {
+        selec <- c(selec, which(trimws(mesures$step) == trimws(ani.step[i])))
+    }
+    res.list <- NULL
+    res.list <- mesures[selec, ]
+    res.list <- res.list
+    col.names <- c("L1", "L1.Inc", "L1.Dec", "L2", "L2.Inc", 
+        "L2.Dec", "L3", "L3.Inc", "L3.Dec", "F13", "F12", "F23")
+    verif <- 1
+    for (i in 1:3) {verif <- verif * res.list$X[i] * res.list$Y[i] * 
+        res.list$Z[i]
+        }
+    if (is.null(verif) || is.na(verif)) {
+        Data <- c(L1 = 0, L2 = 0, L3 = 0, L1.Inc = 0, L1.Dec = 0, 
+            L2.Inc = 0, L2.Dec = 0, L3.Inc = 0, L3.Dec = 0, F13 = 0, 
+            F12 = 0, F23 = 0)
+        return(as.data.frame(t(Data), col.names = col.names))
+    }
+    
+    if (res.list$X[2] < 0){
+      
+      res.list$X[1] <- -1*res.list$X[1]
+      res.list$X[2] <- -1*res.list$X[2]
+      res.list$X[3] <- -1*res.list$X[3]
+      
+    }
+    
+    if (res.list$Y[3] < 0){
+      
+      res.list$Y[1] <- -1*res.list$Y[1]
+      res.list$Y[2] <- -1*res.list$Y[2]
+      res.list$Y[3] <- -1*res.list$Y[3]
+      
+    }
+    
+    if (res.list$Z[1] < 0){
+      
+      res.list$Z[1] <- -1*res.list$Z[1]
+      res.list$Z[2] <- -1*res.list$Z[2]
+      res.list$Z[3] <- -1*res.list$Z[3]
+      
+    }
+    
+    mat.reel <- matrix(c(res.list$X[2], (res.list$X[3]), (res.list$X[1]),
+                         (res.list$Y[2]), (res.list$Y[3]), (res.list$Y[1]),
+                         (res.list$Z[2]), (res.list$Z[3]), (res.list$Z[1])), 3, 3)
+    coef.norm <- 1
+    kxx <- mat.reel[1, 1]/coef.norm
+    kyy <- mat.reel[2, 2]/coef.norm
+    kzz <- mat.reel[3, 3]/coef.norm
+    kxy <- (mat.reel[1, 2] + mat.reel[2, 1])/2/coef.norm
+    kxz <- (mat.reel[1, 3] + mat.reel[3, 1])/2/coef.norm
+    kyz <- (mat.reel[2, 3] + mat.reel[3, 2])/2/coef.norm
+    suscept <- (kxx + kyy + kzz)/3
+    mat.sym.norm <- matrix(c(kxx/suscept, kxy/suscept, kxz/suscept, 
+        0, kyy/suscept, kyz/suscept, 0, 0, kzz/suscept), 3, 3)
+    v <- eigen(mat.sym.norm, symmetric = TRUE)
+    v1 <- to.polar(v$vectors[1, 1], v$vectors[2, 1], v$vectors[3, 
+        1])
+    v2 <- to.polar(v$vectors[1, 2], v$vectors[2, 2], v$vectors[3, 
+        2])
+    v3 <- to.polar(v$vectors[1, 3], v$vectors[2, 3], v$vectors[3, 
+        3])
+    if (v3$I < 0) {
+        v3$I <- -v3$I
+        v3$D <- D.AM(v3$D + 180)
+        v2$I <- -v2$I
+        v2$D <- D.AM(v2$D + 180)
+    print(v)}
+    if (is.null(v$values[3]) || is.null(v$values[2])) {
+        Data <- c(L1 = 0, L2 = 0, L3 = 0, L1.Inc = 0, L1.Dec = 0, 
+            L2.Inc = 0, L2.Dec = 0, L3.Inc = 0, L3.Dec = 0, F13 = 0, 
+            F12 = 0, F23 = 0)
+    }
+    else {
+        F13 <- v$values[1]/v$values[3]
+        F12 <- v$values[1]/v$values[2]
+        F23 <- v$values[2]/v$values[3]
+        Data <- c(L1 = v$values[1], L2 = v$values[2], L3 = v$values[3], 
+            L1.Inc = v1$I, L1.Dec = v1$D, L2.Inc = v2$I, L2.Dec = v2$D, 
+            L3.Inc = v3$I, L3.Dec = v3$D, F13 = F13, F12 = F12, 
+            F23 = F23)
+    }
+    return(as.data.frame(t(Data), col.names = col.names))
+}
+
+
+
 #' Calcul des directions et valeurs des vecteurs propres d'anisotropie partielle pour un spécimen à une certaine température
 #' @param mesures data.frame contenant les mesures
 #' @param step.value typiquement la température des mesures d'anisotropie
