@@ -10,10 +10,10 @@
 #  http://www.r-project.org/Licenses/
 #  _________________________________________________________________________________
 
-# Version 2022-02-01
+# Version 2024-06-18
 #
 
-#' @author "Philippe DUFRESNE"
+#' @authors "Philippe DUFRESNE, Théo DUBROCA"
 #' @name ArMag
 #' @docType package
 
