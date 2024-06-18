@@ -10,7 +10,11 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r pour creer un racourcie }
 #shinyShortcut(shinyDirectory = "~/Documents/AM/R_Projects/ArMag/Visu_AM", OS = "unix",   gitIgnore = FALSE)
 ```
+## Memo
+Quand on modifie le code, il faut penser à faire la documentation avec:
 
+setwd("/Users/dufresne/Documents/R_Project/ArMag")
+devtools::document()
 # Chargement des fonctions d'ArMag via GitHub
 ```{r echo = TRUE}
 
