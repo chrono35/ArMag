@@ -13,8 +13,7 @@
 # Version 2024-06-18
 #
 
-#' @authors "Philippe DUFRESNE, Théo DUBROCA"
-#' @name ArMag
+#' @author "Philippe DUFRESNE, Théo DUBROCA"
 #' @docType package
 
 # Equation du 3 degrées
