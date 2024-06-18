@@ -14,7 +14,7 @@ lambert.ID.circle(
   col = par("fg"),
   clockwise = TRUE,
   absolue = TRUE,
-  lty = par("lty"),
+  lty = 1,
   ...
 )
 }
