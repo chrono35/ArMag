@@ -1,6 +1,6 @@
 #  Licence ----
 #
-#  Copyright or © or Copr. CNRS	2020-2024
+#  Copyright or © or Copr. CNRS	2020-2026
 #
 #
 # This package is under
@@ -10,12 +10,13 @@
 #  http://www.r-project.org/Licenses/
 #  _________________________________________________________________________________
 
-# Version 2024-06-18
+# Version 2026-03-16
 #
 
 #' @author "Philippe DUFRESNE, Théo DUBROCA"
 #' @docType package
 
+# Routines de calcul ----------------------
 # Equation du 3 degrées
 # résolution du 3 eme degre pour calcul mcFadden importé de ARMAG
 # modifier suivant livre photocopié
@@ -163,207 +164,164 @@ angleD <- function(X, Y)
   return(res)
 }
 
-#' Statistique de mcFadden sur l'inclinaison seule à partir des coordonées XYZ
-#' @seealso \code{\link{stat.mcFadden}}, \code{\link{stat.fisher}}
+
+
+#' Bounding box for a Lambert diagram
+#'
+#' Cette fonction calcule les limites (xmin, xmax, ymin, ymax) nécessaires
+#' pour tracer un diagramme Lambert (ou « Lambert equal‑area ») entre
+#' deux inclinaisons `i.min` / `i.max` et deux déclinaisons `d.min` / `d.max`.
+#'
+#' @param i.min   Inclinaison minimale (en degrés, 0 ≤ i.min ≤ 90)
+#' @param i.max   Inclinaison maximale (en degrés, 0 ≤ i.max ≤ 90)
+#' @param d.min   Déclinaison minimale (en degrés, -90 ≤ d.min ≤ 270)
+#' @param d.max   Déclinaison maximale (en degrés, -90 ≤ d.max ≤ 270)
+#' @param n       Nombre de points à générer le long des arcs (défaut = 500)
+#' @return Une liste contenant `xlim` et `ylim`, chacune étant un vecteur
+#'         de deux valeurs (`c(min, max)`).
+#' @examples
+#' find.extremum(i.min = 0, i.max = 60, d.min = -90, d.max = 270)
 #' @export
-stat.mcFadden.XYZ <- function(TabX, TabY, TabZ)
+find.extremum <- function(i.min = 0,
+                          i.max = 90,
+                          d.min = -90,
+                          d.max = 270,
+                          n = 500,
+                          as.list = FALSE)
 {
-  N <- length(TabX)
-  VP <- to.polar(TabX, TabY, TabZ)
 
-  stat.mcFadden(inc, dec)
+  ##
+  ## 1. Contrôles de cohérence des arguments
+  ##
 
+  if (i.min < 0 || i.min > 90)    stop("i.min doit être compris entre 0 et 90°")
+  if (i.max < 0 || i.max > 90)    stop("i.max doit être compris entre 0 et 90°")
+  if (i.max < i.min)              stop("i.max ne peut pas être inférieur à i.min")
+  if (d.min < -90 || d.min > 270) stop("d.min doit être compris entre -90° et 270°")
+  if (d.max < -90 || d.max > 270) stop("d.max doit être compris entre -90° et 270°")
+  if (d.max < d.min)              stop("d.max ne peut pas être inférieur à d.min")
+
+  ##
+  ## 2. Rayon correspondant à chaque inclinaison
+  ##
+  # Rayon = 1 - (inc - i.min) / (90 - i.min)
+  #   - pour i.min → r = 1 (cercle extérieur)
+  #   - pour i.max → r = 1 - (i.max - i.min)/(90 - i.min) (cercle intérieur)
+  denom <- 90 - i.min
+  if (denom == 0) {
+    # cas particulier : i.min = 90 → le diagramme se réduit à un point
+    r1 <- r2 <- 0
+  } else {
+    r1 <- 1                                   # inclinaison = i.min
+    r2 <- 1 - (i.max - i.min) / denom         # inclinaison = i.max
+  }
+
+  ##
+  ## 3. Génération des points le long des deux arcs de déclinaison
+  ##
+  # on travaille en radians pour sin/cos
+  d.seq <- seq(d.min, d.max, length.out = n) * pi / 180
+  # coordonnées du cercle extérieur (i = i.min)
+  x1 <- r1 * sin(d.seq)
+  y1 <- r1 * cos(d.seq)
+  # coordonnées du cercle intérieur (i = i.max)
+  x2 <- r2 * sin(d.seq)
+  y2 <- r2 * cos(d.seq)
+  ##
+  ## 4. Boîte englobante (bounding box)
+  ##
+  xlim <- range(c(x1, x2), na.rm = TRUE)
+  ylim <- range(c(y1, y2), na.rm = TRUE)
+
+  if (as.list) {
+    return(list(x.range = x.range, y.range = y.range))
+  } else {
+    return(c(x.range = x.range, y.range = y.range))
+  }
 }
 
-#' Statistique de mcFadden sur l'inclinaison seule à partir des coordonées I et D
-#' @param Data liste des inclinaisons en degré ou une data.frame avec les variables $I et $D
-#' @param dec liste des déclinaisons en degré
-#' @param inc.absolue calcul avec la valeur absolue des inclinaisons
-#' @return  en degré, un data.frame "n", "imoy.McFadden", "imoy.McElhinny", "a95.mcFad", "a95.eqFish", "Kb", "Kssb", "imin", "imax", "dmin", "dmax"
-#' @seealso \code{\link{stat.mcFadden.XYZ}}, \code{\link{stat.fisher}}
-#' @references https://doi.org/10.1111/j.1365-246X.1990.tb05683.x
+## Calcul astronomique ----
+
+# Le jour julien 0 commence le 24 novembre -4713 (4712 BC) à 12h
+#' The number of Julian days for astronomical calculations
+#'  Julian Day 0 starts November 24th -4713 (4712 BC) at 12:00 pm
+#' @seealso \code{\link{https://codes-sources.commentcamarche.net/source/31774-calcul-de-la-position-du-soleil-declinaison-angle-horaire-altitude-et-azimut-altaz-solaire}}
 #' @export
-stat.mcFadden <- function(Data, dec = NULL, inc.absolue = TRUE)
+julian.day <- function( day, month, year, hour, minute, seconde)
 {
+  day.hour <- day + hour/24.0 + minute/1440.0 + seconde/86400.0
 
-  if (is.null(dec)) {
-    inc <- Data$I
-    dec <- Data$D
-    Dmin <- min(dec)
-    Dmax <- max(dec)
-  } else {
-    inc <- Data
-    Dmin <- min(dec)
-    Dmax <- max(dec)
+  if (month == 1 || month == 2) {
+    year <- year-1.0
+    month <- month+12.0
   }
 
-  if (inc.absolue)
-    inc <- abs(inc)
+  a <- trunc(year/100.0)
+  b <- 2 - a + trunc(a/4.0)
 
-  # Calcul des sommes
-  N <- length(inc)
+  julian <- trunc(365.25*(year+4716.0)) + trunc(30.6001*(month+1.0)) + day.hour + b - 1524.5
 
-  if (N<=2) {
-      warning("length(inc) < 3")
-      return()
-  }
-
-  Imin <- min(inc)
-  Imax <- max(inc)
-
-  Imoy <- 0
-
-  # Passage en radian pour les calculs
-  i.rad <- as.numeric(inc*pi/180)
-
-  A <- sum(sin(i.rad))
-  B <- sum(cos(i.rad))
-
-
-  P <- 2*(N+2*B)/A
-  Q <- -6
-  R <- 2*(N-2*B)/A
-  S <- 1
-
-  E4 <- EQUATION_DEGRE_4(P, Q, R, S)
-
-  KJ <- N/(2*(N-A*sin(2*atan(E4$PX1))-B*cos(2*atan(E4$PX1))))
-
-  Imoy <- 2*atan(E4$PX1)
-  K <- KJ
-
-
-  KJ <- N/(2*(N-A*sin(2*atan(E4$PX2))-B*cos(2*atan(E4$PX2))))
-  if (KJ>K) {
-    Imoy <- 2*atan(E4$PX2)
-    K <- KJ
-  }
-
-  KJ <- N/(2*(N-A*sin(2*atan(E4$PX3))-B*cos(2*atan(E4$PX3))))
-  if (KJ>K) {
-    Imoy <- 2*atan(E4$PX3)
-    K <- KJ
-  }
-
-  KJ <- N/(2*(N-A*sin(2*atan(E4$PX4))-B*cos(2*atan(E4$PX4))))
-  if (KJ>K) {
-    Imoy <- 2*atan(E4$PX4)
-    K <- KJ
-  }
-
-  CFad <- sum(cos(i.rad-Imoy))
-  SFad <- sum(sin(i.rad-Imoy))
-
-  I.McElhinny <- Imoy /pi*180     # modif effectuée le 2017/01/25
-  imoy.McFadden <- (Imoy + (SFad/CFad) ) /pi*180
-
-  a95mcFadden <- 1 - ((SFad/CFad)^2)/2 - (qf(.95, 1, N-1)*(N-CFad)/(CFad*(N-1)))
-  a95mcFadden <- acos(a95mcFadden) /pi*180
-  Kssb <-  (N-1)/2/(N-CFad)
-
-  # retour en degré #
-  return(data.frame( n= N, imoy.McFadden = imoy.McFadden, imoy.McElhinny = I.McElhinny,
-                     a95.mcFad = a95mcFadden, a95.eqFish = 2.4477/sqrt(N*K)/pi*180,
-                         Kb = K, Kssb = Kssb,
-                         imin = Imin, imax = Imax, Dmin = Dmin, Dmax = Dmax))
-
-  }
-
-#' Statistique de Fisher
-#' modifié, pas de pondération calcul de A95 Vrai sans simplification tel que fisher 1953
-#' @param Data liste des inclinaisons en degré ou une data.frame avec les variables $I et $D
-#' @param dec liste des déclinaisons en degrés
-#' @param aim liste des aimantations, facultatif
-#' @param pfish pourcentage de confiance
-#' @param inc.absolue calcul avec la valeur absolue des inclinaisons
-#' @return  en degrés
-#' @seealso \code{\link{stat.mcFadden}}
-#' @keywords fisher
-#' @export
-stat.fisher <- function (Data, dec = NULL, aim = NA, pfish = 0.95, inc.absolue = TRUE)
-{
-  if (is.null(dec)) {
-    inc <- Data$I
-    dec <- Data$D
-  } else {
-    inc <- Data
-    dec <- dec
-  }
-
-  n <- length(inc)
-  if (length(dec) != n) {
-    return("length (dec) diff length(inc)")
-  }
-  if (is.na(aim) || length(aim) != n) {
-   # message("length(aim) diff length(inc)")
-    aim <-  rep(1, n)
-  }
-
-  if (inc.absolue == TRUE)
-    inc <- abs(inc)
-
-  imin <- min(inc)
-  imax <- max(inc)
-  dmin <- min(dec)
-  dmax <- max(dec)
-
-
-  # Passage en radian pour les calculs
-  i.rad <- inc/180*pi
-  d.rad <- dec/180*pi
-
-  sx <- sum(aim*cos(i.rad)*cos(d.rad))
-  sy <- sum(aim*cos(i.rad)*sin(d.rad))
-  sz <- sum(aim*sin(i.rad))
-  sn <- sum(aim)
-
-  r <- sqrt(sx*sx+sy*sy+sz*sz)
-
-  imoy <- n_arcsin(sz/r)
-  dmoy <- angleD(sx,sy)
-  KF <- sn/(sn-r)
-  # Calcul de A95 Vrai sans simplification tel que fisher 1953
-  a95 <- exp( (1/(n-1))* log(1/(1-pfish)) )
-  a95 <- (a95 - 1 )*(n-r)/r
-  a95 <- acos(1-a95)
-
-  # correction du biais
-  KF <- ((n-1)/n) * KF
-
-  if (KF<10) {
-    delta <- log(1+ (1-pfish) * (exp(2*KF) -1) ) /KF
-    delta <- acos(delta-1)
-  } else {
-    delta <- log(1-pfish)/KF
-    delta <- acos(1 + delta)
-  }
-
-
-  # retour en degrés
-  return(data.frame(n = n, imoy =imoy/pi*180, dmoy = dmoy/pi*180, alpha=a95/pi*180, pfish = pfish, delta = delta/pi*180, KF = KF,
-                    imin = imin, imax = imax, dmin = dmin, dmax = dmax))
+  return (as.numeric(julian))
 }
 
 
-#' Valeurs maximun d'un tracer lambert
-#' Permet de trouver les valeurs minimales et maximales pour tracer un lambert
-#' Fonction interne
-find.extremum <- function(i.min = 0, i.max = 90, d.min = -90, d.max = 270)
+#' Calculate the azimuth of the sun in a place at a given date at a given time "UTC".
+#' @seealso \code{\link{https://codes-sources.commentcamarche.net/source/31774-calcul-de-la-position-du-soleil-declinaison-angle-horaire-altitude-et-azimut-altaz-solaire}}
+#' @seealso \code{\link{https://fr.planetcalc.com/320/}}
+#' @export
+sun.azimuth <- function(day, month, year, hour, minute, seconde=0, longdeg, longmin=0, longsec=0, latdeg, latmin=0, latsec=0)
 {
-  d.seq <- seq( d.min, d.max, length.out = 300)
-  x1.seq <- sin(d.seq*pi/180 ) * (1 - (i.min-i.min)/(90-i.min))
-  x2.seq <- sin(d.seq*pi/180 ) * (1 - (i.max-i.min)/(90-i.min))
+  longitude <- DMS.to.DD(longdeg, longmin, longsec)
+  latitude <- DMS.to.DD(latdeg, latmin, latsec)
+  #     Heure d'hiver ou d'été
+  correction_heure <- 0
 
-  y1.seq <- cos(d.seq*pi/180 ) * (1 - (i.min-i.min)/(90-i.min))
-  y2.seq <- cos(d.seq*pi/180 ) * (1 - (i.max-i.min)/(90-i.min))
+  jj <- julian.day(day, month, year, hour, minute, seconde) - correction_heure/24.0 - 2451545.0
 
-  x.range <- range(x1.seq, x2.seq)
-  y.range <- range(y1.seq, y2.seq)
+  #     Calculs ascension droite et déclinaison
+  g <- 357.529 + 0.98560028*jj
+  q <- 280.459 + 0.98564736*jj
+  l <- q + 1.915 * sin(g*pi/180.0) + 0.020*sin(2*g*pi/180.0) # Ellipticité
+  e <- 23.439 - 0.00000036*jj
 
-  return(c(x.range = x.range, y.range = y.range))
+  ascension_droite <- atan(cos(e*pi/180.0)*sin(l*pi/180.0)/cos(l*pi/180.0))*(180.0/pi)/15.0
+  if (cos(l*pi/180.0) < 0) {
+    ascension_droite <- 12.0 + ascension_droite
+  }
+  if (cos(l*pi/180.0)>0 && sin(l*pi/180.0) < 0) {
+    ascension_droite <- ascension_droite + 24.0
+  }
+  declinaison <- asin(sin(e*pi/180.0)*sin(l*pi/180.0))*180.0/pi
+
+
+  nb_siecle <- jj/36525.0
+  heure_siderale1 <- (24110.54841 + (8640184.812866*nb_siecle) + (0.093104*(nb_siecle*nb_siecle)) - (0.0000062*(nb_siecle*nb_siecle*nb_siecle)))/3600.0
+  heure_siderale2 <- ((heure_siderale1/24.0) - trunc(heure_siderale1/24.0)) * 24.0
+
+  angleH <- 360.0*heure_siderale2/23.9344
+  angleT <- (hour - correction_heure - 12.0 + minute/60.0 + seconde/3600.0)*360.0/23.9344 # jour sidéraux = 23h56min 4,0989s -> 23,93447h -> 0,9972696 jour solaire
+  angle <- angleT + angleH
+
+  angle_horaire <- angle - ascension_droite*15.0 + longitude
+
+  #       calculs altitude et azimut
+
+  altitude <- asin( sin(declinaison*pi/180.0)*sin(latitude*pi/180.0) - cos(declinaison*pi/180.0)*cos(latitude*pi/180.0)*cos(angle_horaire*pi/180.0) )*180.0/pi
+
+  azimut <- acos( (sin(declinaison*pi/180.0) - sin(latitude*pi/180.0)*sin(altitude*pi/180.0)) / (cos(latitude*pi/180.0)*cos(altitude*pi/180.0)) )*180.0/pi
+  sinazimut <- (cos(declinaison*pi/180.0)*sin(angle_horaire*pi/180.0)) / cos(altitude*pi/180.0)
+  if (sinazimut < 0) {
+    azimut <- 360 - azimut;
+  }
+
+  return(as.numeric(azimut))
 }
 
-# Transformation des mesures en coordonnées graphiques ----------------------
+
+
+# Transformations ----
+## Mesures en coordonnées graphiques ----
+
 #' Valeur de X graphique pour I et D
 #' Fonction interne
 #' @param i inclinaison en degrés
@@ -399,8 +357,7 @@ Y <- function(i, d, ray=1, i.min = 0, box.range)
 
 }
 
-# Transformation de type de repère -----------------
-## Conversion
+## Transformations angulaires -----
 
 #' Conversion de Degrés Minute Second en Degré Décimal
 #' @param degre degrés entier
@@ -461,9 +418,8 @@ D.pal <- function(d)
 }
 
 
-# Transformation de type de coordonnée ----
+## Changements de repère ----
 
-## to cartesian vector  ----
 #' Valeur de Y pour I et D
 #' @param inc liste des inclinaisons en degré
 #' @param des liste des déclinaisons en degré
@@ -519,35 +475,8 @@ to.cartesian <- function(inc, dec, aim=1)
 
 
 
-#' Coordonnées polaires pour X, Y et Z
-#' @return I, D, F en degré
-#' @seealso \code{\link{to.polar}} , \code{\link{cartesien}}
-#' @export
-to.polar <- function(X, Y, Z)
-{ #en A/m
-  res <- NULL
-  resT <- NULL
-  for (i in 1:length(X)) {
-    res$X <- X[i]
-    res$Y <- Y[i]
-    res$Z <- Z[i]
-    aim <-  as.numeric( sqrt(X[i]*X[i] + Y[i]*Y[i] + Z[i]*Z[i]) )
-    if ( aim== 0) {
-      res$I <- as.numeric( 0 )
-      res$D <- as.numeric( 0 )
-    } else {
-      res$I <- as.numeric( n_arcsin(Z[i]/aim) /pi*180 )
-      res$D <- as.numeric( angleD(X[i],Y[i]) /pi*180 )
-    }
 
-    res$F <- aim
 
-    resT <- c(resT, res)
-  }
-  return( resT )
-}
-
-# Calcul vecteur polaire ----
 #' inclinaison pour X, Y et Z
 #' @return angle en degré
 #' @export
@@ -584,1161 +513,120 @@ to.polar.F <- function(X, Y, Z)
   return(res)
 }
 
-# Trace des graphes ----
-
-## Plot Lambert directionnel ID ----
-
-#' lambert.ID.grid
-#' Trace une grille dans le repère Lambert, fonctionne avec la fonction lambert()
-#'
-#' # Pour choisir les graduations
-#' et pour paleomag : lab.pos$D = c(seq(270, 350, by=10), seq(0, 90, by=10))
-#' Label.pos : doit être dans l'étendu des dex.min, dec.max, inc.min, inc.max
-#'
-#' @param  radlab écrit les labels sous forme d'étoile
-#' @param  label.pos séquence de valeur à afficher en I et D, attention format particulier !!
-#' @examples
-#' label.pos = NULL
-#' label.pos$I = seq(0, 90, by=20)
-#' label.pos$D = seq(0, 90, by=10)
+#' Coordonnées polaires pour X, Y et Z
+#' @return I, D, F en degré
+#' @seealso \code{\link{to.polar}} , \code{\link{cartesien}}
 #' @export
-lambert.ID.grid <- function (main = "", xlab = "", ylab = "", labels = NA, label.pos = NULL, radlab = FALSE,
-                        start = 0, clockwise = FALSE, label.prop = 1.1,
-                        grid.col = "gray", grid.bg = "transparent", show.radial.grid = TRUE, labels.precision = 0,
-                        dec.min = -90, dec.max = 270, inc.min = 0, inc.max = 90, new = TRUE, ...)
-{
-  # setting up coord. system
-  if (new == TRUE) {
-    par( pty = "s")
-
-    maxlength <- 100 # la valeur n'a pas d'influence, la fonction plot() calcul le reste
-    plot(c(-maxlength, maxlength), c(-maxlength, maxlength), type = "n", axes = FALSE, main = main, xlab = xlab, ylab = ylab, new = new)
-  }
-
-  labelsD <- NULL
-  maxlength <-  100
-  par(xpd = TRUE)
-  box.range <- find.extremum(inc.min, inc.max, dec.min, dec.max)
-
-  anglesD <- seq(dec.min, dec.max, by = 1) # angle de deviation en degrée
-
-  if (is.null(label.pos)) {
-    labelI.pos <- seq(inc.min, inc.max, by = 10)
-    labelD.pos <- seq(dec.min, dec.max, by = 10)
-  }
-  else {
-    labelI.pos <- label.pos$I
-    labelD.pos <- label.pos$D
-  }
-  # Supprime la superposition des labels pour D égale à -90 et 270
-  if ((labelD.pos[1] == -90) && (labelD.pos[length(labelD.pos)] == 270))
-    labelD.pos <- labelD.pos[-length(labelD.pos)]
-
-  if (show.radial.grid) {
-    # Trace un cercle  autour
-    xpos <- X(inc.min, anglesD, maxlength, i.min = inc.min, box.range)
-    ypos <- Y(inc.min, anglesD, maxlength, i.min = inc.min, box.range)
-    lines(xpos, ypos, col = adjustcolor( grid.col, alpha.f = 0.5))
-
-    # Trace les cercles radiaux concentriques
-    if (length(labelI.pos)>0)
-      for (i in seq(length(labelI.pos), 1, by = -1)) {
-        xpos <- X(labelI.pos[i], anglesD, maxlength, i.min = inc.min, box.range)
-        ypos <- Y(labelI.pos[i], anglesD, maxlength, i.min = inc.min, box.range)
-        lines(xpos, ypos, col = adjustcolor( grid.col, alpha.f = 0.5)) #, border = grid.col)
-      }
-
-
-    if (!is.null(labels)) {
-      if (is.na(labels[1]))
-        labelsI <- as.character(round(labelI.pos, labels.precision))
-
-      labelsD <- as.character(round(labelD.pos, labels.precision))
-    }
-
-
-    if (clockwise == FALSE)
-      labelD.pos <- -labelD.pos
-     if (start)
-       labelD.pos <- labelD.pos + start
-  # Trace les rayons
-
-  #if (show.radial.grid) {
-    for (i in 1: length(labelD.pos)) {
-      xposA <- X(inc.min, labelD.pos[i], ray = maxlength, inc.min, box.range)
-      yposA <- Y(inc.min, labelD.pos[i], ray = maxlength, inc.min, box.range)
-
-      xposB <- X(inc.max, labelD.pos[i], ray = maxlength, inc.min, box.range)
-      yposB <- Y(inc.max, labelD.pos[i], ray = maxlength, inc.min, box.range)
-      segments( x0=xposA, y0=yposA, x1=xposB, y1=yposB, col = grid.col)
-
-    }
-
-
-    for (label in 2:length(labelI.pos)) {
-      xpos <- X(labelI.pos[label], dec.min, ray = maxlength, inc.min, box.range)
-      ypos <- Y(labelI.pos[label], dec.min, ray = maxlength, inc.min, box.range)
-      #labelsrt <- dec.min + 90 # labelI.pos[label] + 90    #* label.prop
-      corect<- 6
-      if (dec.min >= -90 && dec.min < 0) {
-        labelsrt <- ( 270 - dec.min)
-        xpos <- xpos + label.prop*cos(dec.min/180*pi) * corect
-        ypos <- ypos - label.prop*(2+sin(dec.min/180*pi)) * corect
-      }
-      else if (dec.min >= 0 && dec.min < 90) {
-        labelsrt <- (90 - dec.min)
-        xpos <- xpos - label.prop*cos(dec.min/180*pi) * corect
-        ypos <- ypos + label.prop*sin(dec.min/180*pi) * corect
-      }
-      else if (dec.min >= 90 && dec.min < 180) {
-        labelsrt <- (90 - dec.min)
-        xpos <- xpos + label.prop*cos(dec.min/180*pi) * corect
-        ypos <- ypos + label.prop*sin(dec.min/180*pi) * corect
-      }
-      else {
-        labelsrt <- (270 - dec.min)
-        xpos <- xpos - label.prop*cos(dec.min/180*pi) * corect
-        ypos <- ypos - label.prop*sin(dec.min/180*pi) * corect
-      }
-
-      # if (labelD.pos[label] > 0 && labelD.pos[label] < 180)
-      #   labelsrt <- (90 - labelD.pos[label])
-      # else
-      #   labelsrt <- (270 - labelD.pos[label]) labelsI[label],
-
-      text(xpos, ypos,labelsI[label] , srt = labelsrt, cex = par("cex.axis"))
-    #  boxed.labels(xpos, ypos, labelsI[label], ypad = par("cex.axis"), border = FALSE, cex =  par("cex.axis"))
-    }
-
-    # Ecrit les textes des angles
-  }
-
-  else {
-    # Trace un cercle  autour
-    #for (i in seq(dec.min, dec.max, by = 1)) {
-      xpos <- X(inc.min, anglesD, maxlength, i.min = inc.min, box.range)
-      ypos <- Y(inc.min, anglesD, maxlength, i.min = inc.min, box.range)
-      lines(xpos, ypos, col = adjustcolor( grid.col, alpha.f = 0.5)) #, border = grid.col)
-    #}
-  }
-    if (!is.null(labelsD)) {
-      xpos <- X(inc.min, labelD.pos, ray = maxlength, inc.min, box.range) * label.prop
-      ypos <- Y(inc.min, labelD.pos, ray = maxlength, inc.min, box.range) * label.prop
-
-
-
-      if (radlab) { # radlab écrit les labels sous forme d'étoile
-        for (label in 1:length(labelD.pos)) {
-          if (labelD.pos[label] > 0 && labelD.pos[label] < 180)
-            labelsrt <- (90 - labelD.pos[label])
-          else
-            labelsrt <- (270 - labelD.pos[label])
-
-          text(xpos[label], ypos[label], labelsD[label], cex = par("cex.axis"), srt = labelsrt)
-        }
-      }
-      else {  # boxed.labels(xpos, ypos, labelsD, ypad = 0.7, border = FALSE,  cex =  par("cex.axis"))
-        for (label in 1:length(labelD.pos)) {
-          text(xpos[label], ypos[label], labelsD[label], cex = par("cex.axis"), srt = 0)
-        }
-      }
-    }
-
-     par(xpd = FALSE)
-}
-
-#' lambert
-#' Place des points I et D dans un repère Lambert avec un data.frame
-#' @param data data.frame avec les variables $I d'inclinaison et $D de déclinaison
-#' @param pt.names  Correspond à la liste des noms des points. Laissée vide n'affiche rien. Si on met pt.names = "", cela affiche les noms
-#' @param label.pos  Séquence de valeur à afficher en I et D, voir fonction lambert.ID.grid
-#' @param point.symbols défini la forme de points, correspond exactement au pch de la fonction points()
-#' @param pch permet de changer la forme du symbole
-#' @param show.grid permet d'afficher une grille en toile d'araigné sur le fond. Mettre à FALSE, si on superpose des diagrammes
-#' @param show.grid.labels permet de changer échelle des graduations
-#' @param inc.lim permet de restreindre l'affichage sur une étendue d'inclinaison. Ex: inc.lim = c(45, 90). Laissée à NULL, le diagramme s'addapte aux données
-#' @param dec.min permet de restreindre l'étendue en déclinaison, borne minimale
-#' @param dec.max permet de restreindre l'étendue en déclinaison, borne maximale
-#' @param new permet d'initialiser la sortie graphique. Mettre à FALSE, si on superpose des diagrammes.
-#' @export
-lambert <- function (data , pt.names = NULL, labels = NA, label.pos = NULL,
-                             radlab = FALSE, start = 0, clockwise = TRUE,
-                             label.prop = 1.1, main = "", xlab = "", ylab = "", line.col = par("fg"),
-                             lty = par("lty"), lwd = par("lwd"), mar = c(2, 2, 3, 2),
-                             show.grid = TRUE, show.grid.labels = 10, show.radial.grid = TRUE,
-                             grid.col = "gray", grid.bg = "transparent",
-                             grid.left = FALSE, grid.unit = NULL, point.symbols = 1, pt.col = par("fg"), bg = pt.col,
-                             inc.lim = NULL, radial.labels = NULL,
-                             boxed.radial = TRUE, poly.col = NA,
-                             dec.min = -90, dec.max = 270, new = TRUE, pch = 21, ...)
-{
-  if (is.null(pt.names))
-    name <- NULL
-  else
-    name <- data$name
-
-  lambert.ID (data$I, data$D , pt.names = name, labels = labels, label.pos = label.pos,
-                               radlab = radlab, start = start, clockwise = clockwise,
-                               label.prop = label.prop, main = main, xlab = xlab, ylab = ylab, line.col = line.col,
-                               lty = lty, lwd = lwd, mar = mar,
-                               show.grid = show.grid, show.grid.labels = show.grid.labels, show.radial.grid = show.radial.grid,
-                               grid.col = grid.col, grid.bg = grid.bg,
-                               grid.left = grid.left, grid.unit = grid.unit, point.symbols = point.symbols, pt.col = pt.col, bg = pt.col,
-                               inc.lim = inc.lim, radial.labels = radial.labels,
-                               boxed.radial = boxed.radial, poly.col = poly.col,
-                               dec.min = dec.min, dec.max = dec.max, new = new, pch = pch, ...)
-}
-
-#' Place des points I et D dans un repère Lambert
-#' @export
-lambert.ID <- function (inc, dec , pt.names = NA, labels = NA, label.pos = NULL,
-                                 radlab = FALSE, start = 0, clockwise = TRUE,
-                                 label.prop = 1.1, main = "", xlab = "", ylab = "", line.col = par("fg"),
-                                 lty = par("lty"), lwd = par("lwd"), mar = c(2, 2, 3, 2),
-                                 show.grid = TRUE, show.grid.labels = 10, show.radial.grid = TRUE,
-                                 grid.col = "gray", grid.bg = "transparent",
-                                 grid.left = FALSE, grid.unit = NULL, point.symbols = 1, pt.col = par("fg"), bg = pt.col,
-                                 inc.lim = NULL, radial.labels = NULL,
-                                 boxed.radial = TRUE, poly.col = NA,
-                                 dec.min = -90, dec.max = 270, new = TRUE, pch = 21, type = 'o')
-{
-
-  if (is.null(inc.lim))
-    inc.lim <- range(abs(inc))
-
-
-
-  #lambert.ID(inclinaisons = inclinaisons, declinaisons = declinaisons, pt.names = pt.names, inc.lim = inc.lim,
-  #           dec.min = dmin, dec.max = dmax, main = main, label.pos = label.pos, pt.col = pt.col, bg = bg, show.grid = show.grid, new = new)
-  if (show.grid == TRUE) {
-
-    if (is.null(label.pos)) {
-      label.pos$I = seq(inc.lim[1], inc.lim[2], by=10)
-      label.pos$D = seq(dec.min, dec.max, by=10)
-    }
-
-    lambert.ID.grid(main = main, label.pos = label.pos, labels = labels,
-                         radlab = radlab,  start = start,
-                         clockwise = clockwise, show.radial.grid = show.radial.grid,
-                         dec.min = dec.min, dec.max = dec.max, inc.min = inc.lim[1] , inc.max = inc.lim[2], new  = new )
-    if (new == TRUE)
-      new <- FALSE
-  }
-  lambert.ID.point(inc, dec, dec.min = dec.min, dec.max = dec.max, inc.lim = inc.lim,
-                        pt.names = pt.names, pt.col = pt.col, bg = bg, pch = pch, new = new, type = type)
-
-
-}
-
-#' Place des points I et D dans un repère Lambert et dessine le symbole
-#' @export
-lambert.ID.position <- function (data, declinaisons = NULL, position = "P",  pt.names = NA, labels = NA, label.pos = NULL,
-                        radlab = FALSE, start = 0, clockwise = TRUE,
-                        label.prop = 1.1, main = "Position auto", xlab = "", ylab = "", line.col = par("fg"),
-                        lty = par("lty"), lwd = par("lwd"), mar = c(2, 2, 3, 2),
-                        show.grid = TRUE, show.grid.labels = 10, show.radial.grid = TRUE,
-                        grid.col = "gray", grid.bg = "transparent",
-                        grid.left = FALSE, grid.unit = NULL, point.symbols = 1, pt.col = par("fg"), bg = pt.col,
-                        inc.lim = c(0, 90), radial.labels = NULL,
-                        boxed.radial = TRUE, poly.col = NA, add = FALSE,
-                        dec.min = -90, dec.max = 90, new = TRUE, ...)
-{
-
-  if (is.null(declinaisons) ) {
-    inclinaisons <- data$I
-    declinaisons <- data$D
-  }
-  else {
-    inclinaisons <- data
-    declinaisons <- declinaisons
-  }
-
-
-
-  if (length(position) < length(inclinaisons))
-    position <- rep(position, length(inclinaisons))
-
-  if (is.null(inc.lim))
-    inc.lim <- range(abs(inclinaisons))
-
-  if (is.null(label.pos)) {
-    lab.pos <- NULL
-    lab.pos$I = seq(inc.lim[1], inc.lim[2], by = 20)
-    lab.pos$D = seq(dec.min, dec.max, by = 10)
-  } else {
-    lab.pos <- label.pos
-  }
-
-  ne <- new
-  if (length(which(position=="P")) > 0) {
-    lambert.ID(inclinaisons[which(position=="P")], declinaisons[which(position=="P")],
-             pt.names = pt.names[which(position=="P")], label.pos = lab.pos, main = main, show.grid = show.grid,
-             inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, pt.col = pt.col,  pch = 23, new = ne)
-    ne <- FALSE
-    show.grid <- FALSE
-    main <- ""
-  }
-
-  if (length(which(position=="C")) > 0) {
-    lambert.ID(inclinaisons[which(position=="C")], declinaisons[which(position=="C")],
-             pt.names = pt.names[which(position=="C")], label.pos = lab.pos, main = main, show.grid = show.grid,
-             inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, pt.col = pt.col,  pch = 22, new = ne)
-    ne <- FALSE
-    show.grid <- FALSE
-    main <- ""
-  }
-
-
-  if (length(which(position=="D")) > 0) {
-    lambert.ID(inclinaisons[which(position=="D")], declinaisons[which(position=="D")],
-             pt.names = pt.names[which(position=="D")], label.pos = lab.pos, main = main, show.grid = show.grid,
-             inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, pt.col = pt.col, pch = 24, new = ne)
-  }
-}
-
-#' Place des points I et D dans un repère Lambert
-#' @export
-lambert.ID.point <- function (inc, dec , pt.names = NA, labels = NA, label.pos = NULL,
-                             start = 0, clockwise = TRUE,
-                             lty = par("lty"),  mar = c(2, 2, 3, 2),
-                             pt.col = par("fg"), bg = pt.col, type = 'o',
-                             inc.lim = NULL,
-                             dec.min = -90, dec.max = 270, new = TRUE, pch = 21, ...)
-{
-
-  maxlength <- 100 # la valeur n'a pas d'influence, la fonction plot() calcul le reste
-  # radlab écrit les labels sous forme d'étoile
-  if (is.null(inc.lim))
-    inc.lim <- range(abs(inc))
-
-  # Sélection des échantillons visibles dans le range
-  index.supprim <- NULL
-  for (i in 1:length(inc)) {
-    if (abs(inc[i])< inc.lim[1] || abs(inc[i])> inc.lim[2] || dec[i]<dec.min || dec[i]>dec.max )
-      index.supprim <- cbind(index.supprim, c(i))
-
-  }
-  if (!is.null(index.supprim)) {
-    inc <- inc[-index.supprim]
-    dec <- dec[-index.supprim]
-
-    if (!is.null(pt.names)  ) {
-      pt.names <- pt.names[-index.supprim]
-    }
-  }
-
-
-  inc.min = inc.lim[1]
-  inc.max = inc.lim[2]
-
-  nbpoints <- length(inc)
-
-  if (clockwise == FALSE)
-    dec <- -dec
-  if (start)
-    dec <- dec + start
-
-  box.range <- find.extremum(inc.min, inc.max, dec.min, dec.max)
-
-  oldpar <- par("xpd", "mar", "pty")
-
-  # setting up coord. system
-  if (new == TRUE) {
-    par(mar = mar, pty = "s")
-
-    maxlength <- 100 # la valeur n'a pas d'influence, la fonction plot() calcul le reste
-    plot(c(-maxlength, maxlength), c(-maxlength, maxlength), type = "n", axes = FALSE, new = new)
-  }
-
- # par(xpd = TRUE)
-
-  if (length(pch) < nbpoints)
-    pch <- rep(pch, length.out = nbpoints)
-
-  if (length(pt.col) < nbpoints)
-    pt.col <- rep(pt.col, length.out = nbpoints)
-
-
-  xpos <- X(inc, dec, ray = maxlength, i.min = inc.min, box.range)
-  ypos <- Y(inc, dec, ray = maxlength, i.min = inc.min, box.range)
-  # print points names
-  if (length(pt.names)>0 )
-    for (i in 1: nbpoints )
-      text(xpos[i], ypos[i], pt.names[i] , srt = 0, cex = par("cex"))
-
-
-
-  # pch = 0, cercle
-  # pch = 1, rond
-  # pch = 2, triangle
-  # pch = 3, plus
-  # pch = 4, croix
-  # pch = 5, losange
-  # pch = 6, triangle vers le bas
-  # pch = 7, carré avec croix
-  # pch = 8, étoile
-  # pch = 9, losange avec plus
-  # pch = 10, cercle avec plus
-  # pch = 11, triangles hauts et bas
-  # pch = 12, carré avec plus
-  # pch = 13, cercle avec croix
-  # pch = 14, carré et triangle vers le bas
-  # pch = 15, carré plein
-  # pch = 16, cercle plein
-  # pch = 17, triangle plein vers le haut
-  # pch = 18, losange plein
-  # pch = 19, cercle solide
-  # pch = 20, petit rond plein
-  # pch = 21, cercle plein bleu, accepte l'argument bg
-  # pch = 22, carré plein bleu
-  # pch = 23, losange plein bleu
-  # pch = 24, triangle plein, pointe vers le haut bleu
-  # pch = 25, triangle plein, pointe vers la bas bleu
-
-  if (!is.null(pt.col))
-    for (i in 1: nbpoints ) {
-      if(pt.col[i] != "transparent") {
-        if (inc[i]<0) {
-          bg.col <- gray(0.95)
-          points(xpos[i], ypos[i], pch = pch[i],  col = pt.col[i], bg = bg.col,  lty=lty, type = type)
-        }
-        else
-          points(xpos[i], ypos[i], pch = pch[i],  col = pt.col[i], bg = pt.col[i],  lty=lty, type = type)
-      }
-    }
-
-
-  invisible(oldpar)
-}
-## Plot lambert circle ----
-
-## lambert.ID.circle.points
-#' Calcul les points pour tracer un cercle
-#' @param i.mean inclinaison du centre du cercle
-#' @param d.mean déclinaiosn du centre du point
-#' @param delta angle d'ouverture du cercle
-#' @return une liste de I et D en degrés
-#' @export
-lambert.ID.circle.points <- function (i.mean, d.mean, delta)
-{
-  Imoy <- i.mean*pi/180
-  Dmoy <- d.mean*pi/180
-  Delta <- delta*pi/180
-  pt <- NULL
-  pt$I <- NULL
-  pt$D <- NULL
-  for (k in seq(0, pi, length.out = 180)) {
-    I.tmp <- n_arcsin(sin(Imoy)*cos(Delta)+cos(k)*cos(Imoy)*sin(Delta))
-    if (abs(Imoy)==(pi/2)) {
-      D.tmp <- k
-    } else {
-      D.tmp <- Dmoy + n_arccos( (cos(Delta)-sin(Imoy)*sin(I.tmp))/(cos(Imoy)*cos(I.tmp)) )
-    }
-
-    pt$I<- c(pt$I , I.tmp*180/pi)
-    pt$D <- c(pt$D, D.AM(D.tmp*180/pi))
-  }
-  for (k in seq(pi, 2*pi, length.out = 180)) {
-    I.tmp <- n_arcsin(sin(Imoy)*cos(Delta)+cos(k)*cos(Imoy)*sin(Delta))
-    if (abs(Imoy)==(pi/2)) {
-      D.tmp <- k
-    } else {
-      D.tmp <- Dmoy - n_arccos( (cos(Delta)-sin(Imoy)*sin(I.tmp))/(cos(Imoy)*cos(I.tmp)) )
-    }
-    pt$I <- c(pt$I, I.tmp*180/pi)
-    pt$D <- c(pt$D, D.AM(D.tmp*180/pi))
-  }
-
-  return(pt)
-}
-
-#' Trace un cercle sur le diagramme lambert
-#' @param  col  définie la couleur de la ligne
-#' @param absolue permet de tracer la partie inclinaison négative des cercles
-#' @export
-lambert.ID.circle <- function (i.mean, d.mean, delta, inc.lim = NULL, dec.min = -90, dec.max = 270,
-                                    col = par("fg"), clockwise = TRUE, absolue = TRUE, lty = 1, ...)
-{
-
-  pt <- lambert.ID.circle.points(i.mean, d.mean, delta)
-
-  maxlength <- 100 # la valeur n'a pas d'influence, la fonction plot() calcul le reste
-  # radlab écrit les labels sous forme d'étoile
-  if (is.null(inc.lim))
-    inc.lim <- range(abs(pt$I))
-
-
-  inc.min = inc.lim[1]
-  inc.max = inc.lim[2]
-
-
-  if (clockwise == FALSE)
-    pt$D <- -pt$D
-
-
-  box.range <- find.extremum(inc.min, inc.max, dec.min, dec.max)
-
-  xpos <- X(pt$I, pt$D, ray = maxlength, i.min = inc.min, box.range)
-  ypos <- Y(pt$I, pt$D, ray = maxlength, i.min = inc.min, box.range)
-
-  before.bad.condition <- FALSE
-  x0 <- xpos[1]
-  y0 <- ypos[1]
-
-
-  for (i in 1: length(pt$I) ) {
-    if (absolue)
-      bad.condition <- (abs(pt$I[i])< inc.lim[1] || abs(pt$I[i])> inc.lim[2] || pt$D[i]<dec.min || pt$D[i]>dec.max )
-    else
-      bad.condition <- (pt$I[i]< inc.lim[1] || pt$I[i]> inc.lim[2] || pt$D[i]<dec.min || pt$D[i]>dec.max )
-
-    if (before.bad.condition == TRUE && bad.condition == FALSE) {
-      x0 <- xpos[i]
-      y0 <- ypos[i]
-    }
-
-    if (before.bad.condition == FALSE && bad.condition == FALSE) {
-      x1 <- xpos[i]
-      y1 <- ypos[i]
-      if (pt$I[i]<0)
-        segments(x0, y0, x1, y1, lty = lty+2, col = col,  ...)
-      else
-        segments(x0, y0, x1, y1, lty = lty, col = col,  ...)
-
-      x0 <- xpos[i]
-      y0 <- ypos[i]
-    }
-
-    before.bad.condition <- bad.condition
-
-  }
-
-}
-
-#' Trace un cercle avec les champs de l'inclinaison possible
-#' @param  field définit la zone possible du champ
-#' @export
-lambert.ID.field <- function (data, dec = NULL , pt.names = NA, field = c(50, 75), inc.lim = c(0, 90), dec.min = -90, dec.max = 270, col = par("fg"),
-                              main = "", pt.col = par("fg"), bg = pt.col, label.pos= NULL, show.grid = TRUE, new = TRUE)
-{
-  #old.par <- par(no.readonly = TRUE) # all par settings which
-
-
-  if (is.null(label.pos)) {
-    label.pos$I = NA
-    label.pos$D = seq(-90, 180, by=90)
-  }
-
-
-  if (is.null(dec) ) {
-    inc <- data$I
-    dec <- data$D
-    if (is.null(pt.names))
-      pt.names <- data$name
-  }
-  else {
-    inc <- data
-    dec <- dec
-  }
-
-
-  if (is.null(inc.lim))
-    inc.lim <- range(abs(inc))
-
-  if (is.null(label.pos)) {
-    lab.pos$I = seq(inc.lim[1], inc.lim[2], by = 20)
-    lab.pos$D = seq(dec.min, dec.max, by = 10)
-  }
-
-
-
-  if (show.grid == TRUE)
-    lambert.ID.grid(main = main, label.pos = label.pos,
-                        start = 0, dec.min = dec.min, dec.max = dec.max, inc.min = inc.lim[1], inc.max = inc.lim[2], new = new )
-
-  lambert.ID.point(inc, dec, inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, pt.names = pt.names, pt.col = pt.col, bg = bg, new = FALSE)
-
-
-
-  hinf <- 90 - field[1]
-  hsup <- 90 - field[2]
-
-  lambert.ID.circle(0, 180, hinf, col =  adjustcolor( col, alpha.f = 0.5) , inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, absolue = FALSE)
-  lambert.ID.circle(0, 0, hinf, col = adjustcolor( col, alpha.f = 0.5) , inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, absolue = FALSE)
-  lambert.ID.circle(0, 90, hinf, col = adjustcolor( col, alpha.f = 0.5) , inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, absolue = FALSE)
-  lambert.ID.circle(0, -90, hinf, col = adjustcolor( col, alpha.f = 0.5) , inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, absolue = FALSE)
-  lambert.ID.circle(90, -90, hinf, col = adjustcolor( col, alpha.f = 0.5) , inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, absolue = FALSE)
-
-
-  lambert.ID.circle(0, 180, hsup, col = adjustcolor( col, alpha.f = 0.5) , inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, absolue = FALSE)
-  lambert.ID.circle(0, 0, hsup, col = adjustcolor( col, alpha.f = 0.5) , inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, absolue = FALSE)
-  lambert.ID.circle(0, 90, hsup, col = adjustcolor( col, alpha.f = 0.5) , inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, absolue = FALSE)
-  lambert.ID.circle(0, -90, hsup, col = adjustcolor( col, alpha.f = 0.5) , inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, absolue = FALSE)
-  lambert.ID.circle(90, -90, hsup, col = adjustcolor( col, alpha.f = 0.5) , inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, absolue = FALSE)
-
-  #on.exit(par(old.par))
-}
-
-#' Place des points X, Y et Z dans un repère Lambert
-#' @export
-lambert.XYZ <- function( X, Y , Z, pt.names = NA, labels = NA, label.pos = NULL,
-                                   radlab = FALSE, start = 0, clockwise = TRUE,
-                                   label.prop = 1.1, main = "", xlab = "", ylab = "", line.col = par("fg"),
-                                   lty = par("lty"), lwd = par("lwd"), mar = c(2, 2, 3, 2),
-                                   show.grid = TRUE, show.grid.labels = 10, show.radial.grid = TRUE,
-                                   grid.col = "gray", grid.bg = "transparent",
-                                   grid.left = FALSE, grid.unit = NULL, type = 'o', pt.col = "blue3", bg = pt.col,
-                                   inc.lim = NULL, radial.labels = NULL,
-                                   boxed.radial = TRUE, poly.col = NA, add = FALSE,
-                                   dec.min = -90, dec.max = 270, new = TRUE, pch = 21)
-{
-  I <- to.polar.I(X, Y, Z)
-  D <- to.polar.D(X, Y, Z)
-  lambert.ID(I, D, pt.names = pt.names, label.pos = label.pos, main = main, show.grid = show.grid,
-             inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, pt.col = pt.col,  pch = pch, new = new, lty = lty, type = type)
-
-}
-
-#' Place des points X, Y et Z dans un repère Lambert avec un data.frame
-#' @export
-lambert.XYZ.specimen <- function( Data, Y , Z, pt.names = "", labels = NA, label.pos = NULL,
-                         radlab = FALSE, start = 0, clockwise = TRUE,
-                         label.prop = 1.1, main = NULL, xlab = "", ylab = "", line.col = "blue3",
-                         lty = par("lty"), lwd = par("lwd"), mar = c(2, 2, 3, 2),
-                         show.grid = TRUE, show.grid.labels = 10, show.radial.grid = TRUE,
-                         grid.col = "lightgray", grid.bg = "transparent",
-                         grid.left = FALSE, grid.unit = NULL, type = 'o', pt.col = "blue", bg = pt.col,
-                         inc.lim = c(0, 90), radial.labels = NULL,
-                         boxed.radial = TRUE, poly.col = NA, add = FALSE,
-                         dec.min = -90, dec.max = 270, new = TRUE, pch = 21, ...)
-{
-  eta <- NULL
-  if(is.data.frame(Data)) {
-    X <- Data$X
-    Y <- Data$Y
-    Z <- Data$Z
-    if (is.null(pt.names))
-      eta <- Data$step
-    if (is.null(main))
-      main <- as.character(Data$name[1])
-  } else {
-    X <- Data
-    if (!is.null(pt.names))
-      eta <- pt.names
-  }
-  I <- to.polar.I(X, Y, Z)
-  D <- to.polar.D(X, Y, Z)
-
-  if (is.null(label.pos)) {
-    label.pos$I = c(90)
-    label.pos$D = seq(-90, 270, by=90)
-  }
-  lambert.ID(I, D, pt.names = pt.names, label.pos = label.pos, main = main, show.grid = show.grid, type = "l",
-                  grid.col = grid.col,
-             inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, line.col = line.col, pt.col = pt.col, bg= par("fg"), new = new)
-  lambert.ID(I, D, pt.names = "", label.pos = label.pos, main = "", show.grid = FALSE,
-                  inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, line.col = line.col, pt.col = pt.col,  pch = pch, type=type, new = FALSE)
-}
-
-#' Place des points I et D dans un repère Lambert avec un data.frame
-#' @export
-lambert.ID.specimen <- function( Data, D , pt.names = "", labels = NA, label.pos = NULL,
-                                       radlab = FALSE, start = 0, clockwise = TRUE,
-                                       label.prop = 1.1, main = NULL, xlab = "", ylab = "", line.col = "blue3",
-                                       lty = par("lty"), lwd = par("lwd"), mar = c(2, 2, 3, 2),
-                                       show.grid = TRUE, show.grid.labels = 10, show.radial.grid = TRUE,
-                                       grid.col = "lightgray", grid.bg = "transparent",
-                                       grid.left = FALSE, grid.unit = NULL, type = 'o', pt.col = "blue3", bg = pt.col,
-                                       inc.lim = c(0, 90), radial.labels = NULL,
-                                       boxed.radial = TRUE, poly.col = NA, add = FALSE,
-                                       dec.min = -90, dec.max = 270, new = TRUE, pch = 21, ...)
-{
-  eta <- NULL
-  if(is.data.frame(Data)) {
-    I <- Data$I
-    D <- Data$D
-    if (is.null(pt.names))
-      eta <- Data$step
-    if (is.null(main))
-      main <- as.character(Data$name[1])
-  } else {
-    I <- Data
-    if (!is.null(pt.names))
-      eta <- pt.names
-  }
-
-  if (is.null(label.pos)) {
-    label.pos$I = c(90)
-    label.pos$D = seq(-90, 270, by=90)
-  }
-  lambert.ID(I, D, pt.names = pt.names, label.pos = label.pos, main = main, show.grid = show.grid, type = "l",
-                  grid.col = grid.col,
-                  inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, line.col = line.col, pt.col = pt.col, bg= par("fg"), new = new)
-  lambert.ID(I, D, pt.names = "", label.pos = label.pos, main = "", show.grid = FALSE,
-                  inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, line.col = line.col, pt.col = pt.col,  pch = pch, new = FALSE, type=type)
-}
-
-#' Trace un diagramme de Zijderveld type 1
-#' @param Data soit une data.frame avec les mesures X, Y et Z, soit que les valeurs de X
-#' @param Y les valeurs de Y, si Data n''est pas une data.frame
-#' @param Z les valeurs de Z, si Data n''est pas une data.frame
-#' @param panel.first = grid() : affiche une grille
-#' @param pt.name = "": n'affiche rien. pt.name = NULL: affiche les étapes si Data est une data.frame
-#' @param legend.pos = NULL : n'affiche pas la legende. legend.pos = "topleft" affiche en haut à gauche
-#' @export
-zijderveld1<- function(Data, Y = NULL, Z = NULL, pt.names = "", main = NULL, panel.first = NULL, pt.col = c("forestgreen", "blue3"),
-                            isometric = TRUE, ylim = NULL, legend.pos = NULL, legend.txt = c("(Y, X)", "(Y, Z)"), new = TRUE, ...)
-{
-  eta <- NULL
-  if(is.data.frame(Data)) {
-    X <- Data$X
-    Y <- Data$Y
-    Z <- Data$Z
-    if (is.null(pt.names))
-      eta <- Data$step
-    else
-      eta <- pt.names
-
-    if (is.null(main))
-      main <- as.character(Data$name[1])
-  } else {
-    X <- Data
-    if (!is.null(pt.names))
-      eta <- pt.names
-  }
-
-  if (isometric == TRUE) {
-     asp <- 1
-  } else {
-     asp <- NA
-  }
-
-  if (is.null(ylim)) {
-    Y.r <- range(X)
-    Z.r <- range(Z)
-    ylim <- c(min(Y.r[1], -Z.r[2]), max(Y.r[2], -Z.r[1]))
-    if (isometric == TRUE) {
-      if (ylim[1]>0)
-        ylim[1]<-0
-      if (ylim[2]<0)
-        ylim[2]<-0
-
-    }
-
-  }
-
-  if (new == TRUE) {
-    plot(Y, X, type = "o", pch = 21, main = main, col = pt.col[1],  bg = adjustcolor( pt.col[1], alpha.f = 0.8), axes = FALSE,
-         panel.first = panel.first, xlab = "", ylab = "", ylim = ylim, asp = asp, xaxt="n", yaxt="n", new = new, ...)
-
-
-
-    if (!is.null(legend.pos))
-      legend(legend.pos, legend.txt, pch = c(19, 21), col = pt.col, bg = c(par("bg"), adjustcolor( pt.col[1], alpha.f = 0.8), adjustcolor( pt.col, alpha.f = 0.05)),
-             box.col = par("bg"), title = "")
-
-    ax1 <- axis(1, pos = 0,  col = "darkgray")
-    ax2 <- axis(2, pos = 0,  col = "darkgray") # Ordonnées
-
-    text(0, ax2[length(ax2)], "+X", col = "gray5", adj = c(-.5, 1), cex = par("cex.lab"))
-    text(0, ax2[1], "+Z", col = "gray5", adj = c(-.5, 0), cex = par("cex.lab"))
-    text( ax1[length(ax1)], 0, "+Y", col = "gray5", adj = c(1, -.5), cex = par("cex.lab"))
-
-  } else {
-    lines(Y, X, type = "o", pch = 21, col = pt.col[1], bg = adjustcolor( pt.col[1], alpha.f = 0.8), ...)
-  }
-
-  lines(Y, -Z, type = "o", pch = 21, col = pt.col[2], bg = adjustcolor( pt.col[2], alpha.f = 0.05), ...)
-
-  text(jitter(Y, 5, amount = 0), jitter(X, 5, amount = 0), eta, cex = par("cex.lab"))
-
-}
-
-#' Trace un diagramme de Zijderveld type 2
-#' @export
-zijderveld2<- function(Data, Y = NULL, Z = NULL, pt.names = "", main = NULL, panel.first = NULL, pt.col = c("forestgreen", "blue3"), isometric = TRUE,
-                            ylim = NULL, legend.pos = NULL, new = TRUE, ...)
-{
-  eta <- NULL
-  if(is.data.frame(Data)) {
-    X <- Data$X
-    Y <- Data$Y
-    Z <- Data$Z
-    if (is.null(main))
-      main <- as.character(Data$name[1])
-    if (is.null(pt.names))
-      eta <- Data$step
-  } else {
-    X <- Data
-    if (!is.null(pt.names))
-      eta <- pt.names
-  }
-
-  if (isometric == TRUE) {
-    asp <- 1
-  } else {
-    asp <- NA
-  }
-
-  if (is.null(ylim)) {
-    Y.r <- range(Y)
-    Z.r <- range(Z)
-    ylim <- c(min(Y.r[1], -Z.r[2]), max(Y.r[2], -Z.r[1]))
-    if (isometric == TRUE) {
-      if (ylim[1]>0)
-        ylim[1]<-0
-      if (ylim[2]<0)
-        ylim[2]<-0
-    }
-  }
-
-  if (new == TRUE) {
-    plot(-X, Y, main = main, type = "o", pch = 21, col = pt.col[1], bg = adjustcolor( pt.col[1], alpha.f = 0.8), axes = FALSE,
-         panel.first = panel.first, xlab = "", ylab = "", ylim = ylim, asp = asp, new = new)
-
-    text(jitter(-X, 5, amount = 0), jitter(Y, 5, amount = 0), eta, cex = par("cex.lab"))
-
-    if (!is.null(legend.pos))
-      legend(legend.pos, c("(-X, Y)", "(-X, Z)"), pch = c(19, 21), col = pt.col, bg = c(par("bg"), adjustcolor( pt.col[1], alpha.f = 0.8), adjustcolor( pt.col, alpha.f = 0.05)),
-             box.col = par("bg"), title = "")
-
-    ax1 <- axis(1, pos = 0, col = "darkgray")
-    ax2 <- axis(2, pos = 0, col = "darkgray") # Ordonnées
-
-    text(0, ax2[length(ax2)], "+Y", col = "gray5", adj = c(-.5, 1), cex = par("cex.lab"))
-    text(0, ax2[1], "+Z", col = "gray5", adj = c(-.5, 0), cex = par("cex.lab"))
-    text( ax1[length(ax1)] , 0, "-X", col = "gray5", adj = c(1, -.5), cex = par("cex.lab"))
-
-
-  } else {
-    lines(-X, Y, type = "o", pch = 21, col = pt.col[1], bg = adjustcolor( pt.col[1], alpha.f = 0.8), ...)
-  }
-
-  lines(-X, -Z, type = "o", pch = 21, col = pt.col[2], bg = adjustcolor( pt.col[2], alpha.f = 0.05))
-
-  text(jitter(-X, 5, amount = 0), jitter(Y, 5, amount = 0), eta, cex = par("cex.lab"))
-
-}
-
-# Repliement ----
-
-#' repliement
-#' Calcul le repliement pour les trois position à plat "P", de chant "C" et debout "D"
-#' pour les matériaux déplacés, la référence est le nord donc -angD
-#' @param data valeur de l'inclinaison, ou une data.frame en degrés
-#' @param dec en degrés
-#' @param position trois valeurs posible à plat "P", de chant "C" et debout "D"
-#' @return en degrés
-#' @export
-repliement <- function (data, dec = NULL, aim = 1, name = NULL, number = NULL,  position = "P")
-{
-
-  if (is.null(dec) ) {
-    inc <- data$I
-    dec <- data$D
-    aim <- data$F
-    nom <- data$name
-    num <- data$number
-  }
-  else {
-    inc <- data
-    dec <- dec
-    if (is.null(name))
-      nom <- rep("", length(inc))
-    else
-      nom <- as.character(name)
-
-    if (is.null(number))
-      num <- c(1:length(inc))
-    else
-      num <- number
-  }
-  if (length(aim) < length(inc))
-    aim <- rep(aim, length(inc))
-
-  if (length(position) < length(inc))
-    position <- rep(position, length(inc))
-
-  X <- to.cartesian.X(inc, dec, aim)
-  Y <- to.cartesian.Y(inc, dec, aim)
-  Z <- to.cartesian.Z(inc, dec, aim)
-
+to.polar <- function(X, Y, Z)
+{ #en A/m
   res <- NULL
-
- # Carottage à plat, repère conventionnel : Calcul des angles I-D pour les trois positions
-  for (i in 1: length(inc)) {
-
-    res$name <- c(res$name, as.character(nom[i]))
-    res$number <- c(res$number, num[i])
-    res$F <- c(res$F, aim[i])
-
-    if (position[i] == "O") { # origine
-      res$D <- c(res$D, angleD( X[i], Y[i] ) /pi * 180 )
-      res$I <- c(res$I, n_arcsin( Z[i]/aim[i] ) /pi * 180)
-
-      res$P <- c(res$P, "O")
+  resT <- NULL
+  for (i in 1:length(X)) {
+    res$X <- X[i]
+    res$Y <- Y[i]
+    res$Z <- Z[i]
+    aim <-  as.numeric( sqrt(X[i]*X[i] + Y[i]*Y[i] + Z[i]*Z[i]) )
+    if ( aim== 0) {
+      res$I <- as.numeric( 0 )
+      res$D <- as.numeric( 0 )
+    } else {
+      res$I <- as.numeric( n_arcsin(Z[i]/aim) /pi*180 )
+      res$D <- as.numeric( angleD(X[i],Y[i]) /pi*180 )
     }
 
-    if (position[i] == "P") { # à plat
-      t.d <- angleD(abs(X[i]), -Y[i]) /pi * 180
-      t.i <- n_arcsin(Z[i]/aim[i]) /pi * 180
+    res$F <- aim
 
-      if (X[i]>= 0 && Z[i]>=0 ) {
-        t.d <- -angleD(X[i], Y[i]) /pi * 180
-      }
-      if (X[i]> 0 && Z[i]<0 ) {
-        t.d <- -angleD(X[i], -Y[i]) /pi * 180
-      }
-
-      if (X[i]< 0 && Z[i]>0 ) {
-        t.d <- angleD(-X[i], Y[i]) /pi * 180
-      }
-      if (X[i]< 0 && Z[i]<0 ) {
-        t.d <- angleD(-X[i], -Y[i]) /pi * 180
-      }
-
-      res$I <- c(res$I, t.i)
-      res$D <- c(res$D, t.d )
-
-      res$P <- c(res$P, "P")
-    }
-
-    if (position[i] == "C") { #  de chant -->> OK
-
-      t.i <- sign(Z[i]) *abs(n_arcsin( -Y[i]/aim[i])) /pi * 180
-      t.d <- angleD( X[i], Z[i]) /pi * 180
-
-      if (X[i]> 0 && Y[i]<0 ) {
-        t.d <- -t.d
-      }
-
-      if (X[i]< 0 && Y[i]>0 ) {
-        t.d <- t.d - 180
-
-      }
-
-
-      if (X[i]<= 0 && Y[i]<=0 ) {
-         t.d <- 180 - t.d
-      }
-
-      # normalisation de la déclinaison
-      if (t.d> 270)
-        t.d <- t.d - 360
-      if (t.d < -90)
-        t.d <- t.d + 360
-
-      res$I <- c(res$I, t.i )
-      res$D <- c(res$D, t.d )
-      res$P <- c(res$P, "C")
-    }
-
-    if (position[i] == "D") { # debout
-
-      t.i <- sign(Z[i]) * n_arcsin(abs(X[i])/aim[i]) /pi * 180
-      t.d <- angleD(Y[i], -Z[i]) /pi * 180
-
-      if (X[i]> 0 && Y[i]<=0 ) {
-        t.d <- t.d - 180
-      }
-
-      if (X[i]< 0 && Y[i]>0 ) {
-        t.d <- - t.d
-      }
-      if (X[i]< 0 && Y[i]<=0 ) {
-        t.d <- 180 - t.d
-      }
-
-      res$I <- c(res$I, t.i)
-      res$D <- c(res$D, t.d)
-      res$P <- c(res$P, "D")
-     }
-
-    tmp <- to.cartesian(t.i, t.d, aim = aim[i])
-    res$X <- c(res$X, tmp$X)
-    res$Y <- c(res$Y, tmp$Y)
-    res$Z <- c(res$Z, tmp$Z)
+    resT <- c(resT, res)
   }
-
-  res.frame <- data.frame( number =  as.numeric(res$number), name = as.character(res$name),
-                           I = as.numeric(res$I), D = as.numeric(res$D), F = as.numeric(res$F),
-                           X = as.numeric(res$X), Y =as.numeric(res$Y), Z =as.numeric(res$Z), position = res$P, stringsAsFactors = FALSE)
-
-  return(res.frame)
+  return( resT )
 }
 
-#' repliement automatique
-#' Recherche la position qui permet d'avoir une position suivant les trois positions possible
-#' donnant l'inclinaison la plus proche de la valeur inc.critique (en degrés)
-#' @param  data valeur de l'inclinaison, ou une data.frame en degrés
-#' @param  dec en degrés
-#' @return I et D en degrés
+## Rotation ----
+
+#' Fait tourner les mesures selon deviation
+#' @param Data un data.frame possédant la variable $step de type chr
+#' @param deviation valeur de l'angle de rotation (en degrés).
 #' @export
-repliement.auto <- function (data, dec = NULL, aim = 1, name = NULL, number = NULL, inc.critique = 90)
+rotation.mesure <- function(Data, deviation)
 {
+  res <- Data
 
-  if (is.null(dec) ) {
-    inc <- data$I
-    dec <- data$D
-    aim <- data$F
-    nom <- data$name
-    num <- data$number
+  for (i in 1 : length(res$D)) {
+    res$D[i] <- as.numeric(res$D[i] + deviation)
+    res$X[i] <- as.numeric(to.cartesian.X(res$I[i], res$D[i], res$F[i]) )
+    res$Y[i] <- as.numeric(to.cartesian.Y(res$I[i], res$D[i], res$F[i]) )
+    res$Z[i] <- as.numeric(to.cartesian.Z(res$I[i], res$D[i], res$F[i]) )
   }
-  else {
-    inc <- data
-    dec <- dec
-    if (is.null(name))
-      nom <- rep("", length(inc))
-    else
-      nom <- as.character(name)
-
-    if (is.null(number))
-      num <- c(1:length(inc))
-    else
-      num <- number
-  }
-
-  res <- NULL
-
-  res.P <- repliement(inc, dec, aim, name = nom, number = num, position = "P")
-  res.C <- repliement(inc, dec, aim, name = nom, number = num, position = "C")
-  res.D <- repliement(inc, dec, aim, name = nom, number = num, position = "D")
-
-  for (i in 1: length(inc)) {
-    # inc.sup <- 90
-    res.tmp <- NULL
-    # Initialisation avec la position à Plat
-    res.tmp$I <- res.P$I[i]
-    res.tmp$D <- res.P$D[i]
-    res.tmp$F <- res.P$F[i]
-    res.tmp$X <- res.P$X[i]
-    res.tmp$Y <- res.P$Y[i]
-    res.tmp$Z <- res.P$Z[i]
-    res.tmp$position <- res.P$position[i]
-
-    inc.sup <- abs(inc.critique - abs(res.P$I[i]))
-
-    # Comparaison avec la position de Chant
-    if (abs(inc.critique - abs(res.C$I[i])) <= inc.sup) {
-      res.tmp$I <- res.C$I[i]
-      res.tmp$D <- res.C$D[i]
-      res.tmp$F <- res.C$F[i]
-      res.tmp$position <- res.C$position[i]
-      res.tmp$X <- res.C$X[i]
-      res.tmp$Y <- res.C$Y[i]
-      res.tmp$Z <- res.C$Z[i]
-      inc.sup <- abs(inc.critique - abs(res.C$I[i]))
-    }
-    # Comparaison avec la position Debout
-    if (abs(inc.critique - abs(res.D$I[i])) <= inc.sup) {
-      res.tmp$I <- res.D$I[i]
-      res.tmp$D <- res.D$D[i]
-      res.tmp$F <- res.D$F[i]
-      res.tmp$position <- res.D$position[i]
-      res.tmp$X <- res.D$X[i]
-      res.tmp$Y <- res.D$Y[i]
-      res.tmp$Z <- res.D$Z[i]
-
-      #inc.sup <- abs(inc.critique-abs(res.D$I))
-    }
-
-    res$I <- c(res$I, res.tmp$I)
-    res$D <- c(res$D, res.tmp$D)
-    res$F <- c(res$F, res.tmp$F)
-
-    res$name <- c(res$name, nom[i])
-    res$number <- c(res$number, num[i])
-
-    res$X <- c(res$X, res.tmp$X)
-    res$Y <- c(res$Y, res.tmp$Y)
-    res$Z <- c(res$Z, res.tmp$Z)
-
-    res$position <- c(res$position, res.tmp$position)
-  }
-
-  res <- data.frame(number = res$number, name = res$name, I = as.numeric(res$I), D = as.numeric(res$D), F = as.numeric(res$F),
-                    X = as.numeric(res$X), Y = as.numeric(res$Y), Z = as.numeric(res$Z), position = res$position, stringsAsFactors = FALSE)
 
   return(res)
 }
 
-#' repliement.tranche
-#' Recherche la position qui permet d'avoir une position suivant la position debout ou dechant
-#' donnant l'inclinaison la plus proche de la valeur inc.critique (en degrés)
-#' @param  data valeur de l'inclinaison, ou une data.frame en degrés
-#' @param  dec en degrés
-#' @return I et D en degrés
+# Fonctions sur fichiers ----
+## Creation fichiers mesures ----
+#' Fonction de création de fichier pour les magnétomètres, pour des matériaux déplacés ----
+#' @param encoding mettre "macroman" pour les mesures au molspin
 #' @export
-repliement.tranche <- function (data, dec = NULL, aim = 1,  name = NULL, number = NULL, inc.critique = 90)
+genere.AMD <- function(file.AMD = "fichier.AMD", list.ech, shape = "Cyl" , encoding = "macroman")
 {
+  entete<- c( "Spinner_Molspin 2008" ,
+              "Commune : à définir",
+              "Site : à définir",
+              "Latitude  :   0°  0'  0\" ",
+              "Longitude :   0°  0'  0\" IGRF:+00.0",
+              "Prélèvements sur matériaux déplacés",
+              "Type de carottage : à plat",
+              paste0("Date de création : " , format(Sys.time(), "%d/%m/%Y")),
+              "","")
 
-  if (is.null(dec) ) {
-    inc <- data$I
-    dec <- data$D
-    aim <- data$F
-    nom <- data$name
-    num <- data$number
-  }
-  else {
-    inc <- data
-    dec <- dec
-    if (is.null(name))
-      nom <- rep("", length(inc))
-    else
-      nom <- as.character(name)
-
-    if (is.null(number))
-      num <- c(1:length(inc))
-    else
-      num <- number
+  txt.mesures <- entete
+  for (i in 1:length(list.ech)) {
+    txt.mesures <- c( txt.mesures,
+                      paste("Id:", format(list.ech[i], width = 13), "in:000.0 az:000.0 Tet:000.0 Psy:000.0 v:01.00 com:TH 0.0µT ", shape, sep = ""),
+                      "Repère:",
+                      "CompDes:  T1:0000T+  T2:0000T+  T3:0000T-  T4:0000T-",
+                      "")
   }
 
-  res <- NULL
 
-  res.C <- repliement(inc, dec, aim, name = nom, number = num, position = "C")
-  res.D <- repliement(inc, dec, aim, name = nom, number = num, position = "D")
+  # Ecriture du fichier
 
-  for (i in 1: length(inc)) {
-
-    res.tmp <- NULL
-    # Initialisation avec la position de Chant
-
-    res.tmp$I <- res.C$I[i]
-    res.tmp$D <- res.C$D[i]
-    res.tmp$F <- res.C$F[i]
-    res.tmp$position <- res.C$position[i]
-    res.tmp$X <- res.D$X[i]
-    res.tmp$Y <- res.D$Y[i]
-    res.tmp$Z <- res.D$Z[i]
-    inc.sup <- abs(inc.critique - abs(res.C$I[i]))
-
-    # Comparaison avec la position Debout
-    if (abs(inc.critique - abs(res.D$I[i])) <= inc.sup) {
-      res.tmp$I <- res.D$I[i]
-      res.tmp$D <- res.D$D[i]
-      res.tmp$F <- res.D$F[i]
-      res.tmp$position <- res.D$position[i]
-      res.tmp$X <- res.D$X[i]
-      res.tmp$Y <- res.D$Y[i]
-      res.tmp$Z <- res.D$Z[i]
-     }
-
-    res$number <- c(res$number, num[i])
-    res$name <- c(res$name, nom[i])
-    res$I <- c(res$I, res.tmp$I)
-    res$D <- c(res$D, res.tmp$D)
-    res$F <- c(res$F, res.tmp$F)
-    res$X <- c(res$X, res.tmp$X)
-    res$Y <- c(res$Y, res.tmp$Y)
-    res$Z <- c(res$Z, res.tmp$Z)
-    res$position <- c(res$position, res.tmp$position)
-  }
-  res.Final <- data.frame( res , stringsAsFactors = FALSE)
-  return(res.Final)
+  filCon <- file(file.AMD, encoding = encoding)
+  writeLines(txt.mesures, filCon)
+  close(filCon)
 }
 
-# Fonction sur fichiers ----
+#' Fonction de création de fichier pour les magnétomètres, pour des structures en place ----
+#' @param encoding mettre "macroman" pour les mesures au molspin
+#' @export
+genere.AMP <- function(file.AMP = "fichier.AMP", list.ech, shape = "Cyl" , encoding = "macroman")
+{
+  entete<- c( "Spinner_Molspin 2008" ,
+              "Commune : à définir",
+              "Site : à Definir",
+              "Latitude  :   0°  0'  0\" ",
+              "Longitude :   0°  0'  0\" IGRF:+00.0",
+              "Prélèvements sur structure en place",
+              "Type de carottage : à plat",
+              paste0("Date de création : " , format(Sys.time(), "%d/%m/%Y")),
+              "","")
 
+  txt.mesures <- entete
+  for (i in 1:length(list.ech)) {
+    txt.mesures <- c( txt.mesures,
+                      paste("Id:", format(list.ech[i], width = 13), "in:000.0 az:000.0 Tet:000.0 Psy:000.0 v:01.00 com:TH 0.0µT ", shape, sep = ""),
+                      "Orient:NM  J: 1  M: 1  A:2000  H: 00  M: 0  S: 0  SM:000.0",
+                      "CompDes:  T1:0000T+  T2:0000T+  T3:0000T-  T4:0000T-",
+                      "")
+  }
+
+
+  # Ecriture du fichier
+
+  filCon <- file(file.AMP, encoding = encoding)
+  writeLines(txt.mesures, filCon)
+  close(filCon)
+}
+## Lectures fichiers ----
 #' read.AM.mesures
 #' Lecture des mesures d'un fichier AM
 #' @param encoding  Pour les fichiers du magnétomètre, il faut "macroman" -> difficle à connaitre, peut être "latin1" ou "utf8".
@@ -1862,7 +750,7 @@ read.AM.info <- function (file.AM, encoding="macroman")
 
   list.mesure <- NULL
   list.mesure <- data.frame(number = c(1: length(g)), name = lname, inc = as.numeric(linc), az = as.numeric(laz), tet = as.numeric(ltet), psy = as.numeric(lpsy), TH =as.numeric(lTH),
-                         shape = lshape, vol =as.numeric(lv),  T1 = as.numeric(lT1), T2 = as.numeric(lT2), T3 = as.numeric(lT3), T4 = as.numeric(lT4), stringsAsFactors = FALSE)
+                            shape = lshape, vol =as.numeric(lv),  T1 = as.numeric(lT1), T2 = as.numeric(lT2), T3 = as.numeric(lT3), T4 = as.numeric(lT4), stringsAsFactors = FALSE)
 
 
   return(list.mesure)
@@ -1902,70 +790,6 @@ read.AM.orient <- function (file.AM, encoding="macroman")
 
 
   return(list.mesure)
-}
-
-#' Fonction de création de fichier pour les magnétomètres, pour des matériaux déplacés ----
-#' @param encoding mettre "macroman" pour les mesures au molspin
-#' @export
-genere.AMD <- function(file.AMD = "fichier.AMD", list.ech, shape = "Cyl" , encoding = "macroman")
-{
-  entete<- c( "Spinner_Molspin 2008" ,
-              "Commune : à définir",
-              "Site : à définir",
-              "Latitude  :   0°  0'  0\" ",
-              "Longitude :   0°  0'  0\" IGRF:+00.0",
-              "Prélèvements sur matériaux déplacés",
-              "Type de carottage : à plat",
-              paste0("Date de création : " , format(Sys.time(), "%d/%m/%Y")),
-              "","")
-
-  txt.mesures <- entete
-  for (i in 1:length(list.ech)) {
-    txt.mesures <- c( txt.mesures,
-                      paste("Id:", format(list.ech[i], width = 13), "in:000.0 az:000.0 Tet:000.0 Psy:000.0 v:01.00 com:TH 0.0µT ", shape, sep = ""),
-                      "Repère:",
-                      "CompDes:  T1:0000T+  T2:0000T+  T3:0000T-  T4:0000T-",
-                      "")
-  }
-
-
-  # Ecriture du fichier
-
-  filCon <- file(file.AMD, encoding = encoding)
-  writeLines(txt.mesures, filCon)
-  close(filCon)
-}
-
-#' Fonction de création de fichier pour les magnétomètres, pour des structures en place ----
-#' @param encoding mettre "macroman" pour les mesures au molspin
-#' @export
-genere.AMP <- function(file.AMP = "fichier.AMP", list.ech, shape = "Cyl" , encoding = "macroman")
-{
-  entete<- c( "Spinner_Molspin 2008" ,
-              "Commune : à définir",
-              "Site : à Definir",
-              "Latitude  :   0°  0'  0\" ",
-              "Longitude :   0°  0'  0\" IGRF:+00.0",
-              "Prélèvements sur structure en place",
-              "Type de carottage : à plat",
-              paste0("Date de création : " , format(Sys.time(), "%d/%m/%Y")),
-              "","")
-
-  txt.mesures <- entete
-  for (i in 1:length(list.ech)) {
-    txt.mesures <- c( txt.mesures,
-                      paste("Id:", format(list.ech[i], width = 13), "in:000.0 az:000.0 Tet:000.0 Psy:000.0 v:01.00 com:TH 0.0µT ", shape, sep = ""),
-                      "Orient:NM  J: 1  M: 1  A:2000  H: 00  M: 0  S: 0  SM:000.0",
-                      "CompDes:  T1:0000T+  T2:0000T+  T3:0000T-  T4:0000T-",
-                      "")
-  }
-
-
-  # Ecriture du fichier
-
-  filCon <- file(file.AMP, encoding = encoding)
-  writeLines(txt.mesures, filCon)
-  close(filCon)
 }
 
 #' Lecture des mesures d'un fichier Pal (*.txt)
@@ -2273,7 +1097,7 @@ read.AM.oldType.info <- function (file.AM, encoding = "macroman")
   return(list.mesure)
 }
 
-
+## Extractions de mesures ----
 #' Extraction des mesures correspondant à un nom
 #' @export
 extract.mesures.specimen.name <- function( specimen.name, list.mesure)
@@ -2299,196 +1123,61 @@ extract.mesures.specimen.number <- function( specimen.number, list.mesure)
   return(res.list)
 }
 
+
+#' Supprime les étapes à la valeur step.value et avec les codes step.code
+#' Utiliser par défaut pour enlever les étapes d'anisotropie
+#' @param Data un data.frame possédant la variable $step de type chr
+#' @param step.value valeur de la température . Par defaut NUll, alors la tempértature est retrouvée automatiquement avec les step.code définis. Si step.value = '', alors suppression de toutes les étapes avec le step.code
+#' @param step.code chaîne de caractère représentant par exemple les étapes de l'anisotropie "Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB", ou des erreurs "??"
+#' @param verbose affiche des commentaires et avertissements
+#' @export
+remove.step <- function(Data, step.value = NULL, step.code = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"), verbose = TRUE )
+{
+  selec <- NULL
+  if (is.null(step.value)) {
+    for (i in 1:length(Data$step)) {
+      if (substring(Data$step[i], 4) == step.code[3])
+        step.value <- Data$step.value[i]
+    }
+  } else  if (step.value == "") {
+    for (i in 1:length(Data$step))
+    {
+      for (j in 1: length(step.code)) {
+        selec <- c( selec, which(substring(Data$step, 4) == step.code[j]) )
+      }
+    }
+  }
+
+  remove.step <- trimws(paste(step.value, step.code, sep = ""))
+
+  for (i in 1:length(remove.step)) {
+    selec <- c( selec, which(trimws(Data$step) == trimws(remove.step[i])) )
+  }
+
+  if (verbose == TRUE) {
+    if (length(selec)== 0) {
+      warning("No step to remove")
+      return(Data)
+    } else {
+      print(paste(Data[selec,]$step))
+    }
+  }
+
+  if (length(selec) > 0) {
+    res.list <- Data[-selec,]
+  }
+  else {
+    res.list <- Data
+  }
+
+  return(res.list)
+}
+
+
+
+
 # Anisotropy Function ----
-
-#' Calcul la matrice d'anisotropie symetrisée et normalisé pour un spécimen
-#' qui sert à la correction
-#' @param mesures data.frame contenant les mesures
-#' @param step.value typiquement la température des mesures d'anisotropie
-#' @param step.code code indiquant les étapes. les noms peuvent changer, mais pas l'ordre
-#' @param volume la valeur du volume du spécimen
-#' @param TH la valeur du champ appliqué
-#' @return un data.frame avec les colonnes "L1", "L1.Inc", "L1.Dec", "L2", "L2.Inc", "L2.Dec", "L3", "L3.Inc", "L3.Dec", "F13", "F12", "F23"
-#' @export
-anisotropy.matrix.symetric <- function(mesures, step.value, step.code = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"), ...)
-{
-
-  ani.step <- trimws(paste(as.character(step.value), step.code, sep = "") )
-
-  selec <- NULL
-  for (i in 1:length(ani.step)) {
-    selec <- c( selec, which(trimws(mesures$step) == trimws(ani.step[i])) )
-  }
-
-  res.list <- NULL
-  res.list <- mesures[selec,]
-  res.list <- res.list
-
-  mat.plus <- matrix( c( res.list$X[3], res.list$X[5], res.list$X[1],
-                         res.list$Y[3], res.list$Y[5], res.list$Y[1],
-                         res.list$Z[3], res.list$Z[5], res.list$Z[1]) , 3, 3)
-
-
-  mat.moins <- matrix( c( res.list$X[4], res.list$X[6], res.list$X[2],
-                          res.list$Y[4], res.list$Y[6], res.list$Y[2],
-                          res.list$Z[4], res.list$Z[6], res.list$Z[2]) , 3, 3)
-  mat.reel <- (mat.plus - mat.moins)/2 #/ (volume * 1E-6)# / coef.norm
-
-  # Symetrisation
-  coef.norm <- 1 #TH* 10/ (4*pi)
-  kxx <- mat.reel[1,1] / coef.norm
-  kyy <- mat.reel[2,2] / coef.norm
-  kzz <- mat.reel[3,3] / coef.norm
-  kxy <- (mat.reel[1,2] + mat.reel[2,1]) / 2 / coef.norm
-  kxz <- (mat.reel[1,3] + mat.reel[3,1]) / 2 / coef.norm
-  kyz <- (mat.reel[2,3] + mat.reel[3,2]) / 2 / coef.norm
-
-  # Normalisation
-  suscept <- (kxx + kyy + kzz)/3
-  mat.sym.norm <- matrix( c( kxx / suscept, kxy / suscept, kxz / suscept,
-                             kxy / suscept, kyy / suscept, kyz / suscept,
-                             kxz / suscept, kyz / suscept, kzz / suscept) , 3, 3)
-
-  return(mat.sym.norm)
-
-}
-
-
-#' Calcul du vecteur propre et de la matrice d'anisotropie pour un spécimen
-#' @param mesures data.frame contenant les mesures
-#' @param step.value typiquement la température des mesures d'anisotropie
-#' @param step.code code indiquant les étapes. les noms peuvent changer, mais pas l'ordre
-#' @param volume la valeur du volume du spécimen
-#' @param TH la valeur du champ appliqué
-#' @return un data.frame avec les colonnes "L1", "L1.Inc", "L1.Dec", "L2", "L2.Inc", "L2.Dec", "L3", "L3.Inc", "L3.Dec", "F13", "F12", "F23"
-#' @export
-anisotropy.eigen <- function(mesures, step.value, step.code = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"), volume = 1, TH = 1,...)
-{
-
-  #step.code <- c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB")
-  ani.step <- trimws(paste(as.character(step.value), step.code, sep = "") )
-
-  selec <- NULL
-  for (i in 1:length(ani.step)) {
-    selec <- c( selec, which(trimws(mesures$step) == trimws(ani.step[i])) )
-  }
-  res.list <- NULL
-  res.list <- mesures[selec,]
-  res.list <- res.list
-
-  mat.plus <- matrix( c( res.list$X[3], res.list$X[5], res.list$X[1],
-                         res.list$Y[3], res.list$Y[5], res.list$Y[1],
-                         res.list$Z[3], res.list$Z[5], res.list$Z[1]) , 3, 3)
-
-
-  mat.moins <- matrix( c( res.list$X[4], res.list$X[6], res.list$X[2],
-                          res.list$Y[4], res.list$Y[6], res.list$Y[2],
-                          res.list$Z[4], res.list$Z[6], res.list$Z[2]) , 3, 3)
-  mat.reel <- (mat.plus - mat.moins)/2 / (volume * 1E-6)# / coef.norm
-
-  # Symetrisation
-  coef.norm <- TH* 10/ (4*pi)
-  kxx <- mat.reel[1,1] / coef.norm
-  kyy <- mat.reel[2,2] / coef.norm
-  kzz <- mat.reel[3,3] / coef.norm
-  kxy <- (mat.reel[1,2] + mat.reel[2,1]) / 2 / coef.norm
-  kxz <- (mat.reel[1,3] + mat.reel[3,1]) / 2 / coef.norm
-  kyz <- (mat.reel[2,3] + mat.reel[3,2]) / 2 / coef.norm
-
-  # normalisation
-  suscept <- (kxx + kyy + kzz)/3
-  mat.sym.norm <- matrix( c( kxx / suscept, kxy / suscept, kxz / suscept,
-                             0,  kyy / suscept, kyz / suscept,
-                             0, 0, kzz / suscept) , 3, 3)
-
-  # vecteurs et valeurs propres
-  v <- eigen(mat.sym.norm, symmetric = TRUE)
-
-  # calcul des angles I,D des vecteurs propres}
-  v1 <- NULL
-  v1$I<-to.polar.I(v$vectors[1, 1], v$vectors[2, 1], v$vectors[3 ,1])
-  v1$D<-to.polar.D(v$vectors[1, 1], v$vectors[2, 1], v$vectors[3 ,1])
-
-
-  v2 <- NULL
-  v2$I<-to.polar.I(v$vectors[1, 2], v$vectors[2, 2], v$vectors[3 ,2])
-  v2$D<-to.polar.D(v$vectors[1, 2], v$vectors[2, 2], v$vectors[3 ,2])
-
-
-  v3 <- NULL
-  v3$I<-to.polar.I(v$vectors[1, 3], v$vectors[2, 3],v$vectors[3 ,3])
-  v3$D<-to.polar.D(v$vectors[1, 3], v$vectors[2, 3],v$vectors[3 ,3])
-
-
-  if (v3$I<0) {
-    v3$I <- -v3$I
-    v3$D <- D.AM(v3$D +180)
-    v2$I <- -v2$I
-    v2$D <- D.AM(v2$D +180)
-  }
-  F13 <- v$values[1]/v$values[3]
-  F12 <- v$values[1]/v$values[2]
-  F23 <- v$values[2]/v$values[3]
-
-
-  ani <- c(eigen = v, L1 = v1, L2 = v2, L3 = v3, F13 = F13, F12 = F12, F23 = F23)
-  return(ani)
-
-}
-
-#' Calcul les coordonnées des tenseurs propres matrice d'anisotropie
-#' @param mesures data.frame contenant les mesures
-#' @param step.value typiquement la température des mesures d'anisotropie
-#' @param step.code code indiquant les étapes. les noms peuvent changer, mais pas l'ordre
-#' @param volume la valeur du volume du spécimen
-#' @param TH la valeur du champ appliqué
-#' @return un data.frame avec les colonnes "L1", "L1.Inc", "L1.Dec", "L2", "L2.Inc", "L2.Dec", "L3", "L3.Inc", "L3.Dec", "F13", "F12", "F23"
-#' @seealso \code{\link{anisotropy.eigen.tensor}}
-#' @export
-anisotropy.eigen.matrix <- function(mesures, step.value, step.code = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"), volume = 1, TH = 1,...)
-{
-
-  ani.step <- trimws(paste(as.character(step.value), step.code, sep = "") )
-
-  selec <- NULL
-  for (i in 1:length(ani.step)) {
-    selec <- c( selec, which(trimws(mesures$step) == trimws(ani.step[i])) )
-  }
-  res.list <- NULL
-  res.list <- mesures[selec,]
-  res.list <- res.list
-
-  mat.plus <- matrix( c( res.list$X[3], res.list$X[5], res.list$X[1],
-                         res.list$Y[3], res.list$Y[5], res.list$Y[1],
-                         res.list$Z[3], res.list$Z[5], res.list$Z[1]) , 3, 3)
-
-
-  mat.moins <- matrix( c( res.list$X[4], res.list$X[6], res.list$X[2],
-                          res.list$Y[4], res.list$Y[6], res.list$Y[2],
-                          res.list$Z[4], res.list$Z[6], res.list$Z[2]) , 3, 3)
-  mat.reel <- (mat.plus - mat.moins)/2 / (volume * 1E-6)# / coef.norm
-
-  # Symetrisation
-  coef.norm <- TH* 10/ (4*pi)
-  kxx <- mat.reel[1,1] / coef.norm
-  kyy <- mat.reel[2,2] / coef.norm
-  kzz <- mat.reel[3,3] / coef.norm
-  kxy <- (mat.reel[1,2] + mat.reel[2,1]) / 2 / coef.norm
-  kxz <- (mat.reel[1,3] + mat.reel[3,1]) / 2 / coef.norm
-  kyz <- (mat.reel[2,3] + mat.reel[3,2]) / 2 / coef.norm
-
-  # normalisation
-  suscept <- (kxx + kyy + kzz)/3
-  mat.sym.norm <- matrix( c( kxx / suscept, kxy / suscept, kxz / suscept,
-                             0,  kyy / suscept, kyz / suscept,
-                             0, 0, kzz / suscept) , 3, 3)
-
-  # vecteurs et valeurs propres
-  v <- eigen(mat.sym.norm, symmetric = TRUE)
-
-  return(as.matrix(v$vectors))
-
-}
+## Anisotropie totale ----
 
 #' Calcul de la matrice moyenne symétrisée d'anisotropie moyen (anisotropie totale)
 #' @param Data.mesures data.frame contenant les mesures
@@ -2749,7 +1438,196 @@ anisotropy.eigen.tensor.total <- function (mesures, step.value, step.code = c("Z
 }
 
 
+ ## Anisotropie partielle ----
 
+#' Calcul la matrice d'anisotropie symetrisée et normalisé pour un spécimen, à partir de mesures d'anisotropie partielle
+#' qui sert à la correction
+#' @param mesures data.frame contenant les mesures
+#' @param step.value typiquement la température des mesures d'anisotropie
+#' @param step.code code indiquant les étapes. les noms peuvent changer, mais pas l'ordre
+#' @param volume la valeur du volume du spécimen
+#' @param TH la valeur du champ appliqué
+#' @return un data.frame avec les colonnes "L1", "L1.Inc", "L1.Dec", "L2", "L2.Inc", "L2.Dec", "L3", "L3.Inc", "L3.Dec", "F13", "F12", "F23"
+#' @export
+anisotropy.matrix.symetric <- function(mesures, step.value, step.code = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"), ...)
+{
+
+  ani.step <- trimws(paste(as.character(step.value), step.code, sep = "") )
+
+  selec <- NULL
+  for (i in 1:length(ani.step)) {
+    selec <- c( selec, which(trimws(mesures$step) == trimws(ani.step[i])) )
+  }
+
+  res.list <- NULL
+  res.list <- mesures[selec,]
+  res.list <- res.list
+
+  mat.plus <- matrix( c( res.list$X[3], res.list$X[5], res.list$X[1],
+                         res.list$Y[3], res.list$Y[5], res.list$Y[1],
+                         res.list$Z[3], res.list$Z[5], res.list$Z[1]) , 3, 3)
+
+
+  mat.moins <- matrix( c( res.list$X[4], res.list$X[6], res.list$X[2],
+                          res.list$Y[4], res.list$Y[6], res.list$Y[2],
+                          res.list$Z[4], res.list$Z[6], res.list$Z[2]) , 3, 3)
+  mat.reel <- (mat.plus - mat.moins)/2 #/ (volume * 1E-6)# / coef.norm
+
+  # Symetrisation
+  coef.norm <- 1 #TH* 10/ (4*pi)
+  kxx <- mat.reel[1,1] / coef.norm
+  kyy <- mat.reel[2,2] / coef.norm
+  kzz <- mat.reel[3,3] / coef.norm
+  kxy <- (mat.reel[1,2] + mat.reel[2,1]) / 2 / coef.norm
+  kxz <- (mat.reel[1,3] + mat.reel[3,1]) / 2 / coef.norm
+  kyz <- (mat.reel[2,3] + mat.reel[3,2]) / 2 / coef.norm
+
+  # Normalisation
+  suscept <- (kxx + kyy + kzz)/3
+  mat.sym.norm <- matrix( c( kxx / suscept, kxy / suscept, kxz / suscept,
+                             kxy / suscept, kyy / suscept, kyz / suscept,
+                             kxz / suscept, kyz / suscept, kzz / suscept) , 3, 3)
+
+  return(mat.sym.norm)
+
+}
+
+
+#' Calcul du vecteur propre et de la matrice d'anisotropie pour un spécimen
+#' @param mesures data.frame contenant les mesures
+#' @param step.value typiquement la température des mesures d'anisotropie
+#' @param step.code code indiquant les étapes. les noms peuvent changer, mais pas l'ordre
+#' @param volume la valeur du volume du spécimen
+#' @param TH la valeur du champ appliqué
+#' @return un data.frame avec les colonnes "L1", "L1.Inc", "L1.Dec", "L2", "L2.Inc", "L2.Dec", "L3", "L3.Inc", "L3.Dec", "F13", "F12", "F23"
+#' @export
+anisotropy.eigen <- function(mesures, step.value, step.code = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"), volume = 1, TH = 1,...)
+{
+
+  #step.code <- c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB")
+  ani.step <- trimws(paste(as.character(step.value), step.code, sep = "") )
+
+  selec <- NULL
+  for (i in 1:length(ani.step)) {
+    selec <- c( selec, which(trimws(mesures$step) == trimws(ani.step[i])) )
+  }
+  res.list <- NULL
+  res.list <- mesures[selec,]
+  res.list <- res.list
+
+  mat.plus <- matrix( c( res.list$X[3], res.list$X[5], res.list$X[1],
+                         res.list$Y[3], res.list$Y[5], res.list$Y[1],
+                         res.list$Z[3], res.list$Z[5], res.list$Z[1]) , 3, 3)
+
+
+  mat.moins <- matrix( c( res.list$X[4], res.list$X[6], res.list$X[2],
+                          res.list$Y[4], res.list$Y[6], res.list$Y[2],
+                          res.list$Z[4], res.list$Z[6], res.list$Z[2]) , 3, 3)
+  mat.reel <- (mat.plus - mat.moins)/2 / (volume * 1E-6)# / coef.norm
+
+  # Symetrisation
+  coef.norm <- TH* 10/ (4*pi)
+  kxx <- mat.reel[1,1] / coef.norm
+  kyy <- mat.reel[2,2] / coef.norm
+  kzz <- mat.reel[3,3] / coef.norm
+  kxy <- (mat.reel[1,2] + mat.reel[2,1]) / 2 / coef.norm
+  kxz <- (mat.reel[1,3] + mat.reel[3,1]) / 2 / coef.norm
+  kyz <- (mat.reel[2,3] + mat.reel[3,2]) / 2 / coef.norm
+
+  # normalisation
+  suscept <- (kxx + kyy + kzz)/3
+  mat.sym.norm <- matrix( c( kxx / suscept, kxy / suscept, kxz / suscept,
+                             0,  kyy / suscept, kyz / suscept,
+                             0, 0, kzz / suscept) , 3, 3)
+
+  # vecteurs et valeurs propres
+  v <- eigen(mat.sym.norm, symmetric = TRUE)
+
+  # calcul des angles I,D des vecteurs propres}
+  v1 <- NULL
+  v1$I<-to.polar.I(v$vectors[1, 1], v$vectors[2, 1], v$vectors[3 ,1])
+  v1$D<-to.polar.D(v$vectors[1, 1], v$vectors[2, 1], v$vectors[3 ,1])
+
+
+  v2 <- NULL
+  v2$I<-to.polar.I(v$vectors[1, 2], v$vectors[2, 2], v$vectors[3 ,2])
+  v2$D<-to.polar.D(v$vectors[1, 2], v$vectors[2, 2], v$vectors[3 ,2])
+
+
+  v3 <- NULL
+  v3$I<-to.polar.I(v$vectors[1, 3], v$vectors[2, 3],v$vectors[3 ,3])
+  v3$D<-to.polar.D(v$vectors[1, 3], v$vectors[2, 3],v$vectors[3 ,3])
+
+
+  if (v3$I<0) {
+    v3$I <- -v3$I
+    v3$D <- D.AM(v3$D +180)
+    v2$I <- -v2$I
+    v2$D <- D.AM(v2$D +180)
+  }
+  F13 <- v$values[1]/v$values[3]
+  F12 <- v$values[1]/v$values[2]
+  F23 <- v$values[2]/v$values[3]
+
+
+  ani <- c(eigen = v, L1 = v1, L2 = v2, L3 = v3, F13 = F13, F12 = F12, F23 = F23)
+  return(ani)
+
+}
+
+#' Calcul les coordonnées des tenseurs propres matrice d'anisotropie
+#' @param mesures data.frame contenant les mesures
+#' @param step.value typiquement la température des mesures d'anisotropie
+#' @param step.code code indiquant les étapes. les noms peuvent changer, mais pas l'ordre
+#' @param volume la valeur du volume du spécimen
+#' @param TH la valeur du champ appliqué
+#' @return un data.frame avec les colonnes "L1", "L1.Inc", "L1.Dec", "L2", "L2.Inc", "L2.Dec", "L3", "L3.Inc", "L3.Dec", "F13", "F12", "F23"
+#' @seealso \code{\link{anisotropy.eigen.tensor}}
+#' @export
+anisotropy.eigen.matrix <- function(mesures, step.value, step.code = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"), volume = 1, TH = 1,...)
+{
+
+  ani.step <- trimws(paste(as.character(step.value), step.code, sep = "") )
+
+  selec <- NULL
+  for (i in 1:length(ani.step)) {
+    selec <- c( selec, which(trimws(mesures$step) == trimws(ani.step[i])) )
+  }
+  res.list <- NULL
+  res.list <- mesures[selec,]
+  res.list <- res.list
+
+  mat.plus <- matrix( c( res.list$X[3], res.list$X[5], res.list$X[1],
+                         res.list$Y[3], res.list$Y[5], res.list$Y[1],
+                         res.list$Z[3], res.list$Z[5], res.list$Z[1]) , 3, 3)
+
+
+  mat.moins <- matrix( c( res.list$X[4], res.list$X[6], res.list$X[2],
+                          res.list$Y[4], res.list$Y[6], res.list$Y[2],
+                          res.list$Z[4], res.list$Z[6], res.list$Z[2]) , 3, 3)
+  mat.reel <- (mat.plus - mat.moins)/2 / (volume * 1E-6)# / coef.norm
+
+  # Symetrisation
+  coef.norm <- TH* 10/ (4*pi)
+  kxx <- mat.reel[1,1] / coef.norm
+  kyy <- mat.reel[2,2] / coef.norm
+  kzz <- mat.reel[3,3] / coef.norm
+  kxy <- (mat.reel[1,2] + mat.reel[2,1]) / 2 / coef.norm
+  kxz <- (mat.reel[1,3] + mat.reel[3,1]) / 2 / coef.norm
+  kyz <- (mat.reel[2,3] + mat.reel[3,2]) / 2 / coef.norm
+
+  # normalisation
+  suscept <- (kxx + kyy + kzz)/3
+  mat.sym.norm <- matrix( c( kxx / suscept, kxy / suscept, kxz / suscept,
+                             0,  kyy / suscept, kyz / suscept,
+                             0, 0, kzz / suscept) , 3, 3)
+
+  # vecteurs et valeurs propres
+  v <- eigen(mat.sym.norm, symmetric = TRUE)
+
+  return(as.matrix(v$vectors))
+
+}
 #' Calcul des directions et valeurs des vecteurs propres d'anisotropie partielle pour un spécimen à une certaine température
 #' @param mesures data.frame contenant les mesures
 #' @param step.value typiquement la température des mesures d'anisotropie
@@ -2993,17 +1871,91 @@ anisotropy.mean.eigen.tensor <- function(Data.mesures, Data.number, step.value, 
 
 }
 
+
+
+#' Calcul la matrice d'anisotropie moyenne symmétrisée pour 2 valeurs de températures différentes
+#' step.value est un vecteur des 2 températures dans l'ordre des deux data frames
+#' @param dat1 mesures d'anisotropie à la température T1
+#' @param dat2 mesures d'anisotropie à la température T2
+#' @param step.value vecteur des températures T1 et T2
+#' @param matrix matrice 3 x 3 correspondant à la matrice (symétrique et normalisé) à utiliser pour la correction
+#' @return une matrice
+#' @export
+anisotropy.mean.matrix.multi <- function(dat1, dat2,
+                                         step.value,
+                                         step.code1 = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"),
+                                         step.code2 = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"))
+{
+  m1 <- matrix(0, ncol = 3, nrow=3)
+  for (i in 1:length(dat1$name)){
+    m1tmp <- extract.mesures.specimen.name(dat1$name[i], dat1)
+    m1 <- m1 + anisotropy.matrix.symetric(m1tmp, step.value = step.value[1], step.code1)
+  }
+
+  m2 <- matrix(0, ncol = 3, nrow=3)
+  for (j in 1:length(dat2$name)){
+    m2tmp <- extract.mesures.specimen.name(dat2$name[j], dat2)
+    m2 <- m2 + anisotropy.matrix.symetric(m2tmp, step.value = step.value[2], step.code2)
+  }
+
+  m <- (m1 + m2)/(length(dat1[,1]) + length(dat2[,1]))
+  kxx <- m[1, 1]
+  kyy <- m[2, 2]
+  kzz <- m[3, 3]
+  kxy <- (m[1, 2] + m[2, 1])/2
+  kxz <- (m[1, 3] + m[3, 1])/2
+  kyz <- (m[2, 3] + m[3, 2])/2
+  suscept <- (kxx + kyy + kzz)/3
+  m_mean <- matrix(c(kxx/suscept, kxy/suscept, kxz/suscept,
+                     kxy/suscept, kyy/suscept, kyz/suscept, kxz/suscept, kyz/suscept,
+                     kzz/suscept), 3, 3)
+}
+
+#' Calcul de la direction et des valeurs du vecteur propre d'anisotropie moyen à partir de la matrice
+#' d'anisotropie et non  pas du data.frame de mesures
+#' Il faut une matrice 3 x3
+#' @param matrix matrice 3 x 3 correspondant à la matrice (symétrique et normalisé) à utiliser pour la correction
+#' @return un data.frame avec les colonnes "L1", "L2", "L3", "L1.Inc", "L1.Dec", "L2.Inc", "L2.Dec", "L3.Inc", "L3.Dec", "F13", "F12", "F23"
+#' @export
+anisotropy.tensor <- function(matrix){
+  v <- eigen(matrix, symmetric = TRUE)
+  v1 <- to.polar(v$vectors[1, 1], v$vectors[2, 1], v$vectors[3,
+                                                             1])
+  v2 <- to.polar(v$vectors[1, 2], v$vectors[2, 2], v$vectors[3,
+                                                             2])
+  v3 <- to.polar(v$vectors[1, 3], v$vectors[2, 3], v$vectors[3,
+                                                             3])
+  if (v3$I < 0) {
+    v3$I <- -v3$I
+    v3$D <- D.AM(v3$D + 180)
+    v2$I <- -v2$I
+    v2$D <- D.AM(v2$D + 180)
+  }
+  F13 <- v$values[1]/v$values[3]
+  F12 <- v$values[1]/v$values[2]
+  F23 <- v$values[2]/v$values[3]
+  Data <- c(L1 = v$values[1], L2 = v$values[2], L3 = v$values[3],
+            L1.Inc = v1$I, L1.Dec = v1$D, L2.Inc = v2$I, L2.Dec = v2$D,
+            L3.Inc = v3$I, L3.Dec = v3$D, F13 = F13, F12 = F12, F23 = F23)
+  col.names <- c("L1", "L2", "L3", "L1.Inc", "L1.Dec", "L2.Inc",
+                 "L2.Dec", "L3.Inc", "L3.Dec", "F13", "F12", "F23")
+  return(as.data.frame(t(Data), col.names = col.names))
+}
+
+
+## Correction ----
+
 #' Corrige les mesures avec la matrice d'anisotropie donnée
 #' Il faut une matrice 3 x3
 #' @param mesures.frame data.frame avec les mesures et variables X, Y, Z, i, D, F
-#' @param ani.matric matrice 3 x 3 correspondant à la matrice (symétrique et normalisé) à utiliser pour la correction
+#' @param ani.matrix matrice 3 x 3 correspondant à la matrice (symétrique et normalisé) à utiliser pour la correction
 #' @return un data.frame du même type que mesures.frame
 #' @export
 correction.anisotropy <- function(mesures.frame, ani.matrix)
 {
 
   if (!is.data.frame(mesures.frame))
-    warning("mesures must be a data.frame")
+    warning("measures must be a data.frame")
   if (!is.matrix(ani.matrix))
     warning("ani.matrix must be a matrix")
 
@@ -3037,201 +1989,6 @@ correction.anisotropy <- function(mesures.frame, ani.matrix)
   return(resT)
 }
 
-#' Tracer dans le diagramme Lambert/ Stéréo d'un tenseur
-#' @param Data un data.frame avec les variables "L1.Inc", "L1.Dec", "L2.Inc", "L2.Dec", "L3.Inc", "L3.Dec"
-#' @export
-lambert.ID.tensors <- function(Data, pt.col = "blue3", new = TRUE, ...)
-{
-  # Restructuration des données
-  L1.Inc <- as.numeric(Data$L1.Inc)
-  L2.Inc <- as.numeric(Data$L2.Inc)
-  L3.Inc <- as.numeric(Data$L3.Inc)
-
-  L1.Dec <- as.numeric(Data$L1.Dec)
-  L2.Dec <- as.numeric(Data$L2.Dec)
-  L3.Dec <- as.numeric(Data$L3.Dec)
-
-  if (length(L1.Inc) == 0)
-    return(print("no DATA"))
-
-  if (length(pt.col) < length(L1.Inc))
-    pt.col <- rep(pt.col, length.out = length(L1.Inc))
-
-  for (i in 1:length(L1.Inc) ) {
-    Da.I <- c(L1.Inc[i], L2.Inc[i], L3.Inc[i])
-    Da.D <- c(L1.Dec[i], L2.Dec[i], L3.Dec[i])
-    lambert.ID(Da.I, Da.D,
-                    inc.lim = c(0, 90), pch = c(22, 24, 21), pt.col = pt.col[i], new = new  )
-    new <- FALSE
-  }
-}
-
-#' Tracer d'un diagramme de Flinn
-#' diagramme des paramètres d'anisotropie F12 en fonction de F23
-#' @param Data soit correspond à un data.frame avec les variables $F23 et $F12, soit seulement des valeurs de F23 dans ce cas, renseignez Data.F12
-#' @param Data.F12 des valeurs pour F12
-#' @param absolue prend la valeur absolue des données
-#' @export
-flinn <- function( Data, Data.F12 = NULL, pt.names = NULL, pt.col = "blue3", pch = 21, type = "p",
-                       xlab = "F23", ylab = "F12", main = "Flinn diagram", absolue = TRUE, new = TRUE)
-{
-   par(pty="s", "xaxp")
-
-  if(is.data.frame(Data)) {
-    if (absolue == TRUE) {
-      X <- abs(Data$F23)
-      Y <- abs(Data$F12)
-    } else {
-      X <- Data$F23
-      Y <- Data$F12
-    }
-
-  } else {
-    if (absolue == TRUE) {
-      X <- abs(Data)
-      Y <- abs(Data.F12)
-    } else {
-      X <- Data
-      Y <- Data.F12
-    }
-
-  }
-  X.lim <- range(X)
-  if (X.lim[1]>1)
-    X.lim[1] <- 1
-
-  Y.lim <- range(Y)
-  if (Y.lim[1]>1)
-    Y.lim[1] <- 1
-
-  XY.max <- max(X.lim[2], Y.lim[2]) * 1.05
-  X.lim[2] <- XY.max
-  Y.lim[2] <- XY.max
-
-  if (new == TRUE) {
-    plot(x = X, y = Y, xlab = xlab, ylab = ylab, xlim = X.lim, ylim = Y.lim, type = type, col = "gray50", bg = pt.col, pch = pch,
-         xaxt = "n", yaxt = "n", asp = 1, bty ="n", main = main, new = TRUE )
-    ax1 <- axis(1, pos = X.lim[1], col = "gray10")
-    ax2 <- axis(2, pos = Y.lim[1], col = "gray10") # Ordonnées
-    cc<-array(c(0,1), c(1,2))
-
-    abline(  coef = cc, col = "gray90")
-
-    main <- ""
-  }  else {
-    points(x = X, y = Y, xlim = X.lim, ylim = Y.lim,  type = type, col = "gray50", bg = pt.col, pch = pch,
-         xaxt = "n", yaxt = "n", asp = 1, bty ="n", new = FALSE)
-  }
-
-  text(jitter(X, 5, amount = 0), jitter(Y, 5, amount = 0), pt.names)
-
-}
-
-#' Tracer d'un diagramme de désaimantation
-#' @param normalize permet de comparer l'évolution de l'aimanation quelque soit l'amplitude en visualisant le résultat comme un pourcentage du maximum
-#' @export
-demag <- function( Data, F = NULL,  pt.col = "blue3", pch = 21, type = "b",
-                             xlab = "°C", ylab = "", main = NULL,
-                             names = NA, normalize = TRUE, step.J0 = NULL, new = TRUE, ...)
-{
-
-  tmp.frame <- NULL
-  if (is.null(main))
-    main <- " F vs step.value"
-
-  if(is.data.frame(Data)) {
-    tmp.frame$name <- Data$name[!is.na(Data$step.value)]
-    tmp.frame$step.value <- Data$step.value[!is.na(Data$step.value)]
-    tmp.frame$F <- Data$F[!is.na(Data$step.value)]
-
-
-  } else {
-    # Création du frame interne
-    if (is.na(names))
-      tmp.frame$name <- as.character(c(1: length(Data)))
-    else
-      tmp.frame$name <- names
-
-    tmp.frame$step.value <- Data
-    tmp.frame$F <- F
-  }
-
-  if (length(pt.col) < length(tmp.frame$step.value) )
-    pt.col <- rep(pt.col, length(tmp.frame$step.value) )
-
-  # comptage et séparation des données
-  current <- tmp.frame$name[1]
-  list.name <- current
-
-  for (i in 1: length(tmp.frame$name)) {
-    if ( tmp.frame$name[i] != current) {
-      current <- tmp.frame$name[i]
-      list.name<- c(list.name, current)
-    }
-  }
-
-  if (is.null(step.J0) == FALSE) {
-    if (length(step.J0) < length(tmp.frame$step.value) )
-      step.J0 <- rep(step.J0, length(list.name) )
-  } else {
-    step.J0 <- rep(NA, length(list.name) )
-  }
-
-  xlim <- range(tmp.frame$step.value)
-
-  # recherche du Ymax pour définir la taille du graphique
-  Ymax <- 0
-  J0 <- 0
-  list.mesure.i <-  NULL
-  if (normalize == TRUE) {
-    for (i in 1 : length(list.name)) {
-      list.mesure.i$F <- tmp.frame$F[tmp.frame$name == list.name[i]]
-      if (is.na(step.J0[i]) == TRUE) {
-        J0[i] <- list.mesure.i$F[1]
-      } else {
-        tmp.etp <- list.mesure.i$F[tmp.frame$step.value == step.J0[i]] # si il y a plusieurs valeurs pour la même étape, comme ani
-        J0[i] <- tmp.etp[1]
-       # J0[i] <- list.mesure.i$F[tmp.frame$step.value == step.J0[i]]
-      }
-      Ymax <- max(Ymax, tmp.frame$F[tmp.frame$name == list.name[i]]/J0[i] *100)
-    }
-  } else
-    Ymax <- max(tmp.frame$F)
-
-  list.mesure.i <-  NULL
-  for (i in 1 : length(list.name)) {
-    list.mesure.i$step.value <- tmp.frame$step.value[which(tmp.frame$name == list.name[i])]
-    list.mesure.i$F <- tmp.frame$F[tmp.frame$name == list.name[i]]
-    if (normalize == TRUE) {
-      coefY <- 100 / J0[i]
-
-    } else
-      coefY <- 1
-
-    Xi <- list.mesure.i$step.value
-    Yi <- list.mesure.i$F  * coefY
-
-    ylim <- c(0, Ymax)
-
-    if (i == 1)
-      plot(x = Xi, y = Yi, xlab = xlab, ylab = ylab, ylim = ylim, xlim = xlim, type = type,
-           col = adjustcolor( pt.col[i], alpha.f = 0.7), bg = pt.col[i], pch = pch,
-           yaxt = "n", bty = "n", main = main, new = new)
-    else
-      lines(x = Xi, y = Yi, type = type, col = adjustcolor( pt.col[i], alpha.f = 0.7), bg = pt.col[i], pch = pch, yaxt = "n", bty ="n")
-
-  }
-
-  axis(2, pos = 0, col = "darkgray") #cex.axis = 0.8) # Ordonnées
-
-  if (normalize == TRUE) {
-    mtext( paste(format(Ymax, digits = 3), "%"), side = 3, col = "gray5", adj = 0, cex = par("cex.lab"))
-  } else {
-    mtext( format(Ymax, digits = 3, scientific = TRUE), side = 3, col = "gray5", adj = 0, cex = par("cex.lab"))
-  }
-
-
-}
 
 # Orientation correction ----
 
@@ -3403,7 +2160,7 @@ correction.bevel <-function(mes, theta=0, psi=0) {
   #rotation teta négatif pour amener le repère dans le plan du biseau
   theta = - theta;
   # détermination de Phi
-  if (abs(psy)==(pi/2)) {
+  if (abs(psi) == (pi/2)) {
     phi <- -psi
   } else {
     phi <- -atan(tan(psi)*cos(theta))  #angle dans le plan de sciage}
@@ -3492,7 +2249,7 @@ correction.bending <- function(mes, dip, str) {
   tmp <- NULL
   for (i in 1:nrow(mes)) {
     tmp <- matrix(c(mes$X[i], mes$Y[i],mes$Z[i]), 3, 1 )
-    tmp <- M_rot %*% tmp
+    tmp <- M_rot_Pli %*% tmp
     tmp <- to.polar(tmp[1], tmp[2], tmp[3])
 
     res$X[i] <- tmp$X
@@ -3506,6 +2263,322 @@ correction.bending <- function(mes, dip, str) {
   return(res)
 }
 
+# Repliement ----
+
+#' repliement
+#' Calcul le repliement pour les trois position à plat "P", de chant "C" et debout "D"
+#' pour les matériaux déplacés, la référence est le nord donc -angD
+#' @param data valeur de l'inclinaison, ou une data.frame en degrés
+#' @param dec en degrés
+#' @param position trois valeurs posible à plat "P", de chant "C" et debout "D"
+#' @return en degrés
+#' @export
+repliement <- function (data, dec = NULL, aim = 1, name = NULL, number = NULL,  position = "P")
+{
+
+  if (is.null(dec) ) {
+    inc <- data$I
+    dec <- data$D
+    aim <- data$F
+    nom <- data$name
+    num <- data$number
+  }
+  else {
+    inc <- data
+    dec <- dec
+    if (is.null(name))
+      nom <- rep("", length(inc))
+    else
+      nom <- as.character(name)
+
+    if (is.null(number))
+      num <- c(1:length(inc))
+    else
+      num <- number
+  }
+  if (length(aim) < length(inc))
+    aim <- rep(aim, length(inc))
+
+  if (length(position) < length(inc))
+    position <- rep(position, length(inc))
+
+  X <- to.cartesian.X(inc, dec, aim)
+  Y <- to.cartesian.Y(inc, dec, aim)
+  Z <- to.cartesian.Z(inc, dec, aim)
+
+  res <- NULL
+
+  # Carottage à plat, repère conventionnel : Calcul des angles I-D pour les trois positions
+  for (i in 1: length(inc)) {
+
+    res$name <- c(res$name, as.character(nom[i]))
+    res$number <- c(res$number, num[i])
+    res$F <- c(res$F, aim[i])
+
+    if (position[i] == "O") { # origine
+      res$D <- c(res$D, angleD( X[i], Y[i] ) /pi * 180 )
+      res$I <- c(res$I, n_arcsin( Z[i]/aim[i] ) /pi * 180)
+
+      res$P <- c(res$P, "O")
+    }
+
+    if (position[i] == "P") { # à plat
+      t.d <- angleD(abs(X[i]), -Y[i]) /pi * 180
+      t.i <- n_arcsin(Z[i]/aim[i]) /pi * 180
+
+      if (X[i]>= 0 && Z[i]>=0 ) {
+        t.d <- -angleD(X[i], Y[i]) /pi * 180
+      }
+      if (X[i]> 0 && Z[i]<0 ) {
+        t.d <- -angleD(X[i], -Y[i]) /pi * 180
+      }
+
+      if (X[i]< 0 && Z[i]>0 ) {
+        t.d <- angleD(-X[i], Y[i]) /pi * 180
+      }
+      if (X[i]< 0 && Z[i]<0 ) {
+        t.d <- angleD(-X[i], -Y[i]) /pi * 180
+      }
+
+      res$I <- c(res$I, t.i)
+      res$D <- c(res$D, t.d )
+
+      res$P <- c(res$P, "P")
+    }
+
+    if (position[i] == "C") { #  de chant -->> OK
+
+      t.i <- sign(Z[i]) *abs(n_arcsin( -Y[i]/aim[i])) /pi * 180
+      t.d <- angleD( X[i], Z[i]) /pi * 180
+
+      if (X[i]> 0 && Y[i]<0 ) {
+        t.d <- -t.d
+      }
+
+      if (X[i]< 0 && Y[i]>0 ) {
+        t.d <- t.d - 180
+
+      }
+
+
+      if (X[i]<= 0 && Y[i]<=0 ) {
+        t.d <- 180 - t.d
+      }
+
+      # normalisation de la déclinaison
+      if (t.d> 270)
+        t.d <- t.d - 360
+      if (t.d < -90)
+        t.d <- t.d + 360
+
+      res$I <- c(res$I, t.i )
+      res$D <- c(res$D, t.d )
+      res$P <- c(res$P, "C")
+    }
+
+    if (position[i] == "D") { # debout
+
+      t.i <- sign(Z[i]) * n_arcsin(abs(X[i])/aim[i]) /pi * 180
+      t.d <- angleD(Y[i], -Z[i]) /pi * 180
+
+      if (X[i]> 0 && Y[i]<=0 ) {
+        t.d <- t.d - 180
+      }
+
+      if (X[i]< 0 && Y[i]>0 ) {
+        t.d <- - t.d
+      }
+      if (X[i]< 0 && Y[i]<=0 ) {
+        t.d <- 180 - t.d
+      }
+
+      res$I <- c(res$I, t.i)
+      res$D <- c(res$D, t.d)
+      res$P <- c(res$P, "D")
+    }
+
+    tmp <- to.cartesian(t.i, t.d, aim = aim[i])
+    res$X <- c(res$X, tmp$X)
+    res$Y <- c(res$Y, tmp$Y)
+    res$Z <- c(res$Z, tmp$Z)
+  }
+
+  res.frame <- data.frame( number =  as.numeric(res$number), name = as.character(res$name),
+                           I = as.numeric(res$I), D = as.numeric(res$D), F = as.numeric(res$F),
+                           X = as.numeric(res$X), Y =as.numeric(res$Y), Z =as.numeric(res$Z), position = res$P, stringsAsFactors = FALSE)
+
+  return(res.frame)
+}
+
+#' repliement automatique
+#' Recherche la position qui permet d'avoir une position suivant les trois positions possible
+#' donnant l'inclinaison la plus proche de la valeur inc.critique (en degrés)
+#' @param  data valeur de l'inclinaison, ou une data.frame en degrés
+#' @param  dec en degrés
+#' @return I et D en degrés
+#' @export
+repliement.auto <- function (data, dec = NULL, aim = 1, name = NULL, number = NULL, inc.critique = 90)
+{
+
+  if (is.null(dec) ) {
+    inc <- data$I
+    dec <- data$D
+    aim <- data$F
+    nom <- data$name
+    num <- data$number
+  }
+  else {
+    inc <- data
+    dec <- dec
+    if (is.null(name))
+      nom <- rep("", length(inc))
+    else
+      nom <- as.character(name)
+
+    if (is.null(number))
+      num <- c(1:length(inc))
+    else
+      num <- number
+  }
+
+  res <- NULL
+
+  res.P <- repliement(inc, dec, aim, name = nom, number = num, position = "P")
+  res.C <- repliement(inc, dec, aim, name = nom, number = num, position = "C")
+  res.D <- repliement(inc, dec, aim, name = nom, number = num, position = "D")
+
+  for (i in 1: length(inc)) {
+    # inc.sup <- 90
+    res.tmp <- NULL
+    # Initialisation avec la position à Plat
+    res.tmp$I <- res.P$I[i]
+    res.tmp$D <- res.P$D[i]
+    res.tmp$F <- res.P$F[i]
+    res.tmp$X <- res.P$X[i]
+    res.tmp$Y <- res.P$Y[i]
+    res.tmp$Z <- res.P$Z[i]
+    res.tmp$position <- res.P$position[i]
+
+    inc.sup <- abs(inc.critique - abs(res.P$I[i]))
+
+    # Comparaison avec la position de Chant
+    if (abs(inc.critique - abs(res.C$I[i])) <= inc.sup) {
+      res.tmp$I <- res.C$I[i]
+      res.tmp$D <- res.C$D[i]
+      res.tmp$F <- res.C$F[i]
+      res.tmp$position <- res.C$position[i]
+      res.tmp$X <- res.C$X[i]
+      res.tmp$Y <- res.C$Y[i]
+      res.tmp$Z <- res.C$Z[i]
+      inc.sup <- abs(inc.critique - abs(res.C$I[i]))
+    }
+    # Comparaison avec la position Debout
+    if (abs(inc.critique - abs(res.D$I[i])) <= inc.sup) {
+      res.tmp$I <- res.D$I[i]
+      res.tmp$D <- res.D$D[i]
+      res.tmp$F <- res.D$F[i]
+      res.tmp$position <- res.D$position[i]
+      res.tmp$X <- res.D$X[i]
+      res.tmp$Y <- res.D$Y[i]
+      res.tmp$Z <- res.D$Z[i]
+
+      #inc.sup <- abs(inc.critique-abs(res.D$I))
+    }
+
+    res$I <- c(res$I, res.tmp$I)
+    res$D <- c(res$D, res.tmp$D)
+    res$F <- c(res$F, res.tmp$F)
+
+    res$name <- c(res$name, nom[i])
+    res$number <- c(res$number, num[i])
+
+    res$X <- c(res$X, res.tmp$X)
+    res$Y <- c(res$Y, res.tmp$Y)
+    res$Z <- c(res$Z, res.tmp$Z)
+
+    res$position <- c(res$position, res.tmp$position)
+  }
+
+  res <- data.frame(number = res$number, name = res$name, I = as.numeric(res$I), D = as.numeric(res$D), F = as.numeric(res$F),
+                    X = as.numeric(res$X), Y = as.numeric(res$Y), Z = as.numeric(res$Z), position = res$position, stringsAsFactors = FALSE)
+
+  return(res)
+}
+
+#' repliement.tranche
+#' Recherche la position qui permet d'avoir une position suivant la position debout ou dechant
+#' donnant l'inclinaison la plus proche de la valeur inc.critique (en degrés)
+#' @param  data valeur de l'inclinaison, ou une data.frame en degrés
+#' @param  dec en degrés
+#' @return I et D en degrés et X, Y, Z correspondant
+#' @export
+repliement.tranche <- function (data, dec = NULL, aim = 1,  name = NULL, number = NULL, inc.critique = 90)
+{
+
+  if (is.null(dec) ) {
+    inc <- data$I
+    dec <- data$D
+    aim <- data$F
+    nom <- data$name
+    num <- data$number
+  }
+  else {
+    inc <- data
+    dec <- dec
+    if (is.null(name))
+      nom <- rep("", length(inc))
+    else
+      nom <- as.character(name)
+
+    if (is.null(number))
+      num <- c(1:length(inc))
+    else
+      num <- number
+  }
+
+  res <- NULL
+
+  res.C <- repliement(inc, dec, aim, name = nom, number = num, position = "C")
+  res.D <- repliement(inc, dec, aim, name = nom, number = num, position = "D")
+
+  for (i in 1: length(inc)) {
+
+    res.tmp <- NULL
+    # Initialisation avec la position de Chant
+
+    res.tmp$I <- res.C$I[i]
+    res.tmp$D <- res.C$D[i]
+    res.tmp$F <- res.C$F[i]
+    res.tmp$position <- res.C$position[i]
+    res.tmp$X <- res.C$X[i]
+    res.tmp$Y <- res.C$Y[i]
+    res.tmp$Z <- res.C$Z[i]
+    inc.sup <- abs(inc.critique - abs(res.C$I[i]))
+
+    # Comparaison avec la position Debout
+    if (abs(inc.critique - abs(res.D$I[i])) <= inc.sup) {
+      res.tmp$I <- res.D$I[i]
+      res.tmp$D <- res.D$D[i]
+      res.tmp$F <- res.D$F[i]
+      res.tmp$position <- res.D$position[i]
+      res.tmp$X <- res.D$X[i]
+      res.tmp$Y <- res.D$Y[i]
+      res.tmp$Z <- res.D$Z[i]
+    }
+
+    res$number <- c(res$number, num[i])
+    res$name <- c(res$name, nom[i])
+    res$I <- c(res$I, res.tmp$I)
+    res$D <- c(res$D, res.tmp$D)
+    res$F <- c(res$F, res.tmp$F)
+    res$X <- c(res$X, res.tmp$X)
+    res$Y <- c(res$Y, res.tmp$Y)
+    res$Z <- c(res$Z, res.tmp$Z)
+    res$position <- c(res$position, res.tmp$position)
+  }
+  res.Final <- data.frame( res , stringsAsFactors = FALSE)
+  return(res.Final)
+}
 
 # Partial component  ----
 
@@ -3936,151 +3009,7 @@ zijderveld2.T1T2 <- function(Data, T1 = NULL, T2 = NULL, show.step = FALSE, igno
   abline(ai, bi)
 }
 
-#' Supprime les étapes à la valeur step.value et avec les codes step.code
-#' Utiliser par défaut pour enlever les étapes d'anisotropie
-#' @param Data un data.frame possédant la variable $step de type chr
-#' @param step.value valeur de la température . Par defaut NUll, alors la tempértature est retrouvée automatiquement avec les step.code définis. Si step.value = '', alors suppression de toutes les étapes avec le step.code
-#' @param step.code chaîne de caractère représentant par exemple les étapes de l'anisotropie "Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB", ou des erreurs "??"
-#' @param verbose affiche des commentaires et avertissements
-#' @export
-remove.step <- function(Data, step.value = NULL, step.code = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"), verbose = TRUE )
-{
-  selec <- NULL
-  if (is.null(step.value)) {
-    for (i in 1:length(Data$step)) {
-      if (substring(Data$step[i], 4) == step.code[3])
-        step.value <- Data$step.value[i]
-    }
-  } else  if (step.value == "") {
-    for (i in 1:length(Data$step))
-    {
-      for (j in 1: length(step.code)) {
-        selec <- c( selec, which(substring(Data$step, 4) == step.code[j]) )
-      }
-    }
-  }
 
-  remove.step <- trimws(paste(step.value, step.code, sep = ""))
-
-  for (i in 1:length(remove.step)) {
-    selec <- c( selec, which(trimws(Data$step) == trimws(remove.step[i])) )
-  }
-
-  if (verbose == TRUE) {
-    if (length(selec)== 0) {
-      warning("No step to remove")
-      return(Data)
-    } else {
-      print(paste(Data[selec,]$step))
-    }
-  }
-
-  if (length(selec) > 0) {
-    res.list <- Data[-selec,]
-  }
-  else {
-    res.list <- Data
-  }
-
-  return(res.list)
-}
-
-# Calcul rotation ----
-
-#' Fait tourner les mesures selon deviation
-#' @param Data un data.frame possédant la variable $step de type chr
-#' @param deviation valeur de l'angle de rotation (en degrés).
-#' @export
-rotation.mesure <- function(Data, deviation)
-{
-  res <- Data
-
-  for (i in 1 : length(res$D)) {
-    res$D[i] <- as.numeric(res$D[i] + deviation)
-    res$X[i] <- as.numeric(to.cartesian.X(res$I[i], res$D[i], res$F[i]) )
-    res$Y[i] <- as.numeric(to.cartesian.Y(res$I[i], res$D[i], res$F[i]) )
-    res$Z[i] <- as.numeric(to.cartesian.Z(res$I[i], res$D[i], res$F[i]) )
-  }
-
-  return(res)
-}
-
-# Calcul astronomique ----
-
-# Le jour julien 0 commence le 24 novembre -4713 (4712 BC) à 12h
-#' The number of Julian days for astronomical calculations
-#'  Julian Day 0 starts November 24th -4713 (4712 BC) at 12:00 pm
-#' @seealso \code{\link{https://codes-sources.commentcamarche.net/source/31774-calcul-de-la-position-du-soleil-declinaison-angle-horaire-altitude-et-azimut-altaz-solaire}}
-#' @export
-julian.day <- function( day, month, year, hour, minute, seconde)
-{
-  day.hour <- day + hour/24.0 + minute/1440.0 + seconde/86400.0
-
-  if (month == 1 || month == 2) {
-    year <- year-1.0
-    month <- month+12.0
-  }
-
-  a <- trunc(year/100.0)
-  b <- 2 - a + trunc(a/4.0)
-
-  julian <- trunc(365.25*(year+4716.0)) + trunc(30.6001*(month+1.0)) + day.hour + b - 1524.5
-
-  return (as.numeric(julian))
-}
-
-
-#' Calculate the azimuth of the sun in a place at a given date at a given time "UTC".
-#' @seealso \code{\link{https://codes-sources.commentcamarche.net/source/31774-calcul-de-la-position-du-soleil-declinaison-angle-horaire-altitude-et-azimut-altaz-solaire}}
-#' @seealso \code{\link{https://fr.planetcalc.com/320/}}
-#' @export
-sun.azimuth <- function(day, month, year, hour, minute, seconde=0, longdeg, longmin=0, longsec=0, latdeg, latmin=0, latsec=0)
-{
-  longitude <- DMS.to.DD(longdeg, longmin, longsec)
-  latitude <- DMS.to.DD(latdeg, latmin, latsec)
-  #     Heure d'hiver ou d'été
-  correction_heure <- 0
-
-  jj <- julian.day(day, month, year, hour, minute, seconde) - correction_heure/24.0 - 2451545.0
-
-  #     Calculs ascension droite et déclinaison
-  g <- 357.529 + 0.98560028*jj
-  q <- 280.459 + 0.98564736*jj
-  l <- q + 1.915 * sin(g*pi/180.0) + 0.020*sin(2*g*pi/180.0) # Ellipticité
-  e <- 23.439 - 0.00000036*jj
-
-  ascension_droite <- atan(cos(e*pi/180.0)*sin(l*pi/180.0)/cos(l*pi/180.0))*(180.0/pi)/15.0
-  if (cos(l*pi/180.0) < 0) {
-    ascension_droite <- 12.0 + ascension_droite
-  }
-  if (cos(l*pi/180.0)>0 && sin(l*pi/180.0) < 0) {
-    ascension_droite <- ascension_droite + 24.0
-  }
-  declinaison <- asin(sin(e*pi/180.0)*sin(l*pi/180.0))*180.0/pi
-
-
-  nb_siecle <- jj/36525.0
-  heure_siderale1 <- (24110.54841 + (8640184.812866*nb_siecle) + (0.093104*(nb_siecle*nb_siecle)) - (0.0000062*(nb_siecle*nb_siecle*nb_siecle)))/3600.0
-  heure_siderale2 <- ((heure_siderale1/24.0) - trunc(heure_siderale1/24.0)) * 24.0
-
-  angleH <- 360.0*heure_siderale2/23.9344
-  angleT <- (hour - correction_heure - 12.0 + minute/60.0 + seconde/3600.0)*360.0/23.9344 # jour sidéraux = 23h56min 4,0989s -> 23,93447h -> 0,9972696 jour solaire
-  angle <- angleT + angleH
-
-  angle_horaire <- angle - ascension_droite*15.0 + longitude
-
-  #       calculs altitude et azimut
-
-  altitude <- asin( sin(declinaison*pi/180.0)*sin(latitude*pi/180.0) - cos(declinaison*pi/180.0)*cos(latitude*pi/180.0)*cos(angle_horaire*pi/180.0) )*180.0/pi
-
-  azimut <- acos( (sin(declinaison*pi/180.0) - sin(latitude*pi/180.0)*sin(altitude*pi/180.0)) / (cos(latitude*pi/180.0)*cos(altitude*pi/180.0)) )*180.0/pi
-  sinazimut <- (cos(declinaison*pi/180.0)*sin(angle_horaire*pi/180.0)) / cos(altitude*pi/180.0)
-  if (sinazimut < 0) {
-    azimut <- 360 - azimut;
-  }
-
-  return(as.numeric(azimut))
-}
 
 # Reduction ----
 
@@ -4538,333 +3467,1962 @@ igrf13syn <- function(isv, date, itype, alt, colat, elong) {
   return(ret)
 }
 
+# Graphiques ----
 
-#'   Standart calcul and plot to study paleo and archeo magnetic magnétisation
-#'   by convention we use the two last character of the variable step to indicate the type of manip
-#'   example 100RA , 100 is the temperature (step.value) , R is the sens of the magnetisation and A is the name of the step (step.name)
+## Lambert directionnel ID ----
+
+#' lambert.ID.grid
+#' Trace une grille dans le repère Lambert, fonctionne avec la fonction lambert()
+#'
+#' # Pour choisir les graduations
+#' et pour paleomag : lab.pos$D = c(seq(270, 350, by=10), seq(0, 90, by=10))
+#' Label.pos : doit être dans l'étendu des dex.min, dec.max, inc.min, inc.max
+#'
+#' @param  radlab écrit les labels sous forme d'étoile
+#' @param  label.pos séquence de valeur à afficher en I et D, attention format particulier !!
+#' @examples
+#' label.pos = NULL
+#' label.pos$I = seq(0, 90, by=20)
+#' label.pos$D = seq(0, 90, by=10)
+#' @export
+lambert.ID.grid <- function (main = "", xlab = "", ylab = "", labels = NA, label.pos = NULL, radlab = FALSE,
+                             start = 0, clockwise = FALSE, label.prop = 1.1,
+                             grid.col = "gray", grid.bg = "transparent", show.radial.grid = TRUE, labels.precision = 0,
+                             dec.min = -90, dec.max = 270, inc.min = 0, inc.max = 90, new = TRUE, ...)
+{
+  # setting up coord. system
+  if (new == TRUE) {
+    par( pty = "s")
+
+    maxlength <- 100 # la valeur n'a pas d'influence, la fonction plot() calcul le reste
+    plot(c(-maxlength, maxlength), c(-maxlength, maxlength), type = "n", axes = FALSE, main = main, xlab = xlab, ylab = ylab, new = new)
+  }
+
+  labelsD <- NULL
+  maxlength <-  100
+  par(xpd = TRUE)
+  box.range <- find.extremum(inc.min, inc.max, dec.min, dec.max)
+
+  anglesD <- seq(dec.min, dec.max, by = 1) # angle de deviation en degrée
+
+  if (is.null(label.pos)) {
+    labelI.pos <- seq(inc.min, inc.max, by = 10)
+    labelD.pos <- seq(dec.min, dec.max, by = 10)
+  }
+  else {
+    labelI.pos <- label.pos$I
+    labelD.pos <- label.pos$D
+  }
+  # Supprime la superposition des labels pour D égale à -90 et 270
+  if ((labelD.pos[1] == -90) && (labelD.pos[length(labelD.pos)] == 270))
+    labelD.pos <- labelD.pos[-length(labelD.pos)]
+
+  if (show.radial.grid) {
+    # Trace un cercle  autour
+    xpos <- X(inc.min, anglesD, maxlength, i.min = inc.min, box.range)
+    ypos <- Y(inc.min, anglesD, maxlength, i.min = inc.min, box.range)
+    lines(xpos, ypos, col = adjustcolor( grid.col, alpha.f = 0.5))
+
+    # Trace les cercles radiaux concentriques
+    if (length(labelI.pos)>0)
+      for (i in seq(length(labelI.pos), 1, by = -1)) {
+        xpos <- X(labelI.pos[i], anglesD, maxlength, i.min = inc.min, box.range)
+        ypos <- Y(labelI.pos[i], anglesD, maxlength, i.min = inc.min, box.range)
+        lines(xpos, ypos, col = adjustcolor( grid.col, alpha.f = 0.5)) #, border = grid.col)
+      }
+
+
+    if (!is.null(labels)) {
+      if (is.na(labels[1]))
+        labelsI <- as.character(round(labelI.pos, labels.precision))
+
+      labelsD <- as.character(round(labelD.pos, labels.precision))
+    }
+
+
+    if (clockwise == FALSE)
+      labelD.pos <- -labelD.pos
+    if (start)
+      labelD.pos <- labelD.pos + start
+    # Trace les rayons
+
+    #if (show.radial.grid) {
+    for (i in 1: length(labelD.pos)) {
+      xposA <- X(inc.min, labelD.pos[i], ray = maxlength, inc.min, box.range)
+      yposA <- Y(inc.min, labelD.pos[i], ray = maxlength, inc.min, box.range)
+
+      xposB <- X(inc.max, labelD.pos[i], ray = maxlength, inc.min, box.range)
+      yposB <- Y(inc.max, labelD.pos[i], ray = maxlength, inc.min, box.range)
+      segments( x0=xposA, y0=yposA, x1=xposB, y1=yposB, col = grid.col)
+
+    }
+
+
+    for (label in 2:length(labelI.pos)) {
+      xpos <- X(labelI.pos[label], dec.min, ray = maxlength, inc.min, box.range)
+      ypos <- Y(labelI.pos[label], dec.min, ray = maxlength, inc.min, box.range)
+      #labelsrt <- dec.min + 90 # labelI.pos[label] + 90    #* label.prop
+      corect<- 6
+      if (dec.min >= -90 && dec.min < 0) {
+        labelsrt <- ( 270 - dec.min)
+        xpos <- xpos + label.prop*cos(dec.min/180*pi) * corect
+        ypos <- ypos - label.prop*(2+sin(dec.min/180*pi)) * corect
+      }
+      else if (dec.min >= 0 && dec.min < 90) {
+        labelsrt <- (90 - dec.min)
+        xpos <- xpos - label.prop*cos(dec.min/180*pi) * corect
+        ypos <- ypos + label.prop*sin(dec.min/180*pi) * corect
+      }
+      else if (dec.min >= 90 && dec.min < 180) {
+        labelsrt <- (90 - dec.min)
+        xpos <- xpos + label.prop*cos(dec.min/180*pi) * corect
+        ypos <- ypos + label.prop*sin(dec.min/180*pi) * corect
+      }
+      else {
+        labelsrt <- (270 - dec.min)
+        xpos <- xpos - label.prop*cos(dec.min/180*pi) * corect
+        ypos <- ypos - label.prop*sin(dec.min/180*pi) * corect
+      }
+
+      # if (labelD.pos[label] > 0 && labelD.pos[label] < 180)
+      #   labelsrt <- (90 - labelD.pos[label])
+      # else
+      #   labelsrt <- (270 - labelD.pos[label]) labelsI[label],
+
+      text(xpos, ypos,labelsI[label] , srt = labelsrt, cex = par("cex.axis"))
+      #  boxed.labels(xpos, ypos, labelsI[label], ypad = par("cex.axis"), border = FALSE, cex =  par("cex.axis"))
+    }
+
+    # Ecrit les textes des angles
+  }
+
+  else {
+    # Trace un cercle  autour
+    #for (i in seq(dec.min, dec.max, by = 1)) {
+    xpos <- X(inc.min, anglesD, maxlength, i.min = inc.min, box.range)
+    ypos <- Y(inc.min, anglesD, maxlength, i.min = inc.min, box.range)
+    lines(xpos, ypos, col = adjustcolor( grid.col, alpha.f = 0.5)) #, border = grid.col)
+    #}
+  }
+  if (!is.null(labelsD)) {
+    xpos <- X(inc.min, labelD.pos, ray = maxlength, inc.min, box.range) * label.prop
+    ypos <- Y(inc.min, labelD.pos, ray = maxlength, inc.min, box.range) * label.prop
+
+
+
+    if (radlab) { # radlab écrit les labels sous forme d'étoile
+      for (label in 1:length(labelD.pos)) {
+        if (labelD.pos[label] > 0 && labelD.pos[label] < 180)
+          labelsrt <- (90 - labelD.pos[label])
+        else
+          labelsrt <- (270 - labelD.pos[label])
+
+        text(xpos[label], ypos[label], labelsD[label], cex = par("cex.axis"), srt = labelsrt)
+      }
+    }
+    else {  # boxed.labels(xpos, ypos, labelsD, ypad = 0.7, border = FALSE,  cex =  par("cex.axis"))
+      for (label in 1:length(labelD.pos)) {
+        text(xpos[label], ypos[label], labelsD[label], cex = par("cex.axis"), srt = 0)
+      }
+    }
+  }
+
+  par(xpd = FALSE)
+}
+
+#' lambert
+#' Place des points I et D dans un repère Lambert avec un data.frame
+#' @param data data.frame avec les variables $I d'inclinaison et $D de déclinaison
+#' @param pt.names  Correspond à la liste des noms des points. Laissée vide n'affiche rien. Si on met pt.names = "", cela affiche les noms
+#' @param label.pos  Séquence de valeur à afficher en I et D, voir fonction lambert.ID.grid
+#' @param point.symbols défini la forme de points, correspond exactement au pch de la fonction points()
+#' @param pch permet de changer la forme du symbole
+#' @param show.grid permet d'afficher une grille en toile d'araigné sur le fond. Mettre à FALSE, si on superpose des diagrammes
+#' @param show.grid.labels permet de changer échelle des graduations
+#' @param inc.lim permet de restreindre l'affichage sur une étendue d'inclinaison. Ex: inc.lim = c(45, 90). Laissée à NULL, le diagramme s'addapte aux données
+#' @param dec.min permet de restreindre l'étendue en déclinaison, borne minimale
+#' @param dec.max permet de restreindre l'étendue en déclinaison, borne maximale
+#' @param new permet d'initialiser la sortie graphique. Mettre à FALSE, si on superpose des diagrammes.
+#' @export
+lambert <- function (data , pt.names = NULL, labels = NA, label.pos = NULL,
+                     radlab = FALSE, start = 0, clockwise = TRUE,
+                     label.prop = 1.1, main = "", xlab = "", ylab = "", line.col = par("fg"),
+                     lty = par("lty"), lwd = par("lwd"), mar = c(2, 2, 3, 2),
+                     show.grid = TRUE, show.grid.labels = 10, show.radial.grid = TRUE,
+                     grid.col = "gray", grid.bg = "transparent",
+                     grid.left = FALSE, grid.unit = NULL, point.symbols = 1, pt.col = par("fg"), bg = pt.col,
+                     inc.lim = NULL, radial.labels = NULL,
+                     boxed.radial = TRUE, poly.col = NA,
+                     dec.min = -90, dec.max = 270, new = TRUE, pch = 21, ...)
+{
+  if (is.null(pt.names))
+    name <- NULL
+  else
+    name <- data$name
+
+  lambert.ID (data$I, data$D , pt.names = name, labels = labels, label.pos = label.pos,
+              radlab = radlab, start = start, clockwise = clockwise,
+              label.prop = label.prop, main = main, xlab = xlab, ylab = ylab, line.col = line.col,
+              lty = lty, lwd = lwd, mar = mar,
+              show.grid = show.grid, show.grid.labels = show.grid.labels, show.radial.grid = show.radial.grid,
+              grid.col = grid.col, grid.bg = grid.bg,
+              grid.left = grid.left, grid.unit = grid.unit, point.symbols = point.symbols, pt.col = pt.col, bg = pt.col,
+              inc.lim = inc.lim, radial.labels = radial.labels,
+              boxed.radial = boxed.radial, poly.col = poly.col,
+              dec.min = dec.min, dec.max = dec.max, new = new, pch = pch, ...)
+}
+
+#' Place des points I et D dans un repère Lambert
+#' @export
+lambert.ID <- function (inc, dec , pt.names = NA, labels = NA, label.pos = NULL,
+                        radlab = FALSE, start = 0, clockwise = TRUE,
+                        label.prop = 1.1, main = "", xlab = "", ylab = "", line.col = par("fg"),
+                        lty = par("lty"), lwd = par("lwd"), mar = c(2, 2, 3, 2),
+                        show.grid = TRUE, show.grid.labels = 10, show.radial.grid = TRUE,
+                        grid.col = "gray", grid.bg = "transparent",
+                        grid.left = FALSE, grid.unit = NULL, point.symbols = 1, pt.col = par("fg"), bg = pt.col,
+                        inc.lim = NULL, radial.labels = NULL,
+                        boxed.radial = TRUE, poly.col = NA,
+                        dec.min = -90, dec.max = 270, new = TRUE, pch = 21, type = 'o')
+{
+
+  if (is.null(inc.lim))
+    inc.lim <- range(abs(inc))
+
+
+
+  #lambert.ID(inclinaisons = inclinaisons, declinaisons = declinaisons, pt.names = pt.names, inc.lim = inc.lim,
+  #           dec.min = dmin, dec.max = dmax, main = main, label.pos = label.pos, pt.col = pt.col, bg = bg, show.grid = show.grid, new = new)
+  if (show.grid == TRUE) {
+
+    if (is.null(label.pos)) {
+      label.pos$I = seq(inc.lim[1], inc.lim[2], by=10)
+      label.pos$D = seq(dec.min, dec.max, by=10)
+    }
+
+    lambert.ID.grid(main = main, label.pos = label.pos, labels = labels,
+                    radlab = radlab,  start = start,
+                    clockwise = clockwise, show.radial.grid = show.radial.grid,
+                    dec.min = dec.min, dec.max = dec.max, inc.min = inc.lim[1] , inc.max = inc.lim[2], new  = new )
+    if (new == TRUE)
+      new <- FALSE
+  }
+  lambert.ID.point(inc, dec, dec.min = dec.min, dec.max = dec.max, inc.lim = inc.lim,
+                   pt.names = pt.names, pt.col = pt.col, bg = bg, pch = pch, new = new, type = type)
+
+
+}
+
+#' Place des points I et D dans un repère Lambert et dessine le symbole
+#' @export
+lambert.ID.position <- function (data, declinaisons = NULL, position = "P",  pt.names = NA, labels = NA, label.pos = NULL,
+                                 radlab = FALSE, start = 0, clockwise = TRUE,
+                                 label.prop = 1.1, main = "Position auto", xlab = "", ylab = "", line.col = par("fg"),
+                                 lty = par("lty"), lwd = par("lwd"), mar = c(2, 2, 3, 2),
+                                 show.grid = TRUE, show.grid.labels = 10, show.radial.grid = TRUE,
+                                 grid.col = "gray", grid.bg = "transparent",
+                                 grid.left = FALSE, grid.unit = NULL, point.symbols = 1, pt.col = par("fg"), bg = pt.col,
+                                 inc.lim = c(0, 90), radial.labels = NULL,
+                                 boxed.radial = TRUE, poly.col = NA, add = FALSE,
+                                 dec.min = -90, dec.max = 90, new = TRUE, ...)
+{
+
+  if (is.null(declinaisons) ) {
+    inclinaisons <- data$I
+    declinaisons <- data$D
+  }
+  else {
+    inclinaisons <- data
+    declinaisons <- declinaisons
+  }
+
+
+
+  if (length(position) < length(inclinaisons))
+    position <- rep(position, length(inclinaisons))
+
+  if (is.null(inc.lim))
+    inc.lim <- range(abs(inclinaisons))
+
+  if (is.null(label.pos)) {
+    lab.pos <- NULL
+    lab.pos$I = seq(inc.lim[1], inc.lim[2], by = 20)
+    lab.pos$D = seq(dec.min, dec.max, by = 10)
+  } else {
+    lab.pos <- label.pos
+  }
+
+  ne <- new
+  if (length(which(position=="P")) > 0) {
+    lambert.ID(inclinaisons[which(position=="P")], declinaisons[which(position=="P")],
+               pt.names = pt.names[which(position=="P")], label.pos = lab.pos, main = main, show.grid = show.grid,
+               inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, pt.col = pt.col,  pch = 23, new = ne)
+    ne <- FALSE
+    show.grid <- FALSE
+    main <- ""
+  }
+
+  if (length(which(position=="C")) > 0) {
+    lambert.ID(inclinaisons[which(position=="C")], declinaisons[which(position=="C")],
+               pt.names = pt.names[which(position=="C")], label.pos = lab.pos, main = main, show.grid = show.grid,
+               inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, pt.col = pt.col,  pch = 22, new = ne)
+    ne <- FALSE
+    show.grid <- FALSE
+    main <- ""
+  }
+
+
+  if (length(which(position=="D")) > 0) {
+    lambert.ID(inclinaisons[which(position=="D")], declinaisons[which(position=="D")],
+               pt.names = pt.names[which(position=="D")], label.pos = lab.pos, main = main, show.grid = show.grid,
+               inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, pt.col = pt.col, pch = 24, new = ne)
+  }
+}
+
+#' Place des points I et D dans un repère Lambert
+#' @export
+lambert.ID.point <- function (inc, dec , pt.names = NA, labels = NA, label.pos = NULL,
+                              start = 0, clockwise = TRUE,
+                              lty = par("lty"),  mar = c(2, 2, 3, 2),
+                              pt.col = par("fg"), bg = pt.col, type = 'o',
+                              inc.lim = NULL,
+                              dec.min = -90, dec.max = 270, new = TRUE, pch = 21, ...)
+{
+
+  maxlength <- 100 # la valeur n'a pas d'influence, la fonction plot() calcul le reste
+  # radlab écrit les labels sous forme d'étoile
+  if (is.null(inc.lim))
+    inc.lim <- range(abs(inc))
+
+  # Sélection des échantillons visibles dans le range
+  index.supprim <- NULL
+  for (i in 1:length(inc)) {
+    if (abs(inc[i])< inc.lim[1] || abs(inc[i])> inc.lim[2] || dec[i]<dec.min || dec[i]>dec.max )
+      index.supprim <- cbind(index.supprim, c(i))
+
+  }
+  if (!is.null(index.supprim)) {
+    inc <- inc[-index.supprim]
+    dec <- dec[-index.supprim]
+
+    if (!is.null(pt.names)  ) {
+      pt.names <- pt.names[-index.supprim]
+    }
+  }
+
+
+  inc.min = inc.lim[1]
+  inc.max = inc.lim[2]
+
+  nbpoints <- length(inc)
+
+  if (clockwise == FALSE)
+    dec <- -dec
+  if (start)
+    dec <- dec + start
+
+  box.range <- find.extremum(inc.min, inc.max, dec.min, dec.max)
+
+  oldpar <- par("xpd", "mar", "pty")
+
+  # setting up coord. system
+  if (new == TRUE) {
+    par(mar = mar, pty = "s")
+
+    maxlength <- 100 # la valeur n'a pas d'influence, la fonction plot() calcul le reste
+    plot(c(-maxlength, maxlength), c(-maxlength, maxlength), type = "n", axes = FALSE, new = new)
+  }
+
+  # par(xpd = TRUE)
+
+  if (length(pch) < nbpoints)
+    pch <- rep(pch, length.out = nbpoints)
+
+  if (length(pt.col) < nbpoints)
+    pt.col <- rep(pt.col, length.out = nbpoints)
+
+
+  xpos <- X(inc, dec, ray = maxlength, i.min = inc.min, box.range)
+  ypos <- Y(inc, dec, ray = maxlength, i.min = inc.min, box.range)
+  # print points names
+  if (length(pt.names)>0 )
+    for (i in 1: nbpoints )
+      text(xpos[i], ypos[i], pt.names[i] , srt = 0, cex = par("cex"))
+
+
+
+  # pch = 0, cercle
+  # pch = 1, rond
+  # pch = 2, triangle
+  # pch = 3, plus
+  # pch = 4, croix
+  # pch = 5, losange
+  # pch = 6, triangle vers le bas
+  # pch = 7, carré avec croix
+  # pch = 8, étoile
+  # pch = 9, losange avec plus
+  # pch = 10, cercle avec plus
+  # pch = 11, triangles hauts et bas
+  # pch = 12, carré avec plus
+  # pch = 13, cercle avec croix
+  # pch = 14, carré et triangle vers le bas
+  # pch = 15, carré plein
+  # pch = 16, cercle plein
+  # pch = 17, triangle plein vers le haut
+  # pch = 18, losange plein
+  # pch = 19, cercle solide
+  # pch = 20, petit rond plein
+  # pch = 21, cercle plein bleu, accepte l'argument bg
+  # pch = 22, carré plein bleu
+  # pch = 23, losange plein bleu
+  # pch = 24, triangle plein, pointe vers le haut bleu
+  # pch = 25, triangle plein, pointe vers la bas bleu
+
+  if (!is.null(pt.col))
+    for (i in 1: nbpoints ) {
+      if(pt.col[i] != "transparent") {
+        if (inc[i]<0) {
+          bg.col <- gray(0.95)
+          points(xpos[i], ypos[i], pch = pch[i],  col = pt.col[i], bg = bg.col,  lty=lty, type = type)
+        }
+        else
+          points(xpos[i], ypos[i], pch = pch[i],  col = pt.col[i], bg = pt.col[i],  lty=lty, type = type)
+      }
+    }
+
+
+  invisible(oldpar)
+}
+## Lambert circle ----
+
+## lambert.ID.circle.points
+#' Calcul les points pour tracer un cercle
+#' @param i.mean inclinaison du centre du cercle
+#' @param d.mean déclinaiosn du centre du point
+#' @param delta angle d'ouverture du cercle
+#' @return une liste de I et D en degrés
+#' @export
+lambert.ID.circle.points <- function (i.mean, d.mean, delta)
+{
+  Imoy <- i.mean*pi/180
+  Dmoy <- d.mean*pi/180
+  Delta <- delta*pi/180
+  pt <- NULL
+  pt$I <- NULL
+  pt$D <- NULL
+  for (k in seq(0, pi, length.out = 180)) {
+    I.tmp <- n_arcsin(sin(Imoy)*cos(Delta)+cos(k)*cos(Imoy)*sin(Delta))
+    if (abs(Imoy)==(pi/2)) {
+      D.tmp <- k
+    } else {
+      D.tmp <- Dmoy + n_arccos( (cos(Delta)-sin(Imoy)*sin(I.tmp))/(cos(Imoy)*cos(I.tmp)) )
+    }
+
+    pt$I<- c(pt$I , I.tmp*180/pi)
+    pt$D <- c(pt$D, D.AM(D.tmp*180/pi))
+  }
+  for (k in seq(pi, 2*pi, length.out = 180)) {
+    I.tmp <- n_arcsin(sin(Imoy)*cos(Delta)+cos(k)*cos(Imoy)*sin(Delta))
+    if (abs(Imoy)==(pi/2)) {
+      D.tmp <- k
+    } else {
+      D.tmp <- Dmoy - n_arccos( (cos(Delta)-sin(Imoy)*sin(I.tmp))/(cos(Imoy)*cos(I.tmp)) )
+    }
+    pt$I <- c(pt$I, I.tmp*180/pi)
+    pt$D <- c(pt$D, D.AM(D.tmp*180/pi))
+  }
+
+  return(pt)
+}
+
+#' Trace un cercle sur le diagramme lambert
+#' @param  col  définie la couleur de la ligne
+#' @param absolue permet de tracer la partie inclinaison négative des cercles
+#' @export
+lambert.ID.circle <- function (i.mean, d.mean, delta, inc.lim = NULL, dec.min = -90, dec.max = 270,
+                               col = par("fg"), clockwise = TRUE, absolue = TRUE, lty = 1, ...)
+{
+
+  pt <- lambert.ID.circle.points(i.mean, d.mean, delta)
+
+  maxlength <- 100 # la valeur n'a pas d'influence, la fonction plot() calcul le reste
+  # radlab écrit les labels sous forme d'étoile
+  if (is.null(inc.lim))
+    inc.lim <- range(abs(pt$I))
+
+
+  inc.min = inc.lim[1]
+  inc.max = inc.lim[2]
+
+
+  if (clockwise == FALSE)
+    pt$D <- -pt$D
+
+
+  box.range <- find.extremum(inc.min, inc.max, dec.min, dec.max)
+
+  xpos <- X(pt$I, pt$D, ray = maxlength, i.min = inc.min, box.range)
+  ypos <- Y(pt$I, pt$D, ray = maxlength, i.min = inc.min, box.range)
+
+  before.bad.condition <- FALSE
+  x0 <- xpos[1]
+  y0 <- ypos[1]
+
+
+  for (i in 1: length(pt$I) ) {
+    if (absolue)
+      bad.condition <- (abs(pt$I[i])< inc.lim[1] || abs(pt$I[i])> inc.lim[2] || pt$D[i]<dec.min || pt$D[i]>dec.max )
+    else
+      bad.condition <- (pt$I[i]< inc.lim[1] || pt$I[i]> inc.lim[2] || pt$D[i]<dec.min || pt$D[i]>dec.max )
+
+    if (before.bad.condition == TRUE && bad.condition == FALSE) {
+      x0 <- xpos[i]
+      y0 <- ypos[i]
+    }
+
+    if (before.bad.condition == FALSE && bad.condition == FALSE) {
+      x1 <- xpos[i]
+      y1 <- ypos[i]
+      if (pt$I[i]<0)
+        segments(x0, y0, x1, y1, lty = lty+2, col = col,  ...)
+      else
+        segments(x0, y0, x1, y1, lty = lty, col = col,  ...)
+
+      x0 <- xpos[i]
+      y0 <- ypos[i]
+    }
+
+    before.bad.condition <- bad.condition
+
+  }
+
+}
+
+#' Trace un cercle avec les champs de l'inclinaison possible
+#' @param  field définit la zone possible du champ
+#' @export
+lambert.ID.field <- function (data, dec = NULL , pt.names = NA, field = c(50, 75), inc.lim = c(0, 90), dec.min = -90, dec.max = 270, col = par("fg"),
+                              main = "", pt.col = par("fg"), bg = pt.col, label.pos= NULL, show.grid = TRUE, new = TRUE)
+{
+  #old.par <- par(no.readonly = TRUE) # all par settings which
+
+
+  if (is.null(label.pos)) {
+    label.pos$I = NA
+    label.pos$D = seq(-90, 180, by=90)
+  }
+
+
+  if (is.null(dec) ) {
+    inc <- data$I
+    dec <- data$D
+    if (is.null(pt.names))
+      pt.names <- data$name
+  }
+  else {
+    inc <- data
+    dec <- dec
+  }
+
+
+  if (is.null(inc.lim))
+    inc.lim <- range(abs(inc))
+
+  if (is.null(label.pos)) {
+    lab.pos$I = seq(inc.lim[1], inc.lim[2], by = 20)
+    lab.pos$D = seq(dec.min, dec.max, by = 10)
+  }
+
+
+
+  if (show.grid == TRUE)
+    lambert.ID.grid(main = main, label.pos = label.pos,
+                    start = 0, dec.min = dec.min, dec.max = dec.max, inc.min = inc.lim[1], inc.max = inc.lim[2], new = new )
+
+  lambert.ID.point(inc, dec, inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, pt.names = pt.names, pt.col = pt.col, bg = bg, new = FALSE)
+
+
+
+  hinf <- 90 - field[1]
+  hsup <- 90 - field[2]
+
+  lambert.ID.circle(0, 180, hinf, col =  adjustcolor( col, alpha.f = 0.5) , inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, absolue = FALSE)
+  lambert.ID.circle(0, 0, hinf, col = adjustcolor( col, alpha.f = 0.5) , inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, absolue = FALSE)
+  lambert.ID.circle(0, 90, hinf, col = adjustcolor( col, alpha.f = 0.5) , inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, absolue = FALSE)
+  lambert.ID.circle(0, -90, hinf, col = adjustcolor( col, alpha.f = 0.5) , inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, absolue = FALSE)
+  lambert.ID.circle(90, -90, hinf, col = adjustcolor( col, alpha.f = 0.5) , inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, absolue = FALSE)
+
+
+  lambert.ID.circle(0, 180, hsup, col = adjustcolor( col, alpha.f = 0.5) , inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, absolue = FALSE)
+  lambert.ID.circle(0, 0, hsup, col = adjustcolor( col, alpha.f = 0.5) , inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, absolue = FALSE)
+  lambert.ID.circle(0, 90, hsup, col = adjustcolor( col, alpha.f = 0.5) , inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, absolue = FALSE)
+  lambert.ID.circle(0, -90, hsup, col = adjustcolor( col, alpha.f = 0.5) , inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, absolue = FALSE)
+  lambert.ID.circle(90, -90, hsup, col = adjustcolor( col, alpha.f = 0.5) , inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, absolue = FALSE)
+
+  #on.exit(par(old.par))
+}
+
+#' Place des points X, Y et Z dans un repère Lambert
+#' @export
+lambert.XYZ <- function( X, Y , Z, pt.names = NA, labels = NA, label.pos = NULL,
+                         radlab = FALSE, start = 0, clockwise = TRUE,
+                         label.prop = 1.1, main = "", xlab = "", ylab = "", line.col = par("fg"),
+                         lty = par("lty"), lwd = par("lwd"), mar = c(2, 2, 3, 2),
+                         show.grid = TRUE, show.grid.labels = 10, show.radial.grid = TRUE,
+                         grid.col = "gray", grid.bg = "transparent",
+                         grid.left = FALSE, grid.unit = NULL, type = 'o', pt.col = "blue3", bg = pt.col,
+                         inc.lim = NULL, radial.labels = NULL,
+                         boxed.radial = TRUE, poly.col = NA, add = FALSE,
+                         dec.min = -90, dec.max = 270, new = TRUE, pch = 21)
+{
+  I <- to.polar.I(X, Y, Z)
+  D <- to.polar.D(X, Y, Z)
+  lambert.ID(I, D, pt.names = pt.names, label.pos = label.pos, main = main, show.grid = show.grid,
+             inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, pt.col = pt.col,  pch = pch, new = new, lty = lty, type = type)
+
+}
+
+#' Place des points X, Y et Z dans un repère Lambert avec un data.frame
+#' @export
+lambert.XYZ.specimen <- function( Data, Y , Z, pt.names = "", labels = NA, label.pos = NULL,
+                                  radlab = FALSE, start = 0, clockwise = TRUE,
+                                  label.prop = 1.1, main = NULL, xlab = "", ylab = "", line.col = "blue3",
+                                  lty = par("lty"), lwd = par("lwd"), mar = c(2, 2, 3, 2),
+                                  show.grid = TRUE, show.grid.labels = 10, show.radial.grid = TRUE,
+                                  grid.col = "lightgray", grid.bg = "transparent",
+                                  grid.left = FALSE, grid.unit = NULL, type = 'o', pt.col = "blue", bg = pt.col,
+                                  inc.lim = c(0, 90), radial.labels = NULL,
+                                  boxed.radial = TRUE, poly.col = NA, add = FALSE,
+                                  dec.min = -90, dec.max = 270, new = TRUE, pch = 21, ...)
+{
+  eta <- NULL
+  if(is.data.frame(Data)) {
+    X <- Data$X
+    Y <- Data$Y
+    Z <- Data$Z
+    if (is.null(pt.names))
+      eta <- Data$step
+    if (is.null(main))
+      main <- as.character(Data$name[1])
+  } else {
+    X <- Data
+    if (!is.null(pt.names))
+      eta <- pt.names
+  }
+  I <- to.polar.I(X, Y, Z)
+  D <- to.polar.D(X, Y, Z)
+
+  if (is.null(label.pos)) {
+    label.pos$I = c(90)
+    label.pos$D = seq(-90, 270, by=90)
+  }
+  lambert.ID(I, D, pt.names = pt.names, label.pos = label.pos, main = main, show.grid = show.grid, type = "l",
+             grid.col = grid.col,
+             inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, line.col = line.col, pt.col = pt.col, bg= par("fg"), new = new)
+  lambert.ID(I, D, pt.names = "", label.pos = label.pos, main = "", show.grid = FALSE,
+             inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, line.col = line.col, pt.col = pt.col,  pch = pch, type=type, new = FALSE)
+}
+
+#' Place des points I et D dans un repère Lambert avec un data.frame
+#' @export
+lambert.ID.specimen <- function( Data, D , pt.names = "", labels = NA, label.pos = NULL,
+                                 radlab = FALSE, start = 0, clockwise = TRUE,
+                                 label.prop = 1.1, main = NULL, xlab = "", ylab = "", line.col = "blue3",
+                                 lty = par("lty"), lwd = par("lwd"), mar = c(2, 2, 3, 2),
+                                 show.grid = TRUE, show.grid.labels = 10, show.radial.grid = TRUE,
+                                 grid.col = "lightgray", grid.bg = "transparent",
+                                 grid.left = FALSE, grid.unit = NULL, type = 'o', pt.col = "blue3", bg = pt.col,
+                                 inc.lim = c(0, 90), radial.labels = NULL,
+                                 boxed.radial = TRUE, poly.col = NA, add = FALSE,
+                                 dec.min = -90, dec.max = 270, new = TRUE, pch = 21, ...)
+{
+  eta <- NULL
+  if(is.data.frame(Data)) {
+    I <- Data$I
+    D <- Data$D
+    if (is.null(pt.names))
+      eta <- Data$step
+    if (is.null(main))
+      main <- as.character(Data$name[1])
+  } else {
+    I <- Data
+    if (!is.null(pt.names))
+      eta <- pt.names
+  }
+
+  if (is.null(label.pos)) {
+    label.pos$I = c(90)
+    label.pos$D = seq(-90, 270, by=90)
+  }
+  lambert.ID(I, D, pt.names = pt.names, label.pos = label.pos, main = main, show.grid = show.grid, type = "l",
+             grid.col = grid.col,
+             inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, line.col = line.col, pt.col = pt.col, bg= par("fg"), new = new)
+  lambert.ID(I, D, pt.names = "", label.pos = label.pos, main = "", show.grid = FALSE,
+             inc.lim = inc.lim, dec.min = dec.min, dec.max = dec.max, line.col = line.col, pt.col = pt.col,  pch = pch, new = FALSE, type=type)
+}
+
+## Zijderveld ----
+#' Trace un diagramme de Zijderveld type 1
+#' @param Data soit une data.frame avec les mesures X, Y et Z, soit que les valeurs de X
+#' @param Y les valeurs de Y, si Data n''est pas une data.frame
+#' @param Z les valeurs de Z, si Data n''est pas une data.frame
+#' @param panel.first = grid() : affiche une grille
+#' @param pt.name = "": n'affiche rien. pt.name = NULL: affiche les étapes si Data est une data.frame
+#' @param legend.pos = NULL : n'affiche pas la legende. legend.pos = "topleft" affiche en haut à gauche
+#' @export
+zijderveld1<- function(Data, Y = NULL, Z = NULL, pt.names = "", main = NULL, panel.first = NULL, pt.col = c("forestgreen", "blue3"),
+                       isometric = TRUE, ylim = NULL, legend.pos = NULL, legend.txt = c("(Y, X)", "(Y, Z)"), new = TRUE, ...)
+{
+  eta <- NULL
+  if(is.data.frame(Data)) {
+    X <- Data$X
+    Y <- Data$Y
+    Z <- Data$Z
+    if (is.null(pt.names))
+      eta <- Data$step
+    else
+      eta <- pt.names
+
+    if (is.null(main))
+      main <- as.character(Data$name[1])
+  } else {
+    X <- Data
+    if (!is.null(pt.names))
+      eta <- pt.names
+  }
+
+  if (isometric == TRUE) {
+    asp <- 1
+  } else {
+    asp <- NA
+  }
+
+  if (is.null(ylim)) {
+    Y.r <- range(X)
+    Z.r <- range(Z)
+    ylim <- c(min(Y.r[1], -Z.r[2]), max(Y.r[2], -Z.r[1]))
+    if (isometric == TRUE) {
+      if (ylim[1]>0)
+        ylim[1]<-0
+      if (ylim[2]<0)
+        ylim[2]<-0
+
+    }
+
+  }
+
+  if (new == TRUE) {
+    plot(Y, X, type = "o", pch = 21, main = main, col = pt.col[1],  bg = adjustcolor( pt.col[1], alpha.f = 0.8), axes = FALSE,
+         panel.first = panel.first, xlab = "", ylab = "", ylim = ylim, asp = asp, xaxt="n", yaxt="n", new = new, ...)
+
+
+
+    if (!is.null(legend.pos))
+      legend(legend.pos, legend.txt, pch = c(19, 21), col = pt.col, bg = c(par("bg"), adjustcolor( pt.col[1], alpha.f = 0.8), adjustcolor( pt.col, alpha.f = 0.05)),
+             box.col = par("bg"), title = "")
+
+    ax1 <- axis(1, pos = 0,  col = "darkgray")
+    ax2 <- axis(2, pos = 0,  col = "darkgray") # Ordonnées
+
+    text(0, ax2[length(ax2)], "+X", col = "gray5", adj = c(-.5, 1), cex = par("cex.lab"))
+    text(0, ax2[1], "+Z", col = "gray5", adj = c(-.5, 0), cex = par("cex.lab"))
+    text( ax1[length(ax1)], 0, "+Y", col = "gray5", adj = c(1, -.5), cex = par("cex.lab"))
+
+  } else {
+    lines(Y, X, type = "o", pch = 21, col = pt.col[1], bg = adjustcolor( pt.col[1], alpha.f = 0.8), ...)
+  }
+
+  lines(Y, -Z, type = "o", pch = 21, col = pt.col[2], bg = adjustcolor( pt.col[2], alpha.f = 0.05), ...)
+
+  text(jitter(Y, 5, amount = 0), jitter(X, 5, amount = 0), eta, cex = par("cex.lab"))
+
+}
+
+#' Trace un diagramme de Zijderveld type 2
+#' @export
+zijderveld2<- function(Data, Y = NULL, Z = NULL, pt.names = "", main = NULL, panel.first = NULL, pt.col = c("forestgreen", "blue3"), isometric = TRUE,
+                       ylim = NULL, legend.pos = NULL, new = TRUE, ...)
+{
+  eta <- NULL
+  if(is.data.frame(Data)) {
+    X <- Data$X
+    Y <- Data$Y
+    Z <- Data$Z
+    if (is.null(main))
+      main <- as.character(Data$name[1])
+    if (is.null(pt.names))
+      eta <- Data$step
+  } else {
+    X <- Data
+    if (!is.null(pt.names))
+      eta <- pt.names
+  }
+
+  if (isometric == TRUE) {
+    asp <- 1
+  } else {
+    asp <- NA
+  }
+
+  if (is.null(ylim)) {
+    Y.r <- range(Y)
+    Z.r <- range(Z)
+    ylim <- c(min(Y.r[1], -Z.r[2]), max(Y.r[2], -Z.r[1]))
+    if (isometric == TRUE) {
+      if (ylim[1]>0)
+        ylim[1]<-0
+      if (ylim[2]<0)
+        ylim[2]<-0
+    }
+  }
+
+  if (new == TRUE) {
+    plot(-X, Y, main = main, type = "o", pch = 21, col = pt.col[1], bg = adjustcolor( pt.col[1], alpha.f = 0.8), axes = FALSE,
+         panel.first = panel.first, xlab = "", ylab = "", ylim = ylim, asp = asp, new = new)
+
+    text(jitter(-X, 5, amount = 0), jitter(Y, 5, amount = 0), eta, cex = par("cex.lab"))
+
+    if (!is.null(legend.pos))
+      legend(legend.pos, c("(-X, Y)", "(-X, Z)"), pch = c(19, 21), col = pt.col, bg = c(par("bg"), adjustcolor( pt.col[1], alpha.f = 0.8), adjustcolor( pt.col, alpha.f = 0.05)),
+             box.col = par("bg"), title = "")
+
+    ax1 <- axis(1, pos = 0, col = "darkgray")
+    ax2 <- axis(2, pos = 0, col = "darkgray") # Ordonnées
+
+    text(0, ax2[length(ax2)], "+Y", col = "gray5", adj = c(-.5, 1), cex = par("cex.lab"))
+    text(0, ax2[1], "+Z", col = "gray5", adj = c(-.5, 0), cex = par("cex.lab"))
+    text( ax1[length(ax1)] , 0, "-X", col = "gray5", adj = c(1, -.5), cex = par("cex.lab"))
+
+
+  } else {
+    lines(-X, Y, type = "o", pch = 21, col = pt.col[1], bg = adjustcolor( pt.col[1], alpha.f = 0.8), ...)
+  }
+
+  lines(-X, -Z, type = "o", pch = 21, col = pt.col[2], bg = adjustcolor( pt.col[2], alpha.f = 0.05))
+
+  text(jitter(-X, 5, amount = 0), jitter(Y, 5, amount = 0), eta, cex = par("cex.lab"))
+
+}
+
+## Anisotropie ----
+#' Tracer dans le diagramme Lambert/ Stéréo d'un tenseur
+#' @param Data un data.frame avec les variables "L1.Inc", "L1.Dec", "L2.Inc", "L2.Dec", "L3.Inc", "L3.Dec"
+#' @export
+lambert.ID.tensors <- function(Data, pt.col = "blue3", new = TRUE, ...)
+{
+  # Restructuration des données
+  L1.Inc <- as.numeric(Data$L1.Inc)
+  L2.Inc <- as.numeric(Data$L2.Inc)
+  L3.Inc <- as.numeric(Data$L3.Inc)
+
+  L1.Dec <- as.numeric(Data$L1.Dec)
+  L2.Dec <- as.numeric(Data$L2.Dec)
+  L3.Dec <- as.numeric(Data$L3.Dec)
+
+  if (length(L1.Inc) == 0)
+    return(print("no DATA"))
+
+  if (length(pt.col) < length(L1.Inc))
+    pt.col <- rep(pt.col, length.out = length(L1.Inc))
+
+  for (i in 1:length(L1.Inc) ) {
+    Da.I <- c(L1.Inc[i], L2.Inc[i], L3.Inc[i])
+    Da.D <- c(L1.Dec[i], L2.Dec[i], L3.Dec[i])
+    lambert.ID(Da.I, Da.D,
+               inc.lim = c(0, 90), pch = c(22, 24, 21), pt.col = pt.col[i], new = new  )
+    new <- FALSE
+  }
+}
+
+#' Tracer d'un diagramme de Flinn
+#' diagramme des paramètres d'anisotropie F12 en fonction de F23
+#' @param Data soit correspond à un data.frame avec les variables $F23 et $F12, soit seulement des valeurs de F23 dans ce cas, renseignez Data.F12
+#' @param Data.F12 des valeurs pour F12
+#' @param absolue prend la valeur absolue des données
+#' @export
+flinn <- function( Data, Data.F12 = NULL, pt.names = NULL,
+                   pt.col = "blue3", pch = 21, type = "p",
+                   xlab = "F23", ylab = "F12",  X.lim = NA, Y.lim = NA,
+                   main = "Flinn diagram",
+                   absolue = TRUE, new = TRUE)
+{
+  par(pty = "s", "xaxp")
+  if (is.data.frame(Data)) {
+    if (absolue == TRUE) {
+      X <- abs(Data$F23)
+      Y <- abs(Data$F12)
+    }
+    else {
+      X <- Data$F23
+      Y <- Data$F12
+    }
+  }
+  else {
+    if (absolue == TRUE) {
+      X <- abs(Data)
+      Y <- abs(Data.F12)
+    }
+    else {
+      X <- Data
+      Y <- Data.F12
+    }
+  }
+
+
+  if (is.na(X.lim)) {
+    X.lim <- range(X)
+    X.lim[1] <- 0
+  }
+
+  if (is.na(Y.lim)) {
+    Y.lim <- range(Y)
+    Y.lim[1] <- 0
+  }
+
+  XY.max <- ceil(max(X.lim[2], Y.lim[2]) * 1.05)
+  X.lim[2] <- XY.max
+  Y.lim[2] <- XY.max
+
+  if (new == TRUE) {
+    plot(x = X, y = Y, xlab = xlab, ylab = ylab, xlim = X.lim,
+         ylim = Y.lim, type = type, col = "gray50", bg = pt.col,
+         pch = pch, xaxt = "n", yaxt = "n", asp = 1, bty = "n",
+         main = main, new = TRUE)
+    ax1 <- axis(1, pos = X.lim[1], col = "gray10", at=c(0:(XY.max+0)))
+    ax2 <- axis(2, pos = Y.lim[1], col = "gray10", at=c(0:(XY.max+0)))
+    cc <- array(c(0, 1), c(1, 2))
+    abline(coef = cc, col = "gray90")
+    main <- ""
+  }
+  else {
+    points(x = X, y = Y, xlim = X.lim, ylim = Y.lim, type = type,
+           col = "gray50", bg = pt.col, pch = pch, xaxt = "n",
+           yaxt = "n", asp = 1, bty = "n", new = FALSE)
+  }
+  text(jitter(X, 5, amount = 0), jitter(Y, 5, amount = 0),
+       pt.names)
+}
+
+#' Tracer d'un diagramme de désaimantation
+#' @param normalize permet de comparer l'évolution de l'aimanation quelque soit l'amplitude en visualisant le résultat comme un pourcentage du maximum
+#' @export
+demag <- function( Data, F = NULL,  pt.col = "blue3", pch = 21, type = "b",
+                   xlab = "°C", ylab = "", main = NULL,
+                   names = NA, normalize = TRUE, step.J0 = NULL, new = TRUE, ...)
+{
+
+  tmp.frame <- NULL
+  if (is.null(main))
+    main <- " F vs step.value"
+
+  if(is.data.frame(Data)) {
+    tmp.frame$name <- Data$name[!is.na(Data$step.value)]
+    tmp.frame$step.value <- Data$step.value[!is.na(Data$step.value)]
+    tmp.frame$F <- Data$F[!is.na(Data$step.value)]
+
+
+  } else {
+    # Création du frame interne
+    if (is.na(names))
+      tmp.frame$name <- as.character(c(1: length(Data)))
+    else
+      tmp.frame$name <- names
+
+    tmp.frame$step.value <- Data
+    tmp.frame$F <- F
+  }
+
+  if (length(pt.col) < length(tmp.frame$step.value) )
+    pt.col <- rep(pt.col, length(tmp.frame$step.value) )
+
+  # comptage et séparation des données
+  current <- tmp.frame$name[1]
+  list.name <- current
+
+  for (i in 1: length(tmp.frame$name)) {
+    if ( tmp.frame$name[i] != current) {
+      current <- tmp.frame$name[i]
+      list.name<- c(list.name, current)
+    }
+  }
+
+  if (is.null(step.J0) == FALSE) {
+    if (length(step.J0) < length(tmp.frame$step.value) )
+      step.J0 <- rep(step.J0, length(list.name) )
+  } else {
+    step.J0 <- rep(NA, length(list.name) )
+  }
+
+  xlim <- range(tmp.frame$step.value)
+
+  # recherche du Ymax pour définir la taille du graphique
+  Ymax <- 0
+  J0 <- 0
+  list.mesure.i <-  NULL
+  if (normalize == TRUE) {
+    for (i in 1 : length(list.name)) {
+      list.mesure.i$F <- tmp.frame$F[tmp.frame$name == list.name[i]]
+      if (is.na(step.J0[i]) == TRUE) {
+        J0[i] <- list.mesure.i$F[1]
+      } else {
+        tmp.etp <- list.mesure.i$F[tmp.frame$step.value == step.J0[i]] # si il y a plusieurs valeurs pour la même étape, comme ani
+        J0[i] <- tmp.etp[1]
+        # J0[i] <- list.mesure.i$F[tmp.frame$step.value == step.J0[i]]
+      }
+      Ymax <- max(Ymax, tmp.frame$F[tmp.frame$name == list.name[i]]/J0[i] *100)
+    }
+  } else
+    Ymax <- max(tmp.frame$F)
+
+  list.mesure.i <-  NULL
+  for (i in 1 : length(list.name)) {
+    list.mesure.i$step.value <- tmp.frame$step.value[which(tmp.frame$name == list.name[i])]
+    list.mesure.i$F <- tmp.frame$F[tmp.frame$name == list.name[i]]
+    if (normalize == TRUE) {
+      coefY <- 100 / J0[i]
+
+    } else
+      coefY <- 1
+
+    Xi <- list.mesure.i$step.value
+    Yi <- list.mesure.i$F  * coefY
+
+    ylim <- c(0, Ymax)
+
+    if (i == 1)
+      plot(x = Xi, y = Yi, xlab = xlab, ylab = ylab, ylim = ylim, xlim = xlim, type = type,
+           col = adjustcolor( pt.col[i], alpha.f = 0.7), bg = pt.col[i], pch = pch,
+           yaxt = "n", bty = "n", main = main, new = new)
+    else
+      lines(x = Xi, y = Yi, type = type, col = adjustcolor( pt.col[i], alpha.f = 0.7), bg = pt.col[i], pch = pch, yaxt = "n", bty ="n")
+
+  }
+
+  axis(2, pos = 0, col = "darkgray") #cex.axis = 0.8) # Ordonnées
+
+  if (normalize == TRUE) {
+    mtext( paste(format(Ymax, digits = 3), "%"), side = 3, col = "gray5", adj = 0, cex = par("cex.lab"))
+  } else {
+    mtext( format(Ymax, digits = 3, scientific = TRUE), side = 3, col = "gray5", adj = 0, cex = par("cex.lab"))
+  }
+
+
+}
+
+# Arai ----
+#' Tracer d'un diagramme de désaimantation
+#' @param tab_thellier résultats du calcul de Thellier.computation
+#' @export
+#'
+#' Plot an Arai diagram
+#'
+#' This function draws the classic Arai plot from the
+#' result of a Thellier‑type experiment.  The input must be the list returned
+#' by `Thellier.computation()`, which contains three components (`ARN`,
+#' `ATR` and `ATP`) that hold the NRM, the TRM and the pTRM‑check points,
+#' respectively.
+#'
+#' The curves can be normalised to their own maximum, to a user‑defined
+#' “J0” step, or left in raw units.  Points that fall inside a temperature
+#' interval defined by `begin.step.value` / `end.step.value` are coloured in
+#' red; the remaining points keep the colour given by `pt.col`.  Optionally,
+#' the step values are printed next to each point and an Ordinary Least
+#' Squares (OLS) regression line is added.
+#'
+#' @inheritParams Thellier.computation
+#' @param tab_thellier   List returned by `Thellier.computation()`.
+#'   It must contain the elements `ARN`, `ATR` and `ATP`.  Each element is a
+#'   list of data frames with at least the columns `F`, `step.value`,
+#'   `step.name` (and optionally `step`).
+#' @param mesures.names  Character vector containing the name of each sample.
+#'   Length must be equal to the number of samples stored in `tab_thellier`.
+#' @param aim.coef       Scaling factor that converts the raw magnetic moment
+#'   (in A·m²) to a dimensionless unit.  The default `1/(10.8*1e-06)` corresponds
+#'   to the conversion used in the original Arai implementation.
+#' @param step.J0        Identifier of the “J0” step (normally the natural
+#'   magnetisation).  The default `"20N0"` is the step used in the original
+#'   code.  If `relative == "J0"` the diagram is normalised to this step.
+#' @param relative       How the data are normalised.
+#'   * `TRUE`  – normalise each curve to its own maximum (default).
+#'   * `"J0"` – normalise to the J0 step (see `step.J0`).
+#'   * `FALSE` – no normalisation (raw values are plotted).
+#' @param show.step.value Logical; if `TRUE` the numeric step values are added
+#'   as text labels next to each point.
+#' @param pt.col         Base colour for the points that are **outside** the
+#'   temperature interval defined by `begin.step.value` / `end.step.value`.
+#'   Points inside the interval are drawn in red.
+#' @param loop.col       Colour used for the pTRM‑check “loop” (the
+#'   segments that connect the check point to the main curve).
+#' @param OLS            Logical; if `TRUE` an Ordinary Least Squares regression
+#'   line is fitted to the points that lie inside the temperature interval and
+#'   drawn in red.
+#' @param begin.step.value Numeric vector (or single value) giving the lower
+#'   bound of the temperature interval (inclusive) used for the OLS fit and for
+#'   the red‑point highlighting.  Length must match the number of samples or be
+#'   of length 1 (in which case it is recycled).
+#' @param end.step.value   Numeric vector (or single value) giving the upper
+#'   bound of the temperature interval (inclusive).  Same recycling rules as
+#'   `begin.step.value`.
+#'
+#' @return **Invisible** – the function is called for its side‑effect (a plot
+#'   is produced for each sample).  No object is returned.
+#'
+#' @details
+#'   1. The three components (`ARN`, `ATR`, `ATP`) are extracted from
+#'      `tab_thellier`.
+#'   2. Depending on `relative`, the NRM (`ARN$F`) and TRM (`ATR$F`) are
+#'      normalised either to their own maxima, to the J0 step, or left
+#'      unchanged.
+#'   3. The main Arai curve (`TR` vs `NRM`) is plotted, optionally with step
+#'      values as text labels.
+#'   4. pTRM‑check loops are drawn in `loop.col`.
+#'   5. If `OLS` is `TRUE` and at least two points lie inside the user‑defined
+#'      temperature interval, a linear regression with slope
+#'      `a_aff = -sqrt(S2y/S2x)` and intercept `b_aff` is added (red line).
+#'
+#' @note The function assumes that the objects in `ARN`, `ATR` and `ATP` are
+#'   **lists of data frames** with identical ordering of rows.
+#'
+#' @warning If the temperature interval defined by `begin.step.value` /
+#'   `end.step.value` does not contain at least two points, the OLS fit is
+#'   skipped and a warning is issued.
+#'
+#' @seealso \code{\link{Thellier.computation}} for the generation of
+#'   `tab_thellier`.
+#'   \code{\link[dplyr]{inner_join}} is used internally to match steps for the
+#'   pTRM‑check loops.
+#'
+#'
+#' @export
+arai.graph <- function(tab_thellier,
+                       mesures.names,
+                       aim.coef = 1/(10.8*1E-06),
+                       step.J0 = "20N0",
+                       relative = TRUE,
+                       show.step.value = TRUE,
+                       pt.col = "blue",
+                       loop.col = "forestgreen",
+                       OLS = TRUE,
+                       begin.step.value = 0,
+                       end.step.value = 1000)
+{
+
+  ARN <- tab_thellier$ARN
+  ATR <- tab_thellier$ATR
+  ATP <- tab_thellier$ATP
+
+  for (i in 1:length(ARN)) {
+    J0 <- ARN[[i]]$F[which(ARN[[i]]$step.value == 0)]
+
+    # xlim <- range(ATR[[i]]$F)
+    # ylim <- c(0, max(ARN[[i]]$F))
+
+    if (relative == TRUE) {
+      ATRmax <- max(ATR[[i]]$F)/100
+      ARNmax <- max(ARN[[i]]$F)/100
+
+    }else if (relative == "J0") {
+      ARNmax <- J0$F* aim.coef/100
+      ATRmax <- ARNmax
+
+    }else{
+      ATRmax <- 1
+      ARNmax <- 1
+    }
+
+    # Normalisation
+    ARN[[i]]$F <- ARN[[i]]$F/ARNmax
+    ATR[[i]]$F <- ATR[[i]]$F/ATRmax
+    ATP[[i]]$F <- ATP[[i]]$F/ATRmax
+
+    # Graph
+    xlim <- range(ATR[[i]]$F)
+    ylim <- c(0, max(ARN[[i]]$F))
+
+    if (relative == TRUE) {
+      xlab <- "% TRM relative to TRM max"
+      ylab <- "% NRM relative to NRM max"
+
+    }else if (relative == "J0"){
+      xlab <- "% TRM relative to J0"
+      ylab <- "% NRM relative to J0"
+
+    }else{
+      xlab <- "TRM"
+      ylab <- "NRM"
+    }
+
+    RN <- ARN[[i]]
+    TR <- ATR[[i]]
+
+    # --- Couleur des points selon plage ---
+    in.range <- (RN$step.value >= begin.step.value[i]) & (RN$step.value <= end.step.value[i])
+    pt.col.res <- ifelse(in.range, "red", pt.col)
+
+    plot(y = RN$F, x = TR$F, type = "o", col = pt.col.res, pch = 20, xlim = xlim, ylim = ylim, xlab = xlab, ylab = ylab)
+    title(mesures.names[i])
+    if (show.step.value == TRUE) {
+      text(y = RN$F, x = TR$F, RN$step.value, adj = 0)
+    }
+
+    # pTRM checks
+    TP <- ATP[[i]]
+    arnLoop.name <- inner_join(RN, TP, by="step.value")[,c(1:9)]
+
+    arnLoop.value <- inner_join(RN, TP, by="step.name")[,c(1:9)]
+
+    atrLoop <- inner_join(TR, arnLoop.value, by = "step.name")[,c(1:8)]
+
+    for (j in 1:length(arnLoop.name$step.name)) {
+      points(x = TP$F[j], y = arnLoop.name$F.x[j], col = loop.col, pch = 4)
+
+      lines(x = c(TP$F[j], atrLoop$F[j]),
+            y = c(arnLoop.value$F.x[j], arnLoop.value$F.x[j]), col = loop.col)
+
+      lines(x = c(TP$F[j], TP$F[j]),
+            y = c(arnLoop.value$F.x[j], arnLoop.name$F.x[j]), col = loop.col)
+    }
+
+    # Ordinary Least Squares
+    if (OLS == TRUE) {
+      RN_for_OLS <- RN[in.range, ]
+      TR_for_OLS <- TR[in.range, ]
+      n <- nrow(RN_for_OLS)
+
+      if (n >= 2) {
+        Xmoy <- mean(TR_for_OLS$F)
+        Ymoy <- mean(RN_for_OLS$F)
+        covYX <- cov(RN_for_OLS$F, TR_for_OLS$F) * (n - 1)/n
+        S2x <- var(TR_for_OLS$F) * (n - 1)/n
+        S2y <- var(RN_for_OLS$F) * (n - 1)/n
+        a_aff <- -sqrt(S2y/S2x)
+        b_aff <- Ymoy - a_aff * Xmoy
+
+        abline(b_aff, a_aff, col = "red", lwd = 2)
+      } else {
+        warning(paste("Not enough points to perform OLS for sample", mesures.names[i]))
+      }
+    }
+  }
+}
+
+# Statistiques ----
+#' Statistique de mcFadden sur l'inclinaison seule à partir des coordonées XYZ
+#' @seealso \code{\link{stat.mcFadden}}, \code{\link{stat.fisher}}
+#' @export
+stat.mcFadden.XYZ <- function(TabX, TabY, TabZ)
+{
+  N <- length(TabX)
+  VP <- to.polar(TabX, TabY, TabZ)
+
+  stat.mcFadden(inc, dec)
+
+}
+
+#' Statistique de mcFadden sur l'inclinaison seule à partir des coordonées I et D
+#' @param Data liste des inclinaisons en degré ou une data.frame avec les variables $I et $D
+#' @param dec liste des déclinaisons en degré
+#' @param inc.absolue calcul avec la valeur absolue des inclinaisons
+#' @return  en degré, un data.frame "n", "imoy.McFadden", "imoy.McElhinny", "a95.mcFad", "a95.eqFish", "Kb", "Kssb", "imin", "imax", "dmin", "dmax"
+#' @seealso \code{\link{stat.mcFadden.XYZ}}, \code{\link{stat.fisher}}
+#' @references https://doi.org/10.1111/j.1365-246X.1990.tb05683.x
+#' @export
+stat.mcFadden <- function(Data, dec = NULL, inc.absolue = TRUE)
+{
+
+  if (is.null(dec)) {
+    inc <- Data$I
+    dec <- Data$D
+    Dmin <- min(dec)
+    Dmax <- max(dec)
+  } else {
+    inc <- Data
+    Dmin <- min(dec)
+    Dmax <- max(dec)
+  }
+
+  if (inc.absolue)
+    inc <- abs(inc)
+
+  # Calcul des sommes
+  N <- length(inc)
+
+  if (N<=2) {
+    warning("length(inc) < 3")
+    return()
+  }
+
+  Imin <- min(inc)
+  Imax <- max(inc)
+
+  Imoy <- 0
+
+  # Passage en radian pour les calculs
+  i.rad <- as.numeric(inc*pi/180)
+
+  A <- sum(sin(i.rad))
+  B <- sum(cos(i.rad))
+
+
+  P <- 2*(N+2*B)/A
+  Q <- -6
+  R <- 2*(N-2*B)/A
+  S <- 1
+
+  E4 <- EQUATION_DEGRE_4(P, Q, R, S)
+
+  KJ <- N/(2*(N-A*sin(2*atan(E4$PX1))-B*cos(2*atan(E4$PX1))))
+
+  Imoy <- 2*atan(E4$PX1)
+  K <- KJ
+
+
+  KJ <- N/(2*(N-A*sin(2*atan(E4$PX2))-B*cos(2*atan(E4$PX2))))
+  if (KJ>K) {
+    Imoy <- 2*atan(E4$PX2)
+    K <- KJ
+  }
+
+  KJ <- N/(2*(N-A*sin(2*atan(E4$PX3))-B*cos(2*atan(E4$PX3))))
+  if (KJ>K) {
+    Imoy <- 2*atan(E4$PX3)
+    K <- KJ
+  }
+
+  KJ <- N/(2*(N-A*sin(2*atan(E4$PX4))-B*cos(2*atan(E4$PX4))))
+  if (KJ>K) {
+    Imoy <- 2*atan(E4$PX4)
+    K <- KJ
+  }
+
+  CFad <- sum(cos(i.rad-Imoy))
+  SFad <- sum(sin(i.rad-Imoy))
+
+  I.McElhinny <- Imoy /pi*180     # modif effectuée le 2017/01/25
+  imoy.McFadden <- (Imoy + (SFad/CFad) ) /pi*180
+
+  a95mcFadden <- 1 - ((SFad/CFad)^2)/2 - (qf(.95, 1, N-1)*(N-CFad)/(CFad*(N-1)))
+  a95mcFadden <- acos(a95mcFadden) /pi*180
+  Kssb <-  (N-1)/2/(N-CFad)
+
+  # retour en degré #
+  return(data.frame( n= N, imoy.McFadden = imoy.McFadden, imoy.McElhinny = I.McElhinny,
+                     a95.mcFad = a95mcFadden, a95.eqFish = 2.4477/sqrt(N*K)/pi*180,
+                     Kb = K, Kssb = Kssb,
+                     imin = Imin, imax = Imax, Dmin = Dmin, Dmax = Dmax))
+
+}
+
+#' Statistique de Fisher
+#' modifié, pas de pondération calcul de A95 Vrai sans simplification tel que fisher 1953
+#' @param Data liste des inclinaisons en degré ou une data.frame avec les variables $I et $D
+#' @param dec liste des déclinaisons en degrés
+#' @param aim liste des aimantations, facultatif
+#' @param pfish pourcentage de confiance
+#' @param inc.absolue calcul avec la valeur absolue des inclinaisons
+#' @return  en degrés
+#' @seealso \code{\link{stat.mcFadden}}
+#' @keywords fisher
+#' @export
+stat.fisher <- function (Data, dec = NULL, aim = NA, pfish = 0.95, inc.absolue = TRUE)
+{
+  if (is.null(dec)) {
+    inc <- Data$I
+    dec <- Data$D
+  } else {
+    inc <- Data
+    dec <- dec
+  }
+
+  n <- length(inc)
+  if (length(dec) != n) {
+    return("length (dec) diff length(inc)")
+  }
+  if (is.na(aim) || length(aim) != n) {
+    # message("length(aim) diff length(inc)")
+    aim <-  rep(1, n)
+  }
+
+  if (inc.absolue == TRUE)
+    inc <- abs(inc)
+
+  imin <- min(inc)
+  imax <- max(inc)
+  dmin <- min(dec)
+  dmax <- max(dec)
+
+
+  # Passage en radian pour les calculs
+  i.rad <- inc/180*pi
+  d.rad <- dec/180*pi
+
+  sx <- sum(aim*cos(i.rad)*cos(d.rad))
+  sy <- sum(aim*cos(i.rad)*sin(d.rad))
+  sz <- sum(aim*sin(i.rad))
+  sn <- sum(aim)
+
+  r <- sqrt(sx*sx+sy*sy+sz*sz)
+
+  imoy <- n_arcsin(sz/r)
+  dmoy <- angleD(sx,sy)
+  KF <- sn/(sn-r)
+  # Calcul de A95 Vrai sans simplification tel que fisher 1953
+  a95 <- exp( (1/(n-1))* log(1/(1-pfish)) )
+  a95 <- (a95 - 1 )*(n-r)/r
+  a95 <- acos(1-a95)
+
+  # correction du biais
+  KF <- ((n-1)/n) * KF
+
+  if (KF<10) {
+    delta <- log(1+ (1-pfish) * (exp(2*KF) -1) ) /KF
+    delta <- acos(delta-1)
+  } else {
+    delta <- log(1-pfish)/KF
+    delta <- acos(1 + delta)
+  }
+
+
+  # retour en degrés
+  return(data.frame(n = n, imoy =imoy/pi*180, dmoy = dmoy/pi*180, alpha=a95/pi*180, pfish = pfish, delta = delta/pi*180, KF = KF,
+                    imin = imin, imax = imax, dmin = dmin, dmax = dmax))
+}
+
+
+# Arai ----
+
+
+#'   Standard calculus to study palaeo and archaeo magnetic measures
+#'   by convention we use the two last characters of the different steps to indicate the type of experimentation
+#'   example 100RA , 100 is the temperature (step.value) , R is the direction of the magnetization and A is the name of the step (step.name)
 #' @references  Coe 1978 : DOI: 10.1029/JB083iB04p01740
 #' Prévost et Al. 1985 DOI: 10.1029/JB090iB12p10417
 #'
 #' @param mesures data.frame with the package convention format
-#' @param relative plot with a relative value in percent
 #' @param verbose show comment
-#' @param show.plot  display the plot
 #' @param TH lab field
 #' @param aim.coef used to correct the measurement often 1E-10x1E6 x volume
-#' @param show.step.value display on the plot the value of each step
-#' @param R.mark = 'R', V.mark = 'V' conventional notation to mark the sens of the magnetisation with the step name
-#' @param P.mark = 'P' mark the pTRM check loop
-#' @param  L.mark = "L", Q.mark = "Q" mark to indiquate the slow cooling step and the quick (fast-normal) cooling step
-#' @param step.J0 is the step of the natural magnetisation eg "0N0", default 20N0
+#' @param R.mark = 'R' points the direction of the magnetization with the step name
+#' @param V.mark = 'V' points the direction of the magnetization with the step name
+#' @param P.mark = 'P' points the pTRM check loop
+#' @param L.mark = "L" points the slow cooling step and
+#' @param Q.mark = "Q" points the quick (fast-normal) cooling step
+#' @param step.J0 is the step of the natural magnetization eg "0N0", default 20N0
 #' @param begin.step.value the first step.value (temperature) used to determinate the magnetic field
 #' @param end.step.value the last step.value (temperature) used to determinate the magnetic field
-#' @param loop.col the color of the line showing the the check loop process
-#' @param pt.col the color of the line and the plot
 #' @export
-arai <- function(mesures, relative = TRUE, verbose = TRUE, show.plot = TRUE, TH = 60, aim.coef = 1E-10*1E6, step.J0 = "20N0", show.step.value = FALSE, R.mark = 'R', V.mark = 'V', P.mark = 'P', L.mark = "L", Q.mark = "Q", pt.col = "blue", loop.col = "forestgreen", begin.step.value = 0, end.step.value = 1000) {
-  # __________________
+Thellier.computation <- function(mesures,
+                                  verbose = TRUE,
+                                  TH = 60,
+                                  aim.coef = 1/(10.8*1E-06),
+                                  step.J0 = "0N0",
+                                  R.mark = "R",
+                                  V.mark = "V",
+                                  P.mark = "P",
+                                  L.mark = "L",
+                                  Q.mark = "Q",
+                                  begin.step.value = 0,
+                                  end.step.value = 1000)
+  {
   if (is.null(step.J0)) {
-    step.J0 <- mes.sel$step[1]
+    step.J0 <- mesures$step[1]
   }
-
-  ATRR <- mesures[which(substr(mesures$step, nchar(mesures$step)-1, nchar(mesures$step)-1 ) == R.mark),]
-  ATRV <- mesures[which(substr(mesures$step, nchar(mesures$step)-1, nchar(mesures$step)-1 ) == V.mark),]
-
-  J0 <- mesures [which(trimws(mesures$step) ==trimws(step.J0) ), ]
-  if (J0$F < 0 ) {
+  ATRR <- mesures[which(substr(mesures$step, nchar(mesures$step) -
+                                 1, nchar(mesures$step) - 1) == R.mark), ]
+  ATRV <- mesures[which(substr(mesures$step, nchar(mesures$step) -
+                                 1, nchar(mesures$step) - 1) == V.mark), ]
+  J0 <- mesures[which(trimws(mesures$step) == trimws(step.J0)),
+  ]
+  if (J0$F < 0) {
     warning("error on step.J0, F must be positive")
-
-  } else {
+  }else{
     ATRR <- rbind.data.frame(J0, ATRR)
     ATRV <- rbind.data.frame(J0, ATRV)
   }
-
-  for (i in 1:length(ATRR$step) ) {
-    ATRR$step.name[i] <- substr(ATRR$step[i], nchar(ATRR$step[i]), nchar(ATRR$step[i]) )
+  for (i in 1:length(ATRR$step)) {
+    ATRR$step.name[i] <- substr(ATRR$step[i], nchar(ATRR$step[i]),
+                                nchar(ATRR$step[i]))
   }
-  for (i in 1:length(ATRV$step) ) {
-    ATRV$step.name[i] <- substr(ATRV$step[i], nchar(ATRV$step[i]), nchar(ATRV$step[i]) )
+  for (i in 1:length(ATRV$step)) {
+    ATRV$step.name[i] <- substr(ATRV$step[i], nchar(ATRV$step[i]),
+                                nchar(ATRV$step[i]))
   }
-
-
   ARN <- NULL
   ATR <- NULL
   RN <- NULL
   TR <- NULL
-  pt.col.res <- NULL
-  # tableau ATR vs ARN
   for (i in ATRR$step.name) {
     iATRR <- which(ATRR$step.name == i)
     iATRV <- which(ATRV$step.name == i)
-
-    atrXR <- ATRR[iATRR, ]$X *aim.coef
-    atrXV <- ATRV[iATRV, ]$X *aim.coef
-
-    atrYR <- ATRR[iATRR, ]$Y *aim.coef
-    atrYV <- ATRV[iATRV, ]$Y *aim.coef
-
-    atrZR <- ATRR[iATRR, ]$Z *aim.coef
-    atrZV <- ATRV[iATRV, ]$Z *aim.coef
-
+    atrXR <- ATRR[iATRR, ]$X * aim.coef
+    atrXV <- ATRV[iATRV, ]$X * aim.coef
+    atrYR <- ATRR[iATRR, ]$Y * aim.coef
+    atrYV <- ATRV[iATRV, ]$Y * aim.coef
+    atrZR <- ATRR[iATRR, ]$Z * aim.coef
+    atrZV <- ATRV[iATRV, ]$Z * aim.coef
+    SuscepR <- ATRR[iATRR, ]$Suscep
+    SuscepV <- ATRV[iATRV, ]$Suscep
     if (ATRR[iATRR, ]$step.value != ATRV[iATRV, ]$step.value) {
-      warning(paste0("Error in step.name within step.value = ", ATRR[iATRR, ]$step, ATRV[iATRV, ]$step) )
+      warning(paste0("Error in step.name within step.value = ",
+                     ATRR[iATRR, ]$step, ATRV[iATRV, ]$step))
       next
     }
-
     RN$X <- (atrXR + atrXV)/2
     RN$Y <- (atrYR + atrYV)/2
     RN$Z <- (atrZR + atrZV)/2
-
     RN <- to.polar(RN$X, RN$Y, RN$Z)
+
+    for (j in length(SuscepR)){
+      if(SuscepR[j] != 0 & SuscepV[j] != 0){
+        RN$Suscep[j] <- (SuscepR[j] + SuscepV[j])/2
+      }else{
+        RN$Suscep[j] <- (SuscepR[j] + SuscepV[j])/1
+      }
+    }
     RN$step.value <- ATRR[iATRR, ]$step.value
     RN$step.name <- i
-
-    ARN <-rbind.data.frame(ARN, RN, stringsAsFactors = FALSE)
-
+    ARN <- rbind.data.frame(ARN, RN, stringsAsFactors = FALSE)
     TR$X <- (atrXR - atrXV)/2
     TR$Y <- (atrYR - atrYV)/2
     TR$Z <- (atrZR - atrZV)/2
     TR <- to.polar(TR$X, TR$Y, TR$Z)
     TR$step.value <- ATRR[iATRR, ]$step.value
     TR$step.name <- i
-
-    ATR <-rbind.data.frame(ATR, TR, stringsAsFactors = FALSE)
-    if ((RN$step.value >= begin.step.value) && (RN$step.value <= end.step.value)) {
-      pt.col.res <- c(pt.col.res, "red")
-    } else {
-      pt.col.res <- c(pt.col.res, pt.col)
-    }
-  }
-  xlim <- range(ATR$F)
-  ylim <- range(ARN$F)
-
-  if (relative == TRUE) {
-    ATRmax <- max(ATR$F) / 100
-    ARNmax <- max(ARN$F) / 100
-  } else {
-    ATRmax <- 1
-    ARNmax <- 1
+    ATR <- rbind.data.frame(ATR, TR, stringsAsFactors = FALSE)
   }
 
-  # Plot Arai
-  if (show.plot == TRUE) {
-
-    xlim <- range(ATR$F/ATRmax)
-    ylim <- range(ARN$F/ARNmax)
-    if (relative == TRUE) {
-      xlab <- "% ATR"
-      ylab <- "% ARN"
-    } else {
-      xlab <- "ATR"
-      ylab <- "ARN"
-    }
-
-    plot(y = ARN$F/ARNmax, x = ATR$F/ATRmax, type='o', col = pt.col.res, pch = 20, xlim = xlim, ylim = ylim, xlab = xlab, ylab = ylab)
-    if (show.step.value == TRUE) {
-      text(y= ARN$F, x=ATR$F, ARN$step.value, adj = 0)
-    }
-  }
-
-  # stat with all points
   Xmoy <- mean(ATR$F)
   Ymoy <- mean(ARN$F)
   n <- length(ATR$F)
-
-  # calcul with a population, not with a sample
-  covYX <- cov(ATR$F, ARN$F) * (n-1)/n
-  S2x <- var(ATR$F) * (n-1)/n
-  S2y <- var(ARN$F) * (n-1)/n
-
+  covYX <- cov(ATR$F, ARN$F) * (n - 1)/n
+  S2x <- var(ATR$F) * (n - 1)/n
+  S2y <- var(ARN$F) * (n - 1)/n
   a_tot <- -sqrt(S2y/S2x)
-  b_tot <- Ymoy - a_tot*Xmoy
+  b_tot <- Ymoy - a_tot * Xmoy
   JTRM <- (-b_tot/a_tot)
 
-  # loop pTRM check
-  ATRP <- mesures[which(substr(mesures$step, nchar(mesures$step)-1, nchar(mesures$step)-1 ) == P.mark),]
-  for (i in 1:length(ATRP$step) ) {
-    ATRP$step.name[i] <- substr(ATRP$step[i], nchar(ATRP$step[i]), nchar(ATRP$step[i]) )
-  }
+  #Bouclage
+  ATRP <- mesures[which(substr(mesures$step, nchar(mesures$step) -
+                                 1, nchar(mesures$step) - 1) == P.mark), ]
 
-  # Plot loop
+if(length(ATRP[,1]) > 0){
+  for (i in 1:length(ATRP$step)) {
+    ATRP$step.name[i] <- substr(ATRP$step[i], nchar(ATRP$step[i]),
+                                nchar(ATRP$step[i]))
+  }
   TP <- NULL
   ATP <- NULL
+
+
   for (i in ATRP$step.name) {
     iATRV <- which(ATRV$step.name == i)
     iATRP <- which(ATRP$step.name == i)
-
-    atrXV <- ATRV[iATRV, ]$X *aim.coef
-    atrXP <- ATRP[iATRP, ]$X *aim.coef
-
-    atrYV <- ATRV[iATRV, ]$Y *aim.coef
-    atrYP <- ATRP[iATRP, ]$Y *aim.coef
-
-    atrZV <- ATRV[iATRV, ]$Z *aim.coef
-    atrZP <- ATRP[iATRP, ]$Z *aim.coef
-
-
-    TP$X <-(atrXP - atrXV)/2
+    atrXV <- ATRV[iATRV, ]$X * aim.coef
+    atrXP <- ATRP[iATRP, ]$X * aim.coef
+    atrYV <- ATRV[iATRV, ]$Y * aim.coef
+    atrYP <- ATRP[iATRP, ]$Y * aim.coef
+    atrZV <- ATRV[iATRV, ]$Z * aim.coef
+    atrZP <- ATRP[iATRP, ]$Z * aim.coef
+    TP$X <- (atrXP - atrXV)/2
     TP$Y <- (atrYP - atrYV)/2
     TP$Z <- (atrZP - atrZV)/2
     TP <- to.polar(TP$X, TP$Y, TP$Z)
     TP$step.value <- ATRP[iATRP, ]$step.value
     TP$step.name <- i
-
-    ATP <-rbind.data.frame(ATP, TP, stringsAsFactors = FALSE)
-
     arnLoop.name <- ARN[which(ARN$step.name == i), ]
     arnLoop.value <- ARN[which(ARN$step.value == TP$step.value), ]
     atrLoop <- ATR[which(ATR$step.name == i), ]
-    if (show.plot == TRUE) {
-      points( x= TP$F/ATRmax, y= arnLoop.value$F/ARNmax, col = loop.col, pch = 4)
-      lines( x= c(atrLoop$F/ATRmax, TP$F/ATRmax, TP$F/ATRmax), y = c(arnLoop.name$F/ARNmax, arnLoop.name$F/ARNmax, arnLoop.value$F/ARNmax), col = loop.col)
-    }
+    ATP <- rbind.data.frame(ATP, TP, stringsAsFactors = FALSE)
   }
+}
 
-  res<- NULL
+
+  # Statistique et résultats
+  res <- NULL
   res$ARN <- ARN
   res$ATR <- ATR
   res$ATP <- ATP
-
-  # Statistic
-
   n <- 0
   Crm <- CrmMax <- 0
   tabX <- NULL
   tabY <- NULL
-  for (i in 1:length(ARN$step.name))  {
-    if ((ARN$step.value[i] >= begin.step.value) && (ARN$step.value[i] <= end.step.value)) {
-      tabX <- c( tabX, ATR[which(ATR$step.value == ARN$step.value[i]),]$F  /ATRmax)
-      tabY <- c( tabY, ARN$F[i]  /ARNmax)
-      n <- n+1
-
-      if (n==1) {
-        incl_ET1.rad <- ARN$I[i]/180*pi
-      } else {
-        Crm <- ( sin( incl_ET1.rad -ARN$I[i]/180*pi) /sin(incl_ET1.rad -pi/2))*ARN$F[i]
-        if (abs(Crm)>CrmMax) {
+  for (i in 1:length(ARN$step.name)) {
+    if ((ARN$step.value[i] >= begin.step.value) && (ARN$step.value[i] <=
+                                                    end.step.value)) {
+      tabX <- c(tabX, ATR[which(ATR$step.value == ARN$step.value[i]),
+      ]$F)
+      tabY <- c(tabY, ARN$F[i])
+      n <- n + 1
+      if (n == 1) {
+        incl_ET1.rad <- ARN$I[i]/180 * pi
+      }
+      else {
+        Crm <- (sin(incl_ET1.rad - ARN$I[i]/180 * pi)/sin(incl_ET1.rad -
+                                                            pi/2)) * ARN$F[i]
+        if (abs(Crm) > CrmMax) {
           CrmMax <- abs(Crm)
         }
       }
-
-
     }
   }
-  CrmMax <- CrmMax/ ( tabX[length(tabX)] - tabX[1])*100
-
+  CrmMax <- CrmMax/(tabX[length(tabX)] - tabX[1]) * 100
   if (n >= 2) {
     Xmoy <- mean(tabX)
     Ymoy <- mean(tabY)
+    covYX <- cov(tabY, tabX) * (n - 1)/n
+    S2x <- var(tabX) * (n - 1)/n
+    S2y <- var(tabY) * (n - 1)/n
+    a_aff <- -sqrt(S2y/S2x) #Coef MCO
+    b_aff <- Ymoy - a_aff * Xmoy #Coef MCO
+    b_coe <- - S2y/S2x
 
-    # calcul sur une population, pas sur un echantillon
-    covYX <- cov(tabY, tabX) * (n-1)/n
-    S2x <- var(tabX) * (n-1)/n
-    S2y <- var(tabY) * (n-1)/n
-
-    a_aff <- -sqrt(S2y/S2x)
-    b_aff <- Ymoy - a_aff*Xmoy
-
-    abline(b_aff, a_aff, col= "red")
-
-    # Calcul du coef. de corrélation linéaire de la droite entre les 2 étapes
     R <- cor(tabY, tabX)
-
-    # calcul de la variance eq n°3 : Prévost et Al. 1985 DOI: 10.1029/JB090iB12p10417
-
-    s <-  covYX/sqrt(S2x*S2y)
+    s <- covYX/sqrt(S2x * S2y)
     if (s < -1) {
-      warning('Error on sigma Prévost =', s);
-      s<- abs(s);
-
-    } else {
-      s <- sqrt( 2+(2*s));
-      sigmaPrevost85 <- s/sqrt(n-2);
-      # Calcul de sigma pour Coe 1978 : DOI: 10.1029/JB083iB04p01740
-      sigmaCoe <- ((2*S2y)-2*a_aff*covYX) /((n-2)*S2x)
+      warning("Error on sigma Prévost =", s)
+      s <- abs(s)
+    }
+    else {
+      s <- sqrt(2 + (2 * s))
+      sigmaPrevost85 <- s/sqrt(n - 2)
+      sigmaCoe <- ((2 * S2y) - 2 * a_aff * covYX)/((n - 2) * S2x)
       sigmaCoe <- sqrt(sigmaCoe)
-
     }
-    # fraction of pTRM used
-    fs1s2 <- function(tx,ty, i1, i2) {
-      (a_aff*tabX[i1] + b_aff  + tabY[i1] )/2 - (a_aff*tabX[i2] + b_aff + tabY[i2])/2
+    fs1s2 <- function(tx, ty, i1, i2) {
+      (a_aff * tabX[i1] + b_aff + tabY[i1])/2 - (a_aff * tabX[i2] + b_aff + tabY[i2])/2
     }
-
     nStep <- length(tabX)
-    # Coe et Al. 1978)
-    fCoe78 <- fs1s2(tabX*ATRmax, tabY*ATRmax, 1, nStep) /b_aff
-
-    g<-0
+    fCoe78 <- fs1s2(tabX, tabY, 1, nStep)/b_aff
+    g <- 0
     for (i in 2:length(tabX)) {
-      g <- g + fs1s2(tabX*ATRmax, tabY*ATRmax, i-1, i)^2
+      g <- g + fs1s2(tabX, tabY, i - 1, i)^2
     }
-    g <- 1 - g/(fCoe78*b_aff)^2
+    g <- 1 - g/(fCoe78 * b_aff)^2
+    qCoe78 <- abs(a_aff) * fCoe78 * g/sigmaCoe
+    qPrevost85 <- fCoe78 * g/sigmaCoe
+    SigFe <- sigmaCoe * TH
+    Fe <- -a_aff * TH
 
-    qCoe78 <- abs(a_aff)*fCoe78*g/sigmaCoe;
-
-    qPrevost85 <- fCoe78*g/sigmaCoe
-
-    SigFe <- sigmaCoe*TH
-    Fe <- -a_aff*TH
+    beta <- sigmaCoe/abs(b_coe)
 
     if (verbose == TRUE) {
-      Commentaire <- paste0('Coef. Corr. lin. R= ', format(R, digits = 3), ' pour ', n,' points')
-      Commentaire <- c(Commentaire, paste0(' Sigmab ( Coe 1978) = ',format(sigmaCoe, digits = 3)) )
-      Commentaire <- c(Commentaire, paste0('with lab field : ', TH, ' µT => Fe= ', format(Fe, digits = 3), ' ± ', format(SigFe, digits = 3), ' µT (Coe et Al. 1978)') )
-      Commentaire <- c(Commentaire, paste0('f = ', format(fCoe78*100, digits = 4), '% (Coe et Al. 1978)') )
-      Commentaire <- c(Commentaire, paste0('q = ', format(qCoe78, digits = 3)) )
-      Commentaire <- c(Commentaire, paste0('g  = ', format(g, digits = 3)) )
-      Commentaire <- c(Commentaire, paste0('Crm  = ', format(CrmMax, digits = 4), ' (Coe 1984)') )
+      Commentaire <- paste0("Coef. Corr. lin. R= ", format(R,
+                                                           digits = 3), " pour ", n, " points")
+      Commentaire <- c(Commentaire, paste0(" Sigmab ( Coe 1978) = ",
+                                           format(sigmaCoe, digits = 3)))
+      Commentaire <- c(Commentaire, paste0("with lab field : ",
+                                           TH, " µT => Fe= ", format(Fe, digits = 3), " ± ",
+                                           format(SigFe, digits = 3), " µT (Coe et Al. 1978)"))
+      Commentaire <- c(Commentaire, paste0("f = ", format(fCoe78 *
+                                                            100, digits = 4), "% (Coe et Al. 1978)"))
+      Commentaire <- c(Commentaire, paste0("q = ", format(qCoe78,
+                                                          digits = 3)))
+      Commentaire <- c(Commentaire, paste0("g  = ", format(g,
+                                                           digits = 3)))
+      Commentaire <- c(Commentaire, paste0("Crm  = ", format(CrmMax,
+                                                             digits = 4), " (Coe 1984)"))
+      Commentaire <- c(Commentaire, paste0("q (Prévost 85) = ",
+                                           format(qPrevost85, digits = 3)))
+      Commentaire <- c(Commentaire, paste0("sigma (Prévost 85) = ",
+                                           format(sigmaPrevost85, digits = 3)))
 
+      Commentaire <- c(Commentaire, paste0("beta (G.Hervé 2011) = ",
+                                           format (beta, digits = 3)))
 
-      Commentaire <- c(Commentaire, paste0('q (Prévost 85) = ', format(qPrevost85, digits = 3)) )
-      Commentaire <- c(Commentaire, paste0('sigma (Prévost 85) = ', format(sigmaPrevost85, digits = 3)) )
       print(Commentaire)
     }
 
-    # Cooling rate
-    # slow step
-    ATRL <- mes.sel[which(substr(mes.sel$step, nchar(mes.sel$step)-1, nchar(mes.sel$step)-1 ) == L.mark),]
-    for (i in 1:length(ATRL$step) ) {
-      ATRL$step.name[i] <- substr(ATRL$step[i], nchar(ATRL$step[i]), nchar(ATRL$step[i]) )
-    }
-    ATRQ <- mes.sel[which(substr(mes.sel$step, nchar(mes.sel$step)-1, nchar(mes.sel$step)-1 ) == Q.mark),]
-    for (i in 1:length(ATRQ$step) ) {
-      ATRQ$step.name[i] <- substr(ATRQ$step[i], nchar(ATRQ$step[i]), nchar(ATRQ$step[i]) )
+      res$stat <- data.frame(Fe, SigFe, sigmaCoe, JTRM, fCoe78, qCoe78, g, CrmMax,
+                             qPrevost85, sigmaPrevost85, s, b_coe, beta)
     }
 
-    # quick step
-    for (i in ATRL$step.name) {
-      iARN <- which(ARN$step.name == i)
-      iATR <- which(ATR$step.name == i)
-
-      iATRL <- which(ATRL$step.name == i)
-      atrXL <- ATRL[iATRL, ]$X*aim.coef  - ARN[iARN, ]$X
-      atrYL <- ATRL[iATRL, ]$Y *aim.coef - ARN[iARN, ]$Y
-      atrZL <- ATRL[iATRL, ]$Z*aim.coef  - ARN[iARN, ]$Z
-      trL <- to.polar(atrXL, atrYL, atrZL)
-      rateL <- (trL$F - ATR[iATR, ]$F) / (ATR[iATR, ]$F)
-      FeL <- Fe*(1-rateL)
-      SigFeL <- SigFe * (1-rateL)
-
-      iATRQ <- which(ATRQ$step.name == i)
-      atrXQ <- ATRQ[iATRQ, ]$X *aim.coef - ARN[iARN, ]$X
-      atrYQ <- ATRQ[iATRQ, ]$Y *aim.coef - ARN[iARN, ]$Y
-      atrZQ <- ATRQ[iATRQ, ]$Z *aim.coef - ARN[iARN, ]$Z
-      trQ <- to.polar(atrXQ, atrYQ, atrZQ)
-      rateQ <- (trQ$F - ATR[iATR, ]$F) / (ATR[iATR, ]$F)
-
-      if (verbose == TRUE) {
-        Commentaire <- paste0('Speed Rate with slow step: ', format(rateL*100, digits = 4), ' %')
-        Commentaire <- c( Commentaire, paste0('Derive speed Rate with quick step: ', format(rateQ*100, digits = 4), ' %') )
-        Commentaire <- c( Commentaire, paste0('Fe Lent= ', format(FeL, digits = 3), ' ± ', format(SigFeL, digits = 3), ' µT') )
-
-        print(Commentaire)
-
-      }
-    }
-
-    res$stat <- data.frame(Fe, SigFe, FeL, SigFeL, rateL, rateQ, sigmaCoe, JTRM, fCoe78, qCoe78, g, CrmMax, qPrevost85, sigmaPrevost85)
-  }
   return(res)
 }
 
+#'   calculus to determinate the cooling rates and evolution factors to apply the cooling rate correction
+#'   by convention we use the two last characters of the different steps to indicate the type of experimentation
+#'   example 100RA , 100 is the temperature (step.value) , R is the direction of the magnetization and A is the name of the step (step.name)
+#' @references  Coe 1978 : DOI: 10.1029/JB083iB04p01740
+#' Prévost et Al. 1985 DOI: 10.1029/JB090iB12p10417
+#'
+#' @param mesures data.frame with the package convention format
+#' @param verbose show comment
+#' @param TH lab field
+#' @param aim.coef used to correct the measurement often 1E-10x1E6 x volume
+#' @param R.mark = 'R' points the direction of the magnetization with the step name
+#' @param V.mark = 'V' points the direction of the magnetization with the step name
+#' @param L.mark = "L" points the slow cooling step and
+#' @param Q.mark = "Q" points the quick (fast-normal) cooling step
 
+#' @param begin.step.value the first step.value (temperature) used to determinate the magnetic field
+#' @param end.step.value the last step.value (temperature) used to determinate the magnetic field
+#' @param Cooling.stepvalue temperature of experimentation
+#' @export
+cooling.rate <- function(mesures,
+                         verbose = TRUE,
+                         TH = 60,
+                         aim.coef = 1/(10.8*1E-06),
+                         R.mark = "R",
+                         V.mark = "V",
+                         L.mark = "L",
+                         Q.mark = "Q",
+                         begin.step.value = 0,
+                         end.step.value = 1000,
+                         digits = 2,
+                         Cooling.stepvalue = NA)
+{
+
+  if (is.na(Cooling.stepvalue)) {
+    ATRL <- mesures[which(substr(mesures$step, nchar(mesures$step) - 1, nchar(mesures$step) - 1) == L.mark), ]
+
+    if (length(ATRL$step.value) == 0) {
+      warning("No L cooling steps : check your file ! \n")
+      return()
+
+    }else if (length(ATRL$step.value) > 1) {
+      warning("Too many L cooling steps (> 1) : check your file ! \n")
+      return()
+    }
+    # Step value of the cooling step
+    Cooling.stepvalue <- ATRL$step.value[1]
+
+    ATRQ <- mesures[which(substr(mesures$step, nchar(mesures$step) - 1, nchar(mesures$step) - 1) == Q.mark), ]
+    # Step value of the stability check step
+    Cooling.stepQ <- ATRQ$step.value[1]
+
+    if (Cooling.stepQ != Cooling.stepvalue) {
+      warning("Not the same L and Q temperature !" + paste0("L temperature =", Cooling.stepvalue, "Q temperature =", Cooling.stepQ))
+      return()
+    }
+  }else{
+    ATRL <- mesures[which(substr(mesures$step, nchar(mesures$step) - 1, nchar(mesures$step) - 1) == L.mark & mesures$step.value == Cooling.stepvalue), ]
+    ATRQ <- mesures[which(substr(mesures$step, nchar(mesures$step) - 1, nchar(mesures$step) - 1) == Q.mark & mesures$step.value == Cooling.stepvalue), ]
+
+    if (length(ATRL$step.value) == 0) {
+      warning("No L cooling steps : check your file ! \n")
+      return()
+
+    }else if (length(ATRL$step.value) > 1) {
+      warning("Too many L cooling steps (> 1) : check your file ! \n")
+      return()
+    }
+
+    if (length(ATRQ$step.value) == 0) {
+      warning("No Q step : not mandatory but check your file \n")
+
+    }else if (length(ATRQ$step.value) > 1) {
+      warning("Too many Q cooling steps (> 1) : check your file ! \n")
+      return()
+    }
+  }
+
+  ATRR <- mesures[which(substr(mesures$step, nchar(mesures$step) - 1, nchar(mesures$step) - 1) == R.mark &
+                          mesures$step.value == Cooling.stepvalue), ]
+  if (length(ATRR$step.value) == 0) {
+    warning("No Thellier steps : check your file ! \n")
+    return()
+  }
+
+  ATRV <- mesures[which(substr(mesures$step, nchar(mesures$step) - 1, nchar(mesures$step) - 1) == V.mark &
+                          mesures$step.value == Cooling.stepvalue), ]
+
+  if (length(ATRR$step.value) != length(ATRV$step.value)) {
+    warning("Not the same amount of R and V steps : check your file ! \n")
+    return()
+  }
+
+  ARN <- NULL
+  ATR <- NULL
+  RN <- NULL
+  TR <- NULL
+  atrXR <- ATRR$X * aim.coef
+  atrXV <- ATRV$X * aim.coef
+  atrYR <- ATRR$Y * aim.coef
+  atrYV <- ATRV$Y * aim.coef
+  atrZR <- ATRR$Z * aim.coef
+  atrZV <- ATRV$Z * aim.coef
+  SuscepR <- ATRR$Suscep
+  SuscepV <- ATRV$Suscep
+  if (ATRR$step.value != ATRV$step.value) {
+    warning(paste0("Error in step.name within step.value = ",
+                   ATRR$step, ATRV$step))
+  }
+  RN$X <- (atrXR + atrXV)/2
+  RN$Y <- (atrYR + atrYV)/2
+  RN$Z <- (atrZR + atrZV)/2
+  RN <- to.polar(RN$X, RN$Y, RN$Z)
+
+  if(SuscepR != 0 & SuscepV != 0){
+    RN$Suscep <- (SuscepR + SuscepV)/2
+  }else{
+    RN$Suscep <- (SuscepR + SuscepV)/1
+  }
+
+  RN$step.value <- ATRR$step.value
+  RN$step.name <- i
+  ARN <- rbind.data.frame(ARN, RN, stringsAsFactors = FALSE)
+  TR$X <- (atrXR - atrXV)/2
+  TR$Y <- (atrYR - atrYV)/2
+  TR$Z <- (atrZR - atrZV)/2
+  TR <- to.polar(TR$X, TR$Y, TR$Z)
+  TR$step.value <- ATRR$step.value
+  TR$step.name <- i
+  ATR <- rbind.data.frame(ATR, TR, stringsAsFactors = FALSE)
+
+  #Vitesse de refroidissement
+  atrXL <- ATRL$X * aim.coef - ARN$X
+  atrYL <- ATRL$Y * aim.coef - ARN$Y
+  atrZL <- ATRL$Z * aim.coef - ARN$Z
+
+  trL <- to.polar(atrXL, atrYL, atrZL)
+
+  rateL <- (trL$F - ATR$F)/(ATR$F)
+
+  if(length(ATRQ$step.value) == 0){
+    ATRQ <- ATRV
+  }
+  atrXQ <- ATRQ$X * aim.coef - ARN$X
+  atrYQ <- ATRQ$Y * aim.coef - ARN$Y
+  atrZQ <- ATRQ$Z * aim.coef - ARN$Z
+  trQ <- to.polar(atrXQ, atrYQ, atrZQ)
+
+  rateQ <- (trQ$F - ATR$F)/(ATR$F)
+
+  if (verbose == TRUE) {
+    Commentaire <- paste0("Speed Rate with slow step: ",
+                          format(rateL * 100, digits = digits), " %")
+    Commentaire <- c(Commentaire, paste0("Derive speed Rate with quick step: ",
+                                         format(rateQ * 100, digits = digits), " %"))
+
+    print(Commentaire)
+  }
+
+  # Résultats
+  res <- NULL
+  res$ARN <- ARN
+  res$ATR <- ATR
+  res$stat <- data.frame(rateL, rateQ)
+
+  return(res)
+}
+
+# Exportation ----
+
+#' Save a set of Arai diagrams to PNG files
+#'
+#' This helper loops over the samples contained in a **Thellier** result
+#' (`tab_thellier`) and writes one PNG file per sample.  The actual
+#' drawing is performed by :func:`arai.graph`.  The function creates the
+#' output directory if it does not already exist and builds a systematic
+#' file name that contains a user‑defined prefix, the sample name and the
+#' temperature interval that was used for the OLS fit (or for the colour
+#' highlighting).
+#'
+#' @param tab_thellier   List returned by `Thellier.computation()`.
+#'   It must contain the three components `ARN`, `ATR` and `ATP`, each of
+#'   which is a **list of data frames** (one data frame per sample).
+#' @param mesures.names  Character vector with the name of each sample.
+#'   Length must be identical to the number of elements in
+#'   `tab_thellier$ARN` (and consequently `ATR` and `ATP`).
+#' @param prefix         Character string that will be placed at the beginning
+#'   of every file name (e.g. `"A2"` or `"SiteA"`).  It is useful to encode
+#'   the experiment or the processing step.
+#' @param begin.step.value Numeric vector (or single value) giving the lower
+#'   bound of the temperature interval (in °C) that will be shown in the
+#'   file name and passed to `arai.graph`.  Length must match
+#'   `mesures.names` or be of length 1 (recycled).
+#' @param end.step.value   Numeric vector (or single value) giving the upper
+#'   bound of the temperature interval (in °C).  Same recycling rules as
+#'   `begin.step.value`.
+#' @param step.J0        Identifier of the “J0” step (default `"0N0"`).  It is
+#'   forwarded to :func:`arai.graph` and only used when the argument
+#'   `relative = "J0"` is set inside that function.
+#' @param show.step.value Logical; if `TRUE` the numeric step values are added
+#'   as text labels on each plot (passed to `arai.graph`).
+#' @param output_dir     Directory where the PNG files will be written.
+#'   If the directory does not exist it is created recursively.
+#' @param width          Width of the PNG image in **pixels** (default 2000).
+#' @param height         Height of the PNG image in **pixels** (default 2000).
+#' @param res            Resolution of the PNG image in **dots per inch**
+#'   (default 300).  Larger values give higher‑quality output but increase file
+#'   size.
+#'
+#' @return Invisibly returns `NULL`.  The side‑effect of the function is the
+#'   creation of one PNG file per sample in `output_dir`.
+#'
+#' @details
+#'   1. The function checks whether `output_dir` exists; if not it creates the
+#'      directory (including any missing parent folders).
+#'   2. For each sample it builds a file name of the form
+#'      `"<prefix>_<sample>_<Tbeg>-<Tend>C.png"` where `Tbeg` and `Tend` are the
+#'      temperature limits supplied by the user.
+#'   3. The graphics device is opened with `png()`, the plot is produced by
+#'      `arai.graph()`, and the device is closed with `dev.off()`.
+#'   4. A progress message is printed to the console for each file.
+#'
+#' @note The function assumes that the three lists (`ARN`, `ATR`, `ATP`) have
+#'   the **same length** and that the *i*‑th element of each list corresponds to
+#'   the *i*‑th sample name in `mesures.names`.  If this is not the case a
+#'   warning will be issued by R when sub‑setting the lists.
+#'
+#' @warning If the supplied temperature vectors (`begin.step.value`,
+#'   `end.step.value`) are shorter than `mesures.names` they will be recycled
+#'   silently.  Make sure the lengths match the number of samples you want to
+#'   plot.
+#'
+#' @seealso \code{\link{arai.graph}} for the actual drawing routine,
+#'   \code{\link{Thellier.computation}} for the creation of `tab_thellier`.
+#'
+#'
+#' @importFrom graphics png dev.off
+#' @importFrom utils dir.create file.path
+#' @export
+save_arai_graphs <- function(tab_thellier,
+                             mesures.names,
+                             prefix,
+                             begin.step.value,
+                             end.step.value,
+                             step.J0 = "0N0",
+                             show.step.value = FALSE,
+                             output_dir = "C:/Users/TonNom/Documents/Arai_graphs",
+                             width = 2000, height = 2000, res = 300)
+  {
+
+  # Crée le dossier de sortie s'il n'existe pas
+  if (!dir.exists(output_dir)) dir.create(output_dir, recursive = TRUE)
+
+  # Boucle sur chaque échantillon
+  for (i in seq_along(mesures.names)) {
+    sample_name <- mesures.names[i]
+    Tbeg <- begin.step.value[i]
+    Tend <- end.step.value[i]
+
+    # Nom du fichier : ex. "A2_Sample1_200-400C.png"
+    filename <- sprintf("%s_%s_%g-%gC.png", prefix, sample_name, Tbeg, Tend)
+    filepath <- file.path(output_dir, filename)
+
+    message("→ Sauvegarde de : ", filepath)
+
+    # Ouvre le périphérique graphique PNG
+    png(filename = filepath, width = width, height = height, res = res)
+
+    # Appelle la fonction de tracé
+    arai.graph(
+      tab_thellier = list(
+        ARN = tab_thellier$ARN[i],
+        ATR = tab_thellier$ATR[i],
+        ATP = tab_thellier$ATP[i]
+      ),
+      mesures.names = sample_name,
+      step.J0 = step.J0,
+      begin.step.value = Tbeg,
+      end.step.value = Tend,
+      show.step.value = show.step.value
+    )
+
+    # Ferme le périphérique graphique
+    dev.off()
+  }
+
+  message("✅ Tous les graphes ont été sauvegardés dans : ", output_dir)
+}
