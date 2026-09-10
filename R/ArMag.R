@@ -5574,8 +5574,7 @@ cooling.rate <- function(mesures,
 #'   \code{\link{Thellier.computation}} for the creation of `tab_thellier`.
 #'
 #'
-#' @importFrom graphics png dev.off
-#' @importFrom utils dir.create file.path
+#' @importFrom grDevices png
 #' @export
 save_arai_graphs <- function(tab_thellier,
                              mesures.names,
