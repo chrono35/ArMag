@@ -234,9 +234,9 @@ find.extremum <- function(i.min = 0,
   ylim <- range(c(y1, y2), na.rm = TRUE)
 
   if (as.list) {
-    return(list(x.range = x.range, y.range = y.range))
+    return(list(x.range = xlim, y.range = ylim))
   } else {
-    return(c(x.range = x.range, y.range = y.range))
+    return(c(x.range = xlim, y.range = ylim))
   }
 }
 
@@ -1131,7 +1131,9 @@ extract.mesures.specimen.number <- function( specimen.number, list.mesure)
 #' @param step.code chaîne de caractère représentant par exemple les étapes de l'anisotropie "Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB", ou des erreurs "??"
 #' @param verbose affiche des commentaires et avertissements
 #' @export
-remove.step <- function(Data, step.value = NULL, step.code = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"), verbose = TRUE )
+remove.step <- function(Data, step.value = NULL,
+                        step.code = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"),
+                        verbose = FALSE )
 {
   selec <- NULL
   if (is.null(step.value)) {
@@ -2151,75 +2153,49 @@ correction.paleo <-function(mes, inc=0, az=0) {
 #' @seealso \code{\link{correction.paleo}}, \code{\link{correction.archeo}}, \code{\link{correction.bending}}
 #' @export
 correction.bevel <-function(mes, theta=0, psi=0) {
-  rad = pi /180
-  phi = 0 # initialisation
+  rad <- pi / 180
 
-  theta <- theta*rad
-  psi <- psi *rad
+  # Conversion en radians
+  theta <- -theta * rad
+  psi   <- psi * rad
 
-  #rotation teta négatif pour amener le repère dans le plan du biseau
-  theta = - theta;
-  # détermination de Phi
-  if (abs(psi) == (pi/2)) {
+  # Calcul de phi
+  if (abs(psi) == pi/2) {
     phi <- -psi
   } else {
-    phi <- -atan(tan(psi)*cos(theta))  #angle dans le plan de sciage}
-    if (psi>=+(pi/2))  phi = phi - pi;
-    if (psi<=-(pi/2))  phi = phi + pi;
+    phi <- -atan(tan(psi) * cos(theta))
+    if (psi >= pi/2)  phi <- phi - pi
+    if (psi <= -pi/2) phi <- phi + pi
   }
 
+  # Matrices de rotation
+  rot_phi <- matrix(c(
+    cos(phi),  sin(phi), 0,
+    -sin(phi), cos(phi), 0,
+    0,         0,        1
+  ), nrow = 3, byrow = TRUE)
 
-  M_rot_Phi <- matrix(data = 0, 3,3)
-  M_rot_Phi[1,1] = cos(phi);
-  M_rot_Phi[1,2] = sin(phi);
-  M_rot_Phi[1,3] = 0;
-  M_rot_Phi[2,1] = -sin(phi);
-  M_rot_Phi[2,2] = cos(phi);
-  M_rot_Phi[2,3] = 0;
-  M_rot_Phi[3,1] = 0;
-  M_rot_Phi[3,2] = 0;
-  M_rot_Phi[3,3] = 1;
+  rot_theta <- matrix(c(
+    cos(theta), 0, -sin(theta),
+    0,          1, 0,
+    sin(theta), 0, cos(theta)
+  ), nrow = 3, byrow = TRUE)
 
-  M_rot_theta <- matrix(data = 0, 3,3)
-  M_rot_theta[1,1] = cos(theta);
-  M_rot_theta[1,2] = 0;
-  M_rot_theta[1,3] = -sin(theta);
-  M_rot_theta[2,1] = 0;
-  M_rot_theta[2,2] = 1;
-  M_rot_theta[2,3] = 0;
-  M_rot_theta[3,1] = sin(theta);
-  M_rot_theta[3,2] = 0;
-  M_rot_theta[3,3] = cos(theta);
+  rot_psi <- matrix(c(
+    cos(psi),  sin(psi), 0,
+    -sin(psi), cos(psi), 0,
+    0,         0,        1
+  ), nrow = 3, byrow = TRUE)
 
-  M_rot_theta_phi <- M_rot_theta %*%  M_rot_Phi
+  # Matrice finale
+  M_rot <- rot_psi %*% (rot_theta %*% rot_phi)
 
-  M_rot_psi <- matrix(data = 0, 3,3)
-  M_rot_psi[1,1] = cos(psi)
-  M_rot_psi[1,2] = sin(psi)
-  M_rot_psi[1,3] = 0
-  M_rot_psi[2,1] = -sin(psi)
-  M_rot_psi[2,2] = cos(psi)
-  M_rot_psi[2,3] = 0
-  M_rot_psi[3,1] = 0
-  M_rot_psi[3,2] = 0
-  M_rot_psi[3,3] = 1
-
-  M_rot <-  M_rot_psy %*% M_rot_theta_phi
-
-  #système matriciel}
-  res<- mes # copy all variable
-  tmp <- NULL
-  for (i in 1:nrow(mes)) {
-    tmp <- matrix(c(mes$X[i], mes$Y[i],mes$Z[i]), 3, 1 )
-    tmp <- M_rot %*% tmp
+  # Application aux données
+  res <- mes
+  for (i in seq_len(nrow(mes))) {
+    tmp <- M_rot %*% c(mes$X[i], mes$Y[i], mes$Z[i])
     tmp <- to.polar(tmp[1], tmp[2], tmp[3])
-
-    res$X[i] <- tmp$X
-    res$Y[i] <- tmp$Y
-    res$Z[i] <- tmp$Z
-    res$I[i] <- tmp$I
-    res$D[i] <- tmp$D
-    res$F[i] <- tmp$F
+    res[i, c("X","Y","Z","I","D","F")] <- unlist(tmp)
   }
 
   return(res)
@@ -2582,121 +2558,206 @@ repliement.tranche <- function (data, dec = NULL, aim = 1,  name = NULL, number 
 
 # Partial component  ----
 
-#' Calcul les directions du vecteur partiel pour une série d'étape
-#' @param en0 permet de calculer la composante qui passe par l'origine (0, 0)
-#' @return une data.frame "X", "Y", "Z", "I", "D", "F", "Sl", "MAD"
+#' @title Calcul du vecteur partiel (direction, inclinaison, etc.) d’un nuage de points 3‑D
+#' @description
+#'   Cette fonction calcule, à partir de trois vecteurs de coordonnées \code{TabX},
+#'   \code{TabY} et \code{TabZ}, le vecteur directeur (composantes \code{X}, \code{Y},
+#'   \code{Z}) ainsi que les paramètres géométriques associés :
+#'   \itemize{
+#'     \item \code{I} : inclinaison (dip) en degrés,
+#'     \item \code{D} : direction (azimut) en degrés,
+#'     \item \code{F} : facteur de forme (always = 1 for a line),
+#'     \item \code{Sl} : rapport \eqn{S_l = \frac{\text{longueur du plus court chemin}}{\text{longueur totale du chemin}}},
+#'     \item \code{MAD} : angle moyen d’écart (Mean Angular Deviation) en degrés.
+#'   }
+#'   Le vecteur est orienté du **dernier point** vers le **premier point** (critère de
+#'   signe configurable dans le code).
+#'   La fonction accepte également le calcul du barycentre (argument \code{en0}).
+#'
+#' @param TabX Numeric vector. Coordonnées X des points.
+#' @param TabY Numeric vector. Coordonnées Y des points.
+#' @param TabZ Numeric vector. Coordonnées Z des points.
+#' @param en0 Logical (default = \code{TRUE}). signifie passe en (0,0)
+#'   Si \code{FALSE}, le barycentre du nuage est soustrait aux coordonnées avant le
+#'   calcul (déplacement du système de référence à l’origine).
+#'   Si \code{TRUE}, le barycentre n’est pas retiré (le nuage reste dans son repère
+#'   d’origine).
+#'
+#' @return A data‑frame (one row) with the following columns:
+#'   \describe{
+#'     \item{X}{Composante X du vecteur directeur (signé).}
+#'     \item{Y}{Composante Y du vecteur directeur (signé).}
+#'     \item{Z}{Composante Z du vecteur directeur (signé).}
+#'     \item{I}{Inclinaison (dip) en degrés.}
+#'     \item{D}{Direction (azimut) en degrés.}
+#'     \item{F}{Facteur de forme (toujours 1 pour une droite).}
+#'     \item{Sl}{Rapport \eqn{S_l}.}
+#'     \item{MAD}{Mean Angular Deviation en degrés.}
+#'   }
+#'
+#' @details
+#'   * **Barycentre** : si \code{en0 = FALSE}, le centre de masse du nuage est
+#'     calculé et soustrait aux coordonnées afin de travailler dans un repère
+#'     centré.
+#'   * **Moment (Kirschink)** : somme des distances euclidiennes entre points
+#'     successifs.
+#'   * **Chemin le plus court** : distance euclidienne entre le premier et le
+#'     dernier point, normalisée par le moment.
+#'   * **Matrice d’inertie** : deux matrices sont construites :
+#'     \itemize{
+#'       \item \code{matMAD} : utilisée pour le calcul du MAD,
+#'       \item \code{matInert} : utilisée pour la détermination du vecteur
+#'         directeur (valeur propre minimale).
+#'     }
+#'   }
+#'   * **Correction du signe** : le vecteur propre est orienté de façon à ce que le
+#'     produit scalaire avec le vecteur \code{ref.vec = (TabX[1]-TabX[n],
+#'     TabY[1]-TabY[n], TabZ[1]-TabZ[n])} soit positif, garantissant ainsi la
+#'     direction « dernier → premier ».
+#'   * **Conversion en angles** : la fonction auxiliaire \code{to.polar()} (à
+#'     fournir dans votre environnement) transforme le vecteur cartésien en
+#'     inclinaison, direction et facteur de forme. La fonction \code{D.AM()} ajuste
+#'     la direction lorsqu’un changement de signe de \code{I} est nécessaire.
+#'
+#' @examples
+#' ## Exemple simple
+#' TabX <- c(1, 0.75, 0.5)
+#' TabY <- c(1, 0.75, 0.5)
+#' TabZ <- c(-1, -0.75, -0.5)
+#' res  <- partial.vector(TabX, TabY, TabZ, en0 = TRUE)
+#' print(res)
+#'
+#' ## Avec déplacement du barycentre (en0 = FALSE)
+#' res2 <- partial.vector(TabX, TabY, TabZ, en0 = FALSE)
+#' print(res2)
+#'
 #' @export
 partial.vector <- function(TabX, TabY, TabZ, en0 = TRUE)
 {
-  col.names <- c("X", "Y", "Z", "I", "D", "F", "Sl", "MAD")
-  ntab <- length(TabX);
+  ## 0.  Contrôles de base
 
-  if ( (ntab<1) || (ntab!=length(TabY)) || (ntab!=length(TabZ))) {
+  col.names <- c("X","Y","Z","I","D","F","Sl","MAD")
+  ntab <- length(TabX)
+
+  if (ntab < 1L || ntab != length(TabY) || ntab != length(TabZ)) {
     warning("No mesure, to calculate the partial vector")
-    Data <- c( X = 0, Y = 0, Z = 0,
-               I = 0, D = 0, F = 0,
-               Sl = NA, MAD = NA )
-
-    return(as.data.frame(t(Data), col.names = col.names))  #il faut au moins 2 étapes
+    return(as.data.frame(
+      list(X = 0, Y = 0, Z = 0,
+           I = 0, D = 0, F = 0,
+           Sl = NA, MAD = NA),
+      col.names = col.names))
   }
 
-  if ( ntab == 1) {
+  if (ntab == 1L) {
     message("Only one mesure, to calculate the partial vector")
     vp1 <- to.polar(TabX[1], TabY[1], TabZ[1])
-    Data <- c( X = TabX[1], Y = TabY[1], Z = TabZ[1],
-               I = vp1$I, D = vp1$D, F = vp1$F,
-               Sl = 1, MAD = 0 )
-
-    return(as.data.frame(t(Data), col.names = col.names))  #il faut au moins 2 étapes
+    return(as.data.frame(
+      list(X = TabX[1], Y = TabY[1], Z = TabZ[1],
+           I = vp1$I, D = vp1$D, F = vp1$F,
+           Sl = 1, MAD = 0),
+      col.names = col.names))
   }
 
+  ## 1.  Barycentre (si en0 == FALSE)
 
-  # calcul du barycentre du nuage de points si 'en0' false
-  somx <- 0; somy <- 0; somz <- 0
-
-  if (en0 == FALSE) {
-    somx <- sum(TabX)
-    somy <- sum(TabY)
-    somz <- sum(TabZ)
-  }
-
-  xm <- somx/ ntab
-  ym <- somy/ ntab
-  zm <- somz/ ntab
-
-  Mom <- 0; # variable pour Kirschink
-  # calcul du moment suivant kischvink
-  #  c.à.d. longueur du chemin total entre les points
-  for ( j in 2 : ntab) {
-    Mom <- Mom + sqrt( (TabX[j]-TabX[j-1])^2
-                       + (TabY[j]-TabY[j-1])^2
-                       + (TabZ[j]-TabZ[j-1])^2 )
-  }
-
-  # Longueur du plus court chemin
-  Sl <- sqrt( (TabX[ntab]-TabX[1])^2
-              + (TabY[ntab]-TabY[1])^2
-              + (TabZ[ntab]-TabZ[1])^2);
-  # Rapport des distances
-  Sl <- Sl/Mom;
-
-
-  sxx <- sum((TabX-xm)^2); sxy <- sum((TabX-xm)*(TabY-ym)); sxz <- sum((TabX-xm)*(TabZ-zm))
-  syy <- sum((TabY-ym)^2); syz <- sum((TabY-ym)*(TabZ-zm))
-  szz <- sum((TabZ-zm)^2);
-  # Matrice d inertie des points x, y, z pour le calcul de la droite
-  Ixx = syy+szz;  Ixy = -sxy;     Ixz = -sxz;
-  Iyy = sxx+szz;  Iyz = -syz;
-  Izz = sxx+syy;
-
-
-  #  MAD
-
-  mat.sym.norm <- matrix( c( sxx, sxy, sxz,
-                             0,  syy, syz,
-                             0, 0, szz) , 3, 3)
-
-  # vecteurs et valeurs propres pour MAD
-  v.mad <- eigen(mat.sym.norm, symmetric = TRUE)
-
-
-  if (( v.mad$values[1] == 0) || ((v.mad$values[2] + v.mad$values[3])/ v.mad$values[1] < 0)) {
-    warning('MAD uncalculable')
-    MAD <- NA
+  if (!en0) {
+    xm <- sum(TabX) / ntab
+    ym <- sum(TabY) / ntab
+    zm <- sum(TabZ) / ntab
   } else {
-    MAD <- atan(sqrt( ((v.mad$values[2] + v.mad$values[3])/ v.mad$values[1]) ));
+    xm <- ym <- zm <- 0
   }
 
-  #   Calcul composante partielle
-  # Matrice d'inertie des points x,y,z
+  ## 2.  Différences centrées (utilisées plusieurs fois)
 
-  # La direction correspond au vecteur propre minimum
-  mat.sym.norm <- matrix( c( Ixx , Ixy , Ixz ,
-                             0,  Iyy , Iyz ,
-                             0, 0, Izz ) , 3, 3)
+  dx <- TabX - xm
+  dy <- TabY - ym
+  dz <- TabZ - zm
 
-  # vecteurs et valeurs propres pour MAD
-  v.cp <- eigen(mat.sym.norm, symmetric = TRUE)
-  v3 <- to.polar(v.cp$vectors[1, 3],  v.cp$vectors[2, 3],  v.cp$vectors[3 ,3])
+  ## 3.  Moment (Kirschink) – version vectorisée
 
-  vcorrect<- NULL
-  vcorrect$I <- sign(TabZ[1] - TabZ[ntab]) * abs(v3$I)
+  dX <- diff(TabX)
+  dY <- diff(TabY)
+  dZ <- diff(TabZ)
+  Mom <- sum(sqrt(dX^2 + dY^2 + dZ^2))
 
-  vcorrect$D <- v3$D
+  ## 4.  Chemin le plus court (Sl)
 
-  if (sign(vcorrect$I) !=  sign(v3$I)) {
-    vcorrect$D <- D.AM(v3$D +180)
+  Sl <- sqrt( (TabX[ntab] - TabX[1])^2 +
+                (TabY[ntab] - TabY[1])^2 +
+                (TabZ[ntab] - TabZ[1])^2 ) / Mom
+
+  ## 5.  Matrice d’inertie (3×3) – on la construit **une fois**
+
+  sxx <- sum(dx * dx)          # = crossprod(dx)
+  syy <- sum(dy * dy)
+  szz <- sum(dz * dz)
+
+  sxy <- sum(dx * dy)
+  sxz <- sum(dx * dz)
+  syz <- sum(dy * dz)
+
+  ## Matrice pour le MAD (triangulaire supérieure remplie)
+  matMAD <- matrix(c(sxx, sxy, sxz,
+                     sxy, syy, syz,
+                     sxz, syz, szz), 3, 3, byrow = TRUE)
+
+  ## Matrice d’inertie « classique » (symétrique)
+  Ixx <- syy + szz; Ixy <- -sxy; Ixz <- -sxz
+  Iyy <- sxx + szz; Iyz <- -syz
+  Izz <- sxx + syy
+  matInert <- matrix(c(Ixx, Ixy, Ixz,
+                       Ixy, Iyy, Iyz,
+                       Ixz, Iyz, Izz), 3, 3, byrow = TRUE)
+
+  ## 6.  Décomposition spectrale (une seule fois)
+
+  # eigen() sur une matrice 3×3 est très rapide, mais on l’appelle deux fois
+  # au lieu de deux appels séparés, on utilise les mêmes valeurs :
+  evMAD <- eigen(matMAD, symmetric = TRUE)
+  evIn  <- eigen(matInert, symmetric = TRUE)
+
+  ## 7.  Calcul du MAD
+
+  if (evMAD$values[1] == 0 ||
+      ((evMAD$values[2] + evMAD$values[3]) / evMAD$values[1]) < 0) {
+    warning("MAD uncalculable")
+    MAD <- NA_real_
+  } else {
+    MAD <- atan( sqrt( (evMAD$values[2] + evMAD$values[3]) / evMAD$values[1] ) )
+    MAD <- MAD * 180 / pi          # degrés
   }
 
+  ## 8.  Direction (vecteur propre minimum)
 
-  # mise en forme du résultat
-  MAD <- MAD * 180 /pi
+  v_dir <- evIn$vectors[, 3]   # colonne 3 = plus petite valeur propre
 
-  Data <- c( X = v.cp$vectors[1, 3], Y = v.cp$vectors[2, 3], Z = v.cp$vectors[3, 3],
-             I = vcorrect$I, D = vcorrect$D, F = v3$F,
-             Sl = Sl, MAD = MAD )
+  ## 9.  Correction du signe : du dernier point → premier point
 
-  return(as.data.frame(t(Data), col.names = col.names))
+  ref.vec <- c(TabX[1] - TabX[ntab],
+               TabY[1] - TabY[ntab],
+               TabZ[1] - TabZ[ntab])
+
+  if ( sum(v_dir * ref.vec) < 0 ) v_dir <- -v_dir
+
+  ## 10.  Angles (I, D, F) et correction du signe de I
+
+  v3 <- to.polar(v_dir[1], v_dir[2], v_dir[3])
+
+  Icorr <- sign(TabZ[1] - TabZ[ntab]) * abs(v3$I)
+  Dcorr <- v3$D
+  if (sign(Icorr) != sign(v3$I)) Dcorr <- D.AM(v3$D + 180)
+
+  ## 11.  Retour du résultat (pas de transposition inutile)
+
+  out <- data.frame(
+    X = v_dir[1], Y = v_dir[2], Z = v_dir[3],
+    I = Icorr,    D = Dcorr,    F = v3$F,
+    Sl = Sl,      MAD = MAD,
+    stringsAsFactors = FALSE
+  )
+  names(out) <- col.names
+  out
 }
 
 #' Calcul le vecteur de la composante partielle
@@ -4340,67 +4401,206 @@ lambert.ID.tensors <- function(Data, pt.col = "blue3", new = TRUE, ...)
 #' @param Data.F12 des valeurs pour F12
 #' @param absolue prend la valeur absolue des données
 #' @export
-flinn <- function( Data, Data.F12 = NULL, pt.names = NULL,
-                   pt.col = "blue3", pch = 21, type = "p",
-                   xlab = "F23", ylab = "F12",  X.lim = NA, Y.lim = NA,
-                   main = "Flinn diagram",
-                   absolue = TRUE, new = TRUE)
-{
-  par(pty = "s", "xaxp")
+# flinn <- function( Data, Data.F12 = NULL, pt.names = NULL,
+#                    pt.col = "blue3", pch = 21, type = "p",
+#                    xlab = "F23", ylab = "F12",  X.lim = NA, Y.lim = NA,
+#                    main = "Flinn diagram",
+#                    absolue = TRUE, new = TRUE)
+# {
+#   par(pty = "s", "xaxp")
+#   if (is.data.frame(Data)) {
+#     if (absolue == TRUE) {
+#       X <- abs(Data$F23)
+#       Y <- abs(Data$F12)
+#     }
+#     else {
+#       X <- Data$F23
+#       Y <- Data$F12
+#     }
+#   }
+#   else {
+#     if (absolue == TRUE) {
+#       X <- abs(Data)
+#       Y <- abs(Data.F12)
+#     }
+#     else {
+#       X <- Data
+#       Y <- Data.F12
+#     }
+#   }
+#
+#   # Si l’utilisateur a passé NULL ou un vecteur de longueur 0,
+#   # on le considère comme « non fourni ».
+#   if (is.null(X.lim) || length(X.lim) == 0 || all(is.na(X.lim))) {
+#     X.lim <- range(X, na.rm = TRUE)
+#     X.lim[1] <- 0                     # on force l’origine à 0
+#   }
+#   if (is.null(Y.lim) || length(Y.lim) == 0 || all(is.na(Y.lim))) {
+#     Y.lim <- range(Y, na.rm = TRUE)
+#     Y.lim[1] <- 0
+#   }
+#
+#   XY.max <- ceiling(max(X.lim[2], Y.lim[2]) * 1.05)
+#   X.lim[2] <- XY.max
+#   Y.lim[2] <- XY.max
+#
+#   # if (new == TRUE) {
+#   #   plot(x = X, y = Y, xlab = xlab, ylab = ylab, xlim = X.lim,
+#   #        ylim = Y.lim, type = type, col = "gray50", bg = pt.col,
+#   #        pch = pch, xaxt = "n", yaxt = "n", asp = 1, bty = "n",
+#   #        main = main, new = TRUE)
+#   #   ax1 <- axis(1, pos = X.lim[1], col = "gray10", at=c(0:(XY.max+0)))
+#   #   ax2 <- axis(2, pos = Y.lim[1], col = "gray10", at=c(0:(XY.max+0)))
+#   #   cc <- array(c(0, 1), c(1, 2))
+#   #   abline(coef = cc, col = "gray90")
+#   #   main <- ""
+#   # }
+#   # else {
+#   #   points(x = X, y = Y, xlim = X.lim, ylim = Y.lim, type = type,
+#   #          col = "gray50", bg = pt.col, pch = pch, xaxt = "n",
+#   #          yaxt = "n", asp = 1, bty = "n", new = FALSE)
+#   # }
+#
+#   ## Tracé du diagramme
+#
+#   if (new == TRUE) {
+#     plot(x = X, y = Y,
+#          xlab = xlab, ylab = ylab,
+#          xlim = X.lim, ylim = Y.lim,
+#          type = type,
+#          col = "gray50", bg = pt.col,
+#          pch = pch,
+#          xaxt = "n", yaxt = "n",
+#          asp = 1, bty = "n",
+#          main = main)
+#     # Axes gradués
+#     axis(1, pos = X.lim[1], col = "gray10",
+#          at = seq(0, XY.max, by = 1))
+#     axis(2, pos = Y.lim[1], col = "gray10",
+#          at = seq(0, XY.max, by = 1))
+#     # Diagonale F12 = F23
+#     abline(a = 0, b = 1, col = "gray90")
+#   } else {
+#     points(x = X, y = Y,
+#            col = "gray50", bg = pt.col,
+#            pch = pch)
+#   }
+#   ##  Étiquetage des points (si demandé)
+#
+#   if (!is.null(pt.names) && length(pt.names) == length(X)) {
+#     # jitter() avec un facteur de 0.5 (déplacement très léger)
+#     text(jitter(X, factor = 0.5),
+#          jitter(Y, factor = 0.5),
+#          labels = pt.names,
+#          cex = 0.8)
+#   }
+#   invisible(list(X = X, Y = Y,
+#                  X.lim = X.lim, Y.lim = Y.lim,
+#                  XY.max = XY.max))
+# }
+flinn <- function(Data,
+                  Data.F12 = NULL,
+                  pt.names = NULL,
+                  pt.col   = "steelblue3",   # couleur disponible dans R
+                  pch      = 21,
+                  type     = "p",
+                  xlab     = "F23",
+                  ylab     = "F12",
+                  X.lim    = NA,
+                  Y.lim    = NA,
+                  main     = "Flinn diagram",
+                  absolue  = TRUE,
+                  new      = TRUE) {
+
+  ## -------------------------------------------------
+  ## 0.  Paramètres graphiques de base
+  ## -------------------------------------------------
+  par(pty = "s")                     # aspect carré (pas de "xaxp")
+
+  ## -------------------------------------------------
+  ## 1.  Extraction des coordonnées (X = F23, Y = F12)
+  ## -------------------------------------------------
   if (is.data.frame(Data)) {
-    if (absolue == TRUE) {
+    if (absolue) {
       X <- abs(Data$F23)
       Y <- abs(Data$F12)
-    }
-    else {
+    } else {
       X <- Data$F23
       Y <- Data$F12
     }
-  }
-  else {
-    if (absolue == TRUE) {
+  } else {
+    if (absolue) {
       X <- abs(Data)
       Y <- abs(Data.F12)
-    }
-    else {
+    } else {
       X <- Data
       Y <- Data.F12
     }
   }
 
-
-  if (is.na(X.lim)) {
-    X.lim <- range(X)
+  ## -------------------------------------------------
+  ## 2.  Définir les limites des axes (si non fournies)
+  ## -------------------------------------------------
+  if (is.null(X.lim) || length(X.lim) == 0 || all(is.na(X.lim))) {
+    X.lim <- range(X, na.rm = TRUE)
     X.lim[1] <- 0
   }
-
-  if (is.na(Y.lim)) {
-    Y.lim <- range(Y)
+  if (is.null(Y.lim) || length(Y.lim) == 0 || all(is.na(Y.lim))) {
+    Y.lim <- range(Y, na.rm = TRUE)
     Y.lim[1] <- 0
   }
 
-  XY.max <- ceil(max(X.lim[2], Y.lim[2]) * 1.05)
+  ## -------------------------------------------------
+  ## 3.  Harmoniser les bornes supérieures (même valeur pour X et Y)
+  ## -------------------------------------------------
+  XY.max <- ceiling(max(X.lim[2], Y.lim[2]) * 1.05)   # +5 % de marge
   X.lim[2] <- XY.max
   Y.lim[2] <- XY.max
 
-  if (new == TRUE) {
-    plot(x = X, y = Y, xlab = xlab, ylab = ylab, xlim = X.lim,
-         ylim = Y.lim, type = type, col = "gray50", bg = pt.col,
-         pch = pch, xaxt = "n", yaxt = "n", asp = 1, bty = "n",
-         main = main, new = TRUE)
-    ax1 <- axis(1, pos = X.lim[1], col = "gray10", at=c(0:(XY.max+0)))
-    ax2 <- axis(2, pos = Y.lim[1], col = "gray10", at=c(0:(XY.max+0)))
-    cc <- array(c(0, 1), c(1, 2))
-    abline(coef = cc, col = "gray90")
-    main <- ""
+  ## -------------------------------------------------
+  ## 4.  Tracé du diagramme
+  ## -------------------------------------------------
+  if (new) {
+    plot(x = X, y = Y,
+         xlab = xlab, ylab = ylab,
+         xlim = X.lim, ylim = Y.lim,
+         type = type,
+         col = "gray50", bg = pt.col,
+         pch = pch,
+         xaxt = "n", yaxt = "n",
+         asp = 1, bty = "n",
+         main = main)
+
+    # Axes gradués
+    axis(1, pos = X.lim[1], col = "gray10",
+         at = seq(0, XY.max, by = 1))
+    axis(2, pos = Y.lim[1], col = "gray10",
+         at = seq(0, XY.max, by = 1))
+
+    # Diagonale F12 = F23
+    abline(a = 0, b = 1, col = "gray90")
+  } else {
+    points(x = X, y = Y,
+           col = "gray50", bg = pt.col,
+           pch = pch)
   }
-  else {
-    points(x = X, y = Y, xlim = X.lim, ylim = Y.lim, type = type,
-           col = "gray50", bg = pt.col, pch = pch, xaxt = "n",
-           yaxt = "n", asp = 1, bty = "n", new = FALSE)
+
+  ## -------------------------------------------------
+  ## 5.  Étiquetage des points (si demandé)
+  ## -------------------------------------------------
+  if (!is.null(pt.names) && length(pt.names) == length(X)) {
+    text(jitter(X, factor = 0.5),
+         jitter(Y, factor = 0.5),
+         labels = pt.names,
+         cex = 0.8)
   }
-  text(jitter(X, 5, amount = 0), jitter(Y, 5, amount = 0),
-       pt.names)
+
+  ## -------------------------------------------------
+  ## 6.  Retour silencieux d’informations utiles
+  ## -------------------------------------------------
+  invisible(list(X = X, Y = Y,
+                 X.lim = X.lim, Y.lim = Y.lim,
+                 XY.max = XY.max))
 }
 
 #' Tracer d'un diagramme de désaimantation

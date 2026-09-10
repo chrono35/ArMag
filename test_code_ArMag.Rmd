@@ -495,4 +495,23 @@ arai(mes.sel, begin.step.value = 250, end.step.value = 700, aim.coef = 1E-10*1E6
 
 ```
 
+# test code genere.AMD
+Préparation de la liste des échantillons
+```{r}
+List_ech <- NULL
+
+for (i in 101:162) {
+  nomA <- paste0(i,"BA")
+  nomB <- paste0(i,"BB")
+  nomC <- paste0(i,"BC")
+  List_ech <-  c(List_ech, nomA, nomB, nomC)
+  
+}
+List_ech
+```
+Création du fichier AMD
+```{r}
+file_AM <- "~/Documents/AM/40306B.AMD"
+genere.AMD(file.AMD = file_AM, list.ech = List_ech, shape = "Cyl")
+```
 
