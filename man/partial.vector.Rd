@@ -2,16 +2,64 @@
 % Please edit documentation in R/ArMag.R
 \name{partial.vector}
 \alias{partial.vector}
-\title{Calcul les directions du vecteur partiel pour une série d'étape}
+\title{Calcul du vecteur partiel (direction, inclinaison, etc.) d’un nuage de points 3‑D}
 \usage{
 partial.vector(TabX, TabY, TabZ, en0 = TRUE)
 }
 \arguments{
-\item{en0}{permet de calculer la composante qui passe par l'origine (0, 0)}
+\item{TabX}{Numeric vector. Coordonnées X des points.}
+
+\item{TabY}{Numeric vector. Coordonnées Y des points.}
+
+\item{TabZ}{Numeric vector. Coordonnées Z des points.}
+
+\item{en0}{Logical (default = \code{TRUE}). signifie passe en (0,0)
+Si \code{FALSE}, le barycentre du nuage est soustrait aux coordonnées avant le
+calcul (déplacement du système de référence à l’origine).
+Si \code{TRUE}, le barycentre n’est pas retiré (le nuage reste dans son repère
+d’origine).}
 }
 \value{
-une data.frame "X", "Y", "Z", "I", "D", "F", "Sl", "MAD"
+A data‑frame (one row) with the following columns:
+  \describe{
+    \item{X}{Composante X du vecteur directeur (signé).}
+    \item{Y}{Composante Y du vecteur directeur (signé).}
+    \item{Z}{Composante Z du vecteur directeur (signé).}
+    \item{I}{Inclinaison (dip) en degrés.}
+    \item{D}{Direction (azimut) en degrés.}
+    \item{F}{Facteur de forme (toujours 1 pour une droite).}
+    \item{Sl}{Rapport \eqn{S_l}.}
+    \item{MAD}{Mean Angular Deviation en degrés.}
+  }
 }
 \description{
-Calcul les directions du vecteur partiel pour une série d'étape
+Cette fonction calcule, à partir de trois vecteurs de coordonnées \code{TabX},
+  \code{TabY} et \code{TabZ}, le vecteur directeur (composantes \code{X}, \code{Y},
+  \code{Z}) ainsi que les paramètres géométriques associés :
+  \itemize{
+    \item \code{I} : inclinaison (dip) en degrés,
+    \item \code{D} : direction (azimut) en degrés,
+    \item \code{F} : facteur de forme (always = 1 for a line),
+    \item \code{Sl} : rapport \eqn{S_l = \frac{\text{longueur du plus court chemin}}{\text{longueur totale du chemin}}},
+    \item \code{MAD} : angle moyen d’écart (Mean Angular Deviation) en degrés.
+  }
+  Le vecteur est orienté du **dernier point** vers le **premier point** (critère de
+  signe configurable dans le code).
+  La fonction accepte également le calcul du barycentre (argument \code{en0}).
+}
+\details{
+
+}
+\examples{
+## Exemple simple
+TabX <- c(1, 0.75, 0.5)
+TabY <- c(1, 0.75, 0.5)
+TabZ <- c(-1, -0.75, -0.5)
+res  <- partial.vector(TabX, TabY, TabZ, en0 = TRUE)
+print(res)
+
+## Avec déplacement du barycentre (en0 = FALSE)
+res2 <- partial.vector(TabX, TabY, TabZ, en0 = FALSE)
+print(res2)
+
 }

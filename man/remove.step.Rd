@@ -9,7 +9,7 @@ remove.step(
   Data,
   step.value = NULL,
   step.code = c("Z+", "Z-", "X+", "X-", "Y+", "Y-", "ZB"),
-  verbose = TRUE
+  verbose = FALSE
 )
 }
 \arguments{

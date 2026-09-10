@@ -10,7 +10,7 @@ correction.anisotropy(mesures.frame, ani.matrix)
 \arguments{
 \item{mesures.frame}{data.frame avec les mesures et variables X, Y, Z, i, D, F}
 
-\item{ani.matric}{matrice 3 x 3 correspondant à la matrice (symétrique et normalisé) à utiliser pour la correction}
+\item{ani.matrix}{matrice 3 x 3 correspondant à la matrice (symétrique et normalisé) à utiliser pour la correction}
 }
 \value{
 un data.frame du même type que mesures.frame

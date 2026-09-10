@@ -21,7 +21,7 @@ repliement.tranche(
 \item{dec}{en degrés}
 }
 \value{
-I et D en degrés
+I et D en degrés et X, Y, Z correspondant
 }
 \description{
 repliement.tranche

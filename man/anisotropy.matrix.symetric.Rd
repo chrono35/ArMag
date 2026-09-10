@@ -2,7 +2,7 @@
 % Please edit documentation in R/ArMag.R
 \name{anisotropy.matrix.symetric}
 \alias{anisotropy.matrix.symetric}
-\title{Calcul la matrice d'anisotropie symetrisée et normalisé pour un spécimen
+\title{Calcul la matrice d'anisotropie symetrisée et normalisé pour un spécimen, à partir de mesures d'anisotropie partielle
 qui sert à la correction}
 \usage{
 anisotropy.matrix.symetric(
@@ -27,6 +27,6 @@ anisotropy.matrix.symetric(
 un data.frame avec les colonnes "L1", "L1.Inc", "L1.Dec", "L2", "L2.Inc", "L2.Dec", "L3", "L3.Inc", "L3.Dec", "F13", "F12", "F23"
 }
 \description{
-Calcul la matrice d'anisotropie symetrisée et normalisé pour un spécimen
+Calcul la matrice d'anisotropie symetrisée et normalisé pour un spécimen, à partir de mesures d'anisotropie partielle
 qui sert à la correction
 }

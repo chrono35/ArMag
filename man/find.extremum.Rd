@@ -2,14 +2,37 @@
 % Please edit documentation in R/ArMag.R
 \name{find.extremum}
 \alias{find.extremum}
-\title{Valeurs maximun d'un tracer lambert
-Permet de trouver les valeurs minimales et maximales pour tracer un lambert
-Fonction interne}
+\title{Bounding box for a Lambert diagram}
 \usage{
-find.extremum(i.min = 0, i.max = 90, d.min = -90, d.max = 270)
+find.extremum(
+  i.min = 0,
+  i.max = 90,
+  d.min = -90,
+  d.max = 270,
+  n = 500,
+  as.list = FALSE
+)
+}
+\arguments{
+\item{i.min}{Inclinaison minimale (en degrés, 0 ≤ i.min ≤ 90)}
+
+\item{i.max}{Inclinaison maximale (en degrés, 0 ≤ i.max ≤ 90)}
+
+\item{d.min}{Déclinaison minimale (en degrés, -90 ≤ d.min ≤ 270)}
+
+\item{d.max}{Déclinaison maximale (en degrés, -90 ≤ d.max ≤ 270)}
+
+\item{n}{Nombre de points à générer le long des arcs (défaut = 500)}
+}
+\value{
+Une liste contenant `xlim` et `ylim`, chacune étant un vecteur
+        de deux valeurs (`c(min, max)`).
 }
 \description{
-Valeurs maximun d'un tracer lambert
-Permet de trouver les valeurs minimales et maximales pour tracer un lambert
-Fonction interne
+Cette fonction calcule les limites (xmin, xmax, ymin, ymax) nécessaires
+pour tracer un diagramme Lambert (ou « Lambert equal‑area ») entre
+deux inclinaisons `i.min` / `i.max` et deux déclinaisons `d.min` / `d.max`.
+}
+\examples{
+find.extremum(i.min = 0, i.max = 60, d.min = -90, d.max = 270)
 }
