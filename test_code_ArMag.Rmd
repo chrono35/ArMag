@@ -491,7 +491,8 @@ begin.step.value = 0
 end.step.value = 700
 
 par(pty="s", "xaxp")
-arai(mes.sel, begin.step.value = 250, end.step.value = 700, aim.coef = 1E-10*1E6/vol)
+#thel <- Thellier.computation(mes.sel, begin.step.value = 250, end.step.value = 700, #aim.coef = 1E-10*1E6/vol)
+#arai.graph(thel)
 
 ```
 
@@ -511,7 +512,7 @@ List_ech
 ```
 Création du fichier AMD
 ```{r}
-file_AM <- "~/Documents/AM/40306B.AMD"
-genere.AMD(file.AMD = file_AM, list.ech = List_ech, shape = "Cyl")
+#file_AM <- "~/Documents/AM/40306B.AMD"
+#genere.AMD(file.AMD = file_AM, list.ech = List_ech, shape = "Cyl")
 ```
 
